@@ -11,7 +11,7 @@ public class W05L01 {
         
         int integer = input.nextInt();
         
-        System.out.print("The factors are: ");
+        System.out.print("The factors are:  ");
         
         for (int i=1;i<=integer;i++){
             if (integer % i == 0 ){
