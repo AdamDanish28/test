@@ -142,6 +142,47 @@ label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
 .bars div{flex:1;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px;opacity:.85}
 .bars-l{display:flex;gap:4px;font-size:10px;color:var(--muted)}
 .bars-l span{flex:1;text-align:center}
+/* focus / pomodoro */
+.focus-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:760px){.focus-grid{grid-template-columns:1fr}}
+.timer{display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 14px}
+.ring{position:relative;width:240px;height:240px;max-width:70vw;max-height:70vw}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:12}
+.ring .track{stroke:var(--line)}
+.ring .prog{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .3s linear}
+.ring.brk .prog{stroke:var(--ok)}
+.ring .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .time{font-size:48px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+.ring .phase{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.rounds{display:flex;gap:6px}
+.rounds i{width:10px;height:10px;border-radius:50%;background:var(--line);display:block}
+.rounds i.on{background:var(--accent)}
+.ctrls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.ctrls .btn{min-width:92px}
+.ctrls .btn.big{padding:12px 28px;font-size:16px;font-weight:600}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.presets button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:13px}
+.presets button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.num{display:flex;align-items:center;gap:6px}
+.num input{width:70px;text-align:center;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px}
+.num span{color:var(--muted);font-size:13px}
+input:disabled,select:disabled,.presets button:disabled{opacity:.5;cursor:not-allowed}
+.goal{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:8px}
+.goal div{height:100%;background:var(--ok);border-radius:5px}
+.day-h{display:flex;justify-content:space-between;align-items:baseline;margin:16px 2px 6px;font-weight:600}
+.day-h small{color:var(--muted);font-weight:500}
+.rec{display:flex;gap:10px;align-items:center;padding:10px 12px}
+.rec+.rec{border-top:1px solid var(--line)}
+.rec .body{flex:1;min-width:0}
+.rec .tm{font-size:13px;color:var(--muted)}
+.rec .dur{font-weight:700;font-variant-numeric:tabular-nums;min-width:58px;text-align:right}
+.rec input[type=checkbox]{width:18px;height:18px}
+.recs{padding:0}
+.selbar{position:sticky;top:58px;z-index:4;display:flex;gap:8px;align-items:center;background:var(--accent-soft);border-radius:12px;padding:8px 12px;margin-bottom:8px;flex-wrap:wrap}
+.selbar .t{flex:1}
+.toast .undo{background:none;border:none;color:var(--accent);font-weight:700;margin-left:10px;cursor:pointer}
+:root[data-theme="dark"] .toast .undo{color:#4f46e5}
 </style>
 </head>
 <body>
@@ -157,6 +198,7 @@ label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
 
 <nav class="tabs">
   <button data-tab="today" class="active"><span class="i">🏠</span>Today</button>
+  <button data-tab="focus"><span class="i">⏱️</span>Focus</button>
   <button data-tab="calendar"><span class="i">📅</span>Calendar</button>
   <button data-tab="topics"><span class="i">📚</span>Topics</button>
   <button data-tab="stats"><span class="i">📈</span>Stats</button>
@@ -171,15 +213,24 @@ const KEY = 'revise.v1';
 const DEFAULT = {
   topics: [],
   settings: { intervals:[1,3,7,14,30], reminderTime:'08:00', notify:false, shiftLate:false, theme:'auto' },
-  log: [] // {date, topicId, stage, rating}
+  log: [], // {date, topicId, stage, rating}
+  // Pomodoro settings and study-session records
+  focus: { study:25, brk:5, longBrk:15, longEvery:4, autoStart:false, sound:true, goal:120 },
+  sessions: [] // {id, start, end, minutes, subject, topicId, topicTitle, note, completed, manual}
 };
 let db = load();
 function load(){
   try{
     const raw = localStorage.getItem(KEY);
-    if(raw){ const d = JSON.parse(raw); return {...DEFAULT, ...d, settings:{...DEFAULT.settings, ...(d.settings||{})}}; }
+    if(raw){ return normalize(JSON.parse(raw)); }
   }catch(e){}
   return structuredClone(DEFAULT);
+}
+function normalize(d){
+  return {...structuredClone(DEFAULT), ...d,
+    settings:{...DEFAULT.settings, ...(d.settings||{})},
+    focus:{...DEFAULT.focus, ...(d.focus||{})},
+    sessions: Array.isArray(d.sessions) ? d.sessions : []};
 }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ toast('Could not save — storage is unavailable'); } }
 
@@ -258,9 +309,15 @@ function dueNow(){ const td = today(); return allPending().filter(x => x.r.due <
 /* ============ UI helpers ============ */
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function toast(msg){
-  const el = document.createElement('div'); el.className='toast'; el.textContent=msg; document.body.appendChild(el);
-  setTimeout(()=>el.remove(), 2600);
+function toast(msg, undo){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const el = document.createElement('div'); el.className='toast'; el.textContent=msg;
+  if(undo){
+    const b = document.createElement('button'); b.className='undo'; b.textContent='Undo';
+    b.onclick = () => { undo(); el.remove(); }; el.appendChild(b);
+  }
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), undo ? 6000 : 2600);
 }
 function stageLabel(r){ return r.extra ? 'Extra review' : `Day ${r.interval}`; }
 function chip(subject){
@@ -280,6 +337,8 @@ function render(){
   document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab===tab));
   const v = $('#view');
   if(tab==='today') v.innerHTML = renderToday();
+  if(tab==='focus'){ v.innerHTML = renderFocus(); updateTimerUI(); }
+  $('#fab').classList.toggle('hidden', tab==='focus');
   if(tab==='calendar') v.innerHTML = renderCalendar();
   if(tab==='topics') v.innerHTML = renderTopics();
   if(tab==='stats') v.innerHTML = renderStats();
@@ -579,6 +638,7 @@ function showTopic(id){
       <button class="btn danger" data-m="delete" data-id="${t.id}">Delete</button>
       <button class="btn" data-m="archive" data-id="${t.id}">${t.archived?'Unarchive':'Archive'}</button>
       <button class="btn" data-m="ics" data-id="${t.id}">📅 Add to calendar</button>
+      <button class="btn" data-m="studyThis" data-id="${t.id}">⏱️ Study this</button>
       <button class="btn primary" data-m="edit" data-id="${t.id}">Edit</button>
     </div>`);
 }
@@ -643,9 +703,9 @@ function exportIcs(topics, name){
 
 /* ============ Notifications ============ */
 let swReg = null;
-async function notify(title, body){
+async function notify(title, body, tag='revise-due'){
   if(!('Notification' in window) || Notification.permission!=='granted') return false;
-  const opts = { body, icon:'icon-192.png', badge:'icon-192.png', tag:'revise-due' };
+  const opts = { body, icon:'icon-192.png', badge:'icon-192.png', tag };
   try{
     if(swReg){ await swReg.showNotification(title, opts); return true; }
   }catch(e){}
@@ -720,6 +780,11 @@ document.addEventListener('click', e => {
   if(d.m){
     const t = d.id && getTopic(d.id);
     if(d.m==='cancel') closeModal();
+    if(d.m==='studyThis'){
+      if(timer.running){ toast('A timer is already running'); }
+      else { timer.subject = t.subject||''; timer.topicId = t.id; saveTimer(); }
+      closeModal(); tab='focus'; render(); scrollTo(0,0);
+    }
     if(d.m==='saveTopic') saveTopic(d.id);
     if(d.m==='edit') editTopic(d.id);
     if(d.m==='undo'){ undoReview(d.id, +d.i); showTopic(d.id); render(); }
@@ -769,8 +834,10 @@ document.addEventListener('change', async e => {
         const have = new Set(db.topics.map(t=>t.id));
         d.topics.forEach(t => { if(have.has(t.id)){ const i=db.topics.findIndex(x=>x.id===t.id); db.topics[i]=t; } else db.topics.push(t); });
         db.log = [...db.log, ...(d.log||[])];
+        const haveS = new Set(db.sessions.map(s=>s.id));
+        (d.sessions||[]).forEach(s => { if(!haveS.has(s.id)) db.sessions.push(s); });
       } else {
-        db = {...DEFAULT, ...d, settings:{...DEFAULT.settings, ...(d.settings||{})}};
+        db = normalize(d);
       }
       save(); render(); toast(`Imported ${d.topics.length} topics`);
     }catch(err){ toast('That file is not a valid Revise backup'); }
@@ -791,6 +858,385 @@ function applyTheme(){
   const t = db.settings.theme;
   if(t==='auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
 }
+
+/* ============ Focus (Pomodoro) ============ */
+const TKEY = 'revise.timer';
+const TIMER_BASE = {phase:'study', running:false, endAt:0, remaining:null, total:null, round:1, sessStart:0, subject:'', topicId:'', note:''};
+let timer = loadTimer();
+function loadTimer(){
+  try{ return {...TIMER_BASE, ...JSON.parse(localStorage.getItem(TKEY)||'{}')}; }catch(e){ return {...TIMER_BASE}; }
+}
+function saveTimer(){ try{ localStorage.setItem(TKEY, JSON.stringify(timer)); }catch(e){} }
+const phaseMin = p => p==='study' ? db.focus.study : p==='long' ? db.focus.longBrk : db.focus.brk;
+const phaseName = p => p==='study' ? 'Focus' : p==='long' ? 'Long break' : 'Short break';
+const isActive = () => timer.remaining != null; // a phase has been started (running or paused)
+const totalMs = () => timer.total ?? phaseMin(timer.phase)*60000;
+const remainingMs = () => timer.running ? Math.max(0, timer.endAt - Date.now()) : (timer.remaining ?? totalMs());
+const clock = ms => { const s = Math.ceil(ms/1000); return `${pad(Math.floor(s/60))}:${pad(s%60)}`; };
+const fmtMin = m => { m = Math.round(m); return m < 60 ? `${m}m` : `${Math.floor(m/60)}h${m%60 ? ' '+(m%60)+'m' : ''}`; };
+const hm = ts => new Date(ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+let audioCtx = null;
+function chime(){
+  if(!db.focus.sound) return;
+  try{
+    audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();
+    [0, .25, .5].forEach((t, k) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.frequency.value = [660, 880, 990][k]; o.type = 'sine';
+      g.gain.setValueAtTime(.0001, audioCtx.currentTime+t);
+      g.gain.exponentialRampToValueAtTime(.3, audioCtx.currentTime+t+.02);
+      g.gain.exponentialRampToValueAtTime(.0001, audioCtx.currentTime+t+.4);
+      o.connect(g).connect(audioCtx.destination); o.start(audioCtx.currentTime+t); o.stop(audioCtx.currentTime+t+.45);
+    });
+  }catch(e){}
+  try{ navigator.vibrate?.([200,100,200]); }catch(e){}
+}
+
+function startPause(){
+  try{ audioCtx ||= new (window.AudioContext||window.webkitAudioContext)(); audioCtx.resume(); }catch(e){}
+  if('Notification' in window && Notification.permission==='default') Notification.requestPermission();
+  if(timer.running){ // pause
+    timer.remaining = Math.max(0, timer.endAt - Date.now()); timer.running = false;
+  } else {
+    if(!isActive()){ timer.total = phaseMin(timer.phase)*60000; timer.remaining = timer.total; }
+    if(timer.phase==='study' && !timer.sessStart) timer.sessStart = Date.now();
+    timer.endAt = Date.now() + timer.remaining; timer.running = true;
+  }
+  saveTimer(); updateTimerUI();
+}
+function studiedMs(){ return timer.phase==='study' && isActive() ? totalMs() - remainingMs() : 0; }
+function recordSession(ms, end, completed){
+  const minutes = Math.round(ms/60000);
+  if(minutes < 1) return null;
+  const t = timer.topicId && getTopic(timer.topicId);
+  const s = { id:uid(), start: timer.sessStart || end - ms, end, minutes,
+    subject: timer.subject.trim(), topicId: t ? t.id : '', topicTitle: t ? t.title : '', note: timer.note.trim(), completed };
+  db.sessions.push(s); save();
+  return s;
+}
+function setPhase(phase, autorun){
+  timer.phase = phase; timer.total = phaseMin(phase)*60000;
+  timer.sessStart = 0;
+  if(autorun){ timer.remaining = timer.total; timer.endAt = Date.now()+timer.total; timer.running = true; if(phase==='study') timer.sessStart = Date.now(); }
+  else { timer.remaining = null; timer.total = null; timer.running = false; }
+  saveTimer();
+}
+// Called when the countdown reaches zero (also on load if it finished while the app was closed)
+function finishPhase(at){
+  const stale = Date.now() - at > 60000;
+  const auto = db.focus.autoStart && !stale;
+  if(timer.phase==='study'){
+    const s = recordSession(totalMs(), at, true);
+    const long = timer.round % db.focus.longEvery === 0;
+    setPhase(long ? 'long' : 'break', auto);
+    chime();
+    notifyFocus('✅ Focus session done', `${s ? fmtMin(s.minutes)+' recorded. ' : ''}Time for a ${phaseMin(timer.phase)} min ${long?'long ':''}break.`);
+  } else {
+    timer.round = timer.phase==='long' ? 1 : timer.round + 1;
+    setPhase('study', auto);
+    chime();
+    notifyFocus('⏰ Break is over', `Ready for ${db.focus.study} more minutes of focus?`);
+  }
+  if(tab==='focus') render(); else updateTimerUI();
+}
+function notifyFocus(title, body){
+  if(document.visibilityState==='visible') toast(title + ' — ' + body);
+  notify(title, body, 'revise-focus');
+}
+function skipPhase(){
+  if(timer.phase==='study'){
+    const ms = studiedMs();
+    const s = ms >= 60000 ? recordSession(ms, Date.now(), false) : null;
+    const long = timer.round % db.focus.longEvery === 0;
+    setPhase(long ? 'long' : 'break', false);
+    toast(s ? `Recorded ${fmtMin(s.minutes)} · break next` : 'Skipped to break');
+  } else {
+    timer.round = timer.phase==='long' ? 1 : timer.round + 1;
+    setPhase('study', false);
+    toast('Break skipped');
+  }
+  render();
+}
+function stopTimer(){
+  const ms = studiedMs();
+  if(ms >= 60000){
+    const s = recordSession(ms, Date.now(), false);
+    if(s) toast(`Stopped — ${fmtMin(s.minutes)} recorded`, () => { db.sessions = db.sessions.filter(x=>x.id!==s.id); save(); render(); });
+  }
+  timer.round = 1; setPhase('study', false); render();
+}
+
+function updateTimerUI(){
+  const rem = remainingMs(), tot = totalMs();
+  if(timer.running) document.title = `${clock(rem)} · ${phaseName(timer.phase)}`;
+  const el = $('#tTime'); if(!el) return;
+  el.textContent = clock(rem);
+  $('#tPhase').textContent = phaseName(timer.phase) + (isActive() && !timer.running ? ' · paused' : '');
+  const C = 2*Math.PI*110;
+  $('#tProg').style.strokeDashoffset = C * (1 - rem/tot);
+  $('#tRing').classList.toggle('brk', timer.phase!=='study');
+  $('#tStart').textContent = timer.running ? '⏸ Pause' : isActive() ? '▶ Resume' : '▶ Start';
+  $('#tStop').disabled = !isActive() && timer.round===1 && timer.phase==='study';
+}
+
+/* --- records filtering --- */
+let recF = { q:'', subject:'', range:'7', sort:'new', selecting:false, sel:new Set() };
+function filteredSessions(){
+  let list = db.sessions.slice();
+  if(recF.range !== 'all'){
+    const from = recF.range==='today' ? today() : addDays(today(), -(+recF.range - 1));
+    list = list.filter(s => ymd(new Date(s.start)) >= from);
+  }
+  if(recF.subject) list = list.filter(s => (s.subject||'') === (recF.subject==='__none' ? '' : recF.subject));
+  const q = recF.q.trim().toLowerCase();
+  if(q) list = list.filter(s => `${s.subject} ${s.topicTitle} ${s.note}`.toLowerCase().includes(q));
+  const by = {
+    new:(a,b)=>b.start-a.start, old:(a,b)=>a.start-b.start,
+    long:(a,b)=>b.minutes-a.minutes, short:(a,b)=>a.minutes-b.minutes,
+    subject:(a,b)=>(a.subject||'~').localeCompare(b.subject||'~') || b.start-a.start
+  };
+  return list.sort(by[recF.sort]);
+}
+function sessionSubjects(){ return [...new Set([...subjects(), ...db.sessions.map(s=>s.subject).filter(Boolean)])].sort((a,b)=>a.localeCompare(b)); }
+function topicOptions(subject, selected){
+  const pool = db.topics.filter(t => !t.archived || t.id===selected);
+  const match = subject ? pool.filter(t => t.subject===subject) : [];
+  const list = match.length ? match : pool;
+  return `<option value="">— none —</option>` + list.map(t => `<option value="${t.id}" ${t.id===selected?'selected':''}>${esc(t.title)}${!match.length && t.subject ? ' ('+esc(t.subject)+')' : ''}</option>`).join('');
+}
+const minutesOn = d => db.sessions.filter(s => ymd(new Date(s.start))===d).reduce((a,s)=>a+s.minutes, 0);
+
+function renderFocus(){
+  const f = db.focus, td = today();
+  const C = 2*Math.PI*110;
+  const todayMin = minutesOn(td), todayN = db.sessions.filter(s=>ymd(new Date(s.start))===td).length;
+  const days = [...Array(7)].map((_,k) => addDays(td, k-6));
+  const mins = days.map(minutesOn); const max = Math.max(1, ...mins);
+  const weekMin = mins.reduce((a,b)=>a+b,0);
+  let streakD = 0, d = todayMin ? td : addDays(td,-1); while(minutesOn(d) > 0){ streakD++; d = addDays(d,-1); }
+  const preset = (key, vals) => vals.map(v => `<button data-f="preset" data-k="${key}" data-v="${v}" class="${f[key]===v?'on':''}">${v}m</button>`).join('');
+  const subs = sessionSubjects();
+  return `
+  <div class="focus-grid">
+    <div class="card timer">
+      <div class="ring" id="tRing">
+        <svg viewBox="0 0 240 240"><circle class="track" cx="120" cy="120" r="110"/><circle class="prog" id="tProg" cx="120" cy="120" r="110" stroke-dasharray="${C}" stroke-dashoffset="0"/></svg>
+        <div class="center"><div class="phase" id="tPhase"></div><div class="time" id="tTime"></div>
+          <div class="rounds">${[...Array(f.longEvery)].map((_,k)=>`<i class="${k < timer.round - (timer.phase==='study'?1:0) ? 'on':''}"></i>`).join('')}</div></div>
+      </div>
+      <div class="ctrls">
+        <button class="btn primary big" id="tStart" data-f="start"></button>
+      </div>
+      <div class="ctrls">
+        <button class="btn" data-f="skip">⏭ ${timer.phase==='study'?'Skip to break':'Skip break'}</button>
+        <button class="btn" id="tStop" data-f="stop">⏹ Stop</button>
+      </div>
+      <div style="width:100%">
+        <label>Subject</label>
+        <input type="text" id="fcSub" list="fcSubList" placeholder="What are you studying?" value="${esc(timer.subject)}">
+        <datalist id="fcSubList">${subs.map(s=>`<option value="${esc(s)}">`).join('')}</datalist>
+        <label>Topic (optional)</label>
+        <select id="fcTopic">${topicOptions(timer.subject, timer.topicId)}</select>
+        <label>Note (optional)</label>
+        <input type="text" id="fcNote" placeholder="e.g. past paper Q1–5" value="${esc(timer.note)}">
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><b>Today</b><small style="color:var(--muted)">🔥 ${streakD} day streak</small></div>
+        <div class="row" style="margin-top:8px">
+          <div><div style="font-size:24px;font-weight:700">${fmtMin(todayMin)}</div><small style="color:var(--muted)">focused · ${todayN} session${todayN===1?'':'s'}</small></div>
+          <div><div style="font-size:24px;font-weight:700">${fmtMin(weekMin)}</div><small style="color:var(--muted)">last 7 days</small></div>
+        </div>
+        <div class="goal"><div style="width:${Math.min(100, todayMin/f.goal*100)}%"></div></div>
+        <small style="color:var(--muted)">Daily goal: ${fmtMin(todayMin)} / ${fmtMin(f.goal)}${todayMin>=f.goal?' 🎉':''}</small>
+        <div class="bars" style="height:70px">${mins.map((m,k)=>`<div style="height:${m/max*100}%;${days[k]===td?'':'opacity:.55'}" title="${fmt(days[k])}: ${fmtMin(m)}"></div>`).join('')}</div>
+        <div class="bars-l">${days.map(x=>`<span>${parse(x).toLocaleDateString(undefined,{weekday:'narrow'})}</span>`).join('')}</div>
+      </div>
+      <div class="card">
+        <b>Timer settings</b>
+        <label>Focus length</label>
+        <div class="num"><input type="number" id="fStudy" min="1" max="240" value="${f.study}"><span>minutes</span></div>
+        <div class="presets">${preset('study',[15,25,30,45,50,60,90])}</div>
+        <label>Break length</label>
+        <div class="num"><input type="number" id="fBrk" min="1" max="120" value="${f.brk}"><span>minutes</span></div>
+        <div class="presets">${preset('brk',[5,10,15,20])}</div>
+        <div class="row">
+          <div><label>Long break</label><div class="num"><input type="number" id="fLong" min="1" max="120" value="${f.longBrk}"><span>min</span></div></div>
+          <div><label>Long break after</label><div class="num"><input type="number" id="fEvery" min="1" max="12" value="${f.longEvery}"><span>sessions</span></div></div>
+        </div>
+        <label>Daily goal</label>
+        <div class="num"><input type="number" id="fGoal" min="5" max="1440" step="5" value="${f.goal}"><span>minutes</span></div>
+        <div class="switch" style="margin-top:10px"><span>Auto-start the next session / break</span><input type="checkbox" id="fAuto" ${f.autoStart?'checked':''}></div>
+        <div class="switch"><span>Sound &amp; vibration when time's up</span><input type="checkbox" id="fSound" ${f.sound?'checked':''}></div>
+        ${isActive() ? '<p style="font-size:12px;color:var(--muted);margin:6px 0 0">New lengths apply from the next session.</p>' : ''}
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin:22px 0 10px;flex-wrap:wrap">
+    <h2 style="margin:0;flex:1">Study records</h2>
+    <button class="btn small" data-f="add">＋ Add</button>
+    <button class="btn small" data-f="select">${recF.selecting?'Done':'☑ Select'}</button>
+    <button class="btn small" data-f="csv">⬇ CSV</button>
+  </div>
+  <div class="toolbar">
+    <input type="search" id="rq" placeholder="Search subject, topic, note…" value="${esc(recF.q)}">
+    <select id="rSub"><option value="">All subjects</option><option value="__none" ${recF.subject==='__none'?'selected':''}>No subject</option>${subs.map(s=>`<option ${s===recF.subject?'selected':''}>${esc(s)}</option>`).join('')}</select>
+    <select id="rRange">${[['today','Today'],['7','Last 7 days'],['30','Last 30 days'],['90','Last 90 days'],['all','All time']].map(([v,l])=>`<option value="${v}" ${v===recF.range?'selected':''}>${l}</option>`).join('')}</select>
+    <select id="rSort">${[['new','Newest first'],['old','Oldest first'],['long','Longest first'],['short','Shortest first'],['subject','By subject']].map(([v,l])=>`<option value="${v}" ${v===recF.sort?'selected':''}>${l}</option>`).join('')}</select>
+  </div>
+  <div id="recWrap">${renderRecords()}</div>`;
+}
+function renderRecords(){
+  const list = filteredSessions();
+  if(!db.sessions.length) return `<div class="card empty">No study sessions yet. Start the timer — every focus session is saved here automatically.</div>`;
+  if(!list.length) return `<div class="card empty">No records match these filters.</div>`;
+  const total = list.reduce((a,s)=>a+s.minutes,0);
+  // per-subject breakdown
+  const bySub = {}; list.forEach(s => { const k = s.subject || 'No subject'; bySub[k] = (bySub[k]||0) + s.minutes; });
+  const subRows = Object.entries(bySub).sort((a,b)=>b[1]-a[1]);
+  let html = `<div class="card" style="margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><b>${list.length} session${list.length>1?'s':''} · ${fmtMin(total)}</b><small style="color:var(--muted)">avg ${fmtMin(total/list.length)}</small></div>
+    <div style="display:flex;height:10px;border-radius:5px;overflow:hidden;margin-top:8px;background:var(--line)">${subRows.map(([k,m])=>`<div title="${esc(k)}: ${fmtMin(m)}" style="flex:${m};background:${k==='No subject'?'var(--muted)':subjectColor(k)}"></div>`).join('')}</div>
+    <div class="meta" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${subRows.map(([k,m])=>`<span class="chip"><span class="dot" style="background:${k==='No subject'?'var(--muted)':subjectColor(k)}"></span>${esc(k)} · ${fmtMin(m)}</span>`).join('')}</div>
+  </div>`;
+  if(recF.selecting){
+    const all = list.every(s=>recF.sel.has(s.id));
+    html += `<div class="selbar"><span class="t"><b>${recF.sel.size}</b> selected</span>
+      <button class="btn small" data-f="selAll">${all?'Clear':'Select all'}</button>
+      <button class="btn small danger" data-f="delSel" ${recF.sel.size?'':'disabled'}>🗑 Delete</button></div>`;
+  }
+  const row = s => {
+    const st = s.manual ? '✍️ Added manually' : s.completed ? '✓ Completed' : '⏹ Stopped early';
+    return `<div class="rec">
+      ${recF.selecting ? `<input type="checkbox" data-sel="${s.id}" ${recF.sel.has(s.id)?'checked':''}>` : ''}
+      <div class="body">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${s.subject ? chip(s.subject) : '<span class="chip">No subject</span>'}${s.topicTitle?`<b style="font-size:14px">${esc(s.topicTitle)}</b>`:''}</div>
+        ${s.note ? `<div style="font-size:13px;margin-top:3px;word-break:break-word">${esc(s.note)}</div>` : ''}
+        <div class="tm">${recF.sort==='new'||recF.sort==='old' ? '' : fmt(ymd(new Date(s.start)))+' · '}${hm(s.start)}–${hm(s.end)} · ${st}</div>
+      </div>
+      <div class="dur">${fmtMin(s.minutes)}</div>
+      ${recF.selecting ? '' : `<button class="icon-btn" data-f="edit" data-id="${s.id}" title="Edit">✏️</button><button class="icon-btn" data-f="del" data-id="${s.id}" title="Delete">🗑️</button>`}
+    </div>`;
+  };
+  if(recF.sort==='new' || recF.sort==='old'){
+    const groups = []; list.forEach(s => { const k = ymd(new Date(s.start)); const g = groups.at(-1); if(g && g.k===k) g.items.push(s); else groups.push({k, items:[s]}); });
+    html += groups.map(g => `<div class="day-h"><span>${g.k===today()?'Today':g.k===addDays(today(),-1)?'Yesterday':fmtLong(g.k)}</span><small>${fmtMin(g.items.reduce((a,s)=>a+s.minutes,0))}</small></div>
+      <div class="card recs">${g.items.map(row).join('')}</div>`).join('');
+  } else {
+    html += `<div class="card recs">${list.map(row).join('')}</div>`;
+  }
+  return html;
+}
+function refreshRecords(){ const w = $('#recWrap'); if(w) w.innerHTML = renderRecords(); }
+
+function deleteSessions(ids){
+  const set = new Set(ids);
+  const removed = db.sessions.filter(s => set.has(s.id));
+  db.sessions = db.sessions.filter(s => !set.has(s.id));
+  ids.forEach(id => recF.sel.delete(id));
+  save(); if(tab==='focus') render();
+  toast(`Deleted ${removed.length} record${removed.length>1?'s':''}`, () => { db.sessions.push(...removed); save(); if(tab==='focus') render(); });
+}
+function editSession(id){
+  const s = id ? db.sessions.find(x=>x.id===id) : null;
+  const st = new Date(s ? s.start : Date.now() - 25*60000);
+  openModal(`<h3>${s?'Edit study record':'Add study record'}</h3>
+    <div class="row">
+      <div><label>Date</label><input type="date" id="sDate" value="${ymd(st)}"></div>
+      <div><label>Start time</label><input type="time" id="sStart" value="${pad(st.getHours())}:${pad(st.getMinutes())}"></div>
+    </div>
+    <label>Minutes studied</label>
+    <div class="num"><input type="number" id="sMin" min="1" max="1440" value="${s?.minutes ?? db.focus.study}" style="width:100px"><span>minutes</span></div>
+    <label>Subject</label>
+    <input type="text" id="sSub" list="sSubList" value="${esc(s?.subject||'')}" placeholder="e.g. Biology">
+    <datalist id="sSubList">${sessionSubjects().map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+    <label>Topic (optional)</label>
+    <select id="sTopic">${topicOptions(s?.subject||'', s?.topicId||'')}</select>
+    <label>Note</label>
+    <input type="text" id="sNote" value="${esc(s?.note||'')}" placeholder="What did you work on?">
+    <div class="foot">
+      ${s?`<button class="btn danger" data-f="delOne" data-id="${s.id}">Delete</button>`:''}
+      <button class="btn" data-m="cancel">Cancel</button>
+      <button class="btn primary" data-f="saveSess" data-id="${s?.id||''}">${s?'Save':'Add record'}</button>
+    </div>`);
+}
+function saveSession(id){
+  const min = Math.round(+$('#sMin').value);
+  if(!(min >= 1 && min <= 1440)){ toast('Minutes must be between 1 and 1440'); return; }
+  const [y,mo,da] = ($('#sDate').value || today()).split('-').map(Number);
+  const [h,mi] = ($('#sStart').value || '00:00').split(':').map(Number);
+  const start = new Date(y, mo-1, da, h, mi).getTime();
+  const topicId = $('#sTopic').value; const t = topicId && getTopic(topicId);
+  const data = { start, end:start+min*60000, minutes:min, subject:$('#sSub').value.trim(), topicId: t?t.id:'', topicTitle: t?t.title:'', note:$('#sNote').value.trim() };
+  if(id){ Object.assign(db.sessions.find(x=>x.id===id), data); toast('Record updated'); }
+  else { db.sessions.push({ id:uid(), completed:false, manual:true, ...data }); toast('Record added'); }
+  save(); closeModal(); render();
+}
+function exportCsv(){
+  const list = filteredSessions();
+  if(!list.length){ toast('No records to export'); return; }
+  const q = v => `"${String(v??'').replace(/"/g,'""')}"`;
+  const rows = [['Date','Start','End','Minutes','Subject','Topic','Note','Status']]
+    .concat(list.map(s => [ymd(new Date(s.start)), hm(s.start), hm(s.end), s.minutes, s.subject, s.topicTitle, s.note, s.manual?'Manual':s.completed?'Completed':'Stopped early']));
+  download(`study-records-${today()}.csv`, '﻿' + rows.map(r=>r.map(q).join(',')).join('\r\n'), 'text/csv');
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-f]'); if(!el) return;
+  const d = el.dataset, f = db.focus;
+  if(d.f==='start') startPause();
+  if(d.f==='skip') skipPhase();
+  if(d.f==='stop') stopTimer();
+  if(d.f==='preset'){ f[d.k] = +d.v; save(); render(); }
+  if(d.f==='add') editSession();
+  if(d.f==='edit') editSession(d.id);
+  if(d.f==='saveSess') saveSession(d.id);
+  if(d.f==='del') deleteSessions([d.id]);
+  if(d.f==='delOne'){ closeModal(); deleteSessions([d.id]); }
+  if(d.f==='csv') exportCsv();
+  if(d.f==='select'){ recF.selecting = !recF.selecting; recF.sel.clear(); render(); }
+  if(d.f==='selAll'){ const l = filteredSessions(); const all = l.every(s=>recF.sel.has(s.id)); l.forEach(s => all ? recF.sel.delete(s.id) : recF.sel.add(s.id)); refreshRecords(); }
+  if(d.f==='delSel' && recF.sel.size && confirm(`Delete ${recF.sel.size} record${recF.sel.size>1?'s':''}?`)){ deleteSessions([...recF.sel]); }
+});
+document.addEventListener('input', e => {
+  const id = e.target.id;
+  if(id==='fcSub'){ timer.subject = e.target.value; saveTimer(); $('#fcTopic').innerHTML = topicOptions(timer.subject.trim(), timer.topicId); }
+  if(id==='fcNote'){ timer.note = e.target.value; saveTimer(); }
+  if(id==='sSub'){ const cur = $('#sTopic').value; $('#sTopic').innerHTML = topicOptions(e.target.value.trim(), cur); }
+  if(id==='rq'){ recF.q = e.target.value; refreshRecords(); }
+});
+document.addEventListener('change', e => {
+  const id = e.target.id, f = db.focus, v = Math.round(+e.target.value);
+  const clampSet = (k, lo, hi) => { if(v >= lo && v <= hi){ f[k] = v; save(); render(); } else { toast(`Enter a number from ${lo} to ${hi}`); render(); } };
+  if(id==='fStudy') clampSet('study', 1, 240);
+  if(id==='fBrk') clampSet('brk', 1, 120);
+  if(id==='fLong') clampSet('longBrk', 1, 120);
+  if(id==='fEvery') clampSet('longEvery', 1, 12);
+  if(id==='fGoal') clampSet('goal', 5, 1440);
+  if(id==='fAuto'){ f.autoStart = e.target.checked; save(); }
+  if(id==='fSound'){ f.sound = e.target.checked; save(); if(f.sound) chime(); }
+  if(id==='fcTopic'){
+    timer.topicId = e.target.value; const t = getTopic(timer.topicId);
+    if(t && !timer.subject.trim() && t.subject){ timer.subject = t.subject; $('#fcSub').value = t.subject; }
+    saveTimer();
+  }
+  if(id==='sTopic'){ const t = getTopic(e.target.value); if(t && !$('#sSub').value.trim()) $('#sSub').value = t.subject||''; }
+  if(id==='rSub'){ recF.subject = e.target.value; refreshRecords(); }
+  if(id==='rRange'){ recF.range = e.target.value; refreshRecords(); }
+  if(id==='rSort'){ recF.sort = e.target.value; refreshRecords(); }
+  if(e.target.dataset.sel){ const s = e.target.dataset.sel; e.target.checked ? recF.sel.add(s) : recF.sel.delete(s); refreshRecords(); }
+});
+// Timer heartbeat
+let wasRunning = timer.running;
+setInterval(() => {
+  if(timer.running && Date.now() >= timer.endAt) finishPhase(timer.endAt);
+  updateTimerUI();
+  if(wasRunning && !timer.running) updateBadge();
+  wasRunning = timer.running;
+}, 500);
+if(timer.running && Date.now() >= timer.endAt) setTimeout(() => finishPhase(timer.endAt), 0);
 
 /* ============ PWA ============ */
 let deferredInstall = null;
