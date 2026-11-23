@@ -189,6 +189,7 @@ input:disabled,select:disabled,.presets button:disabled{opacity:.5;cursor:not-al
 <header><div class="hwrap">
   <div class="brand"><img src="icon.svg" alt="">Revise</div>
   <div class="spacer"></div>
+  <button class="icon-btn hidden" id="syncBtn" title="Sync now" style="font-size:14px"></button>
   <button class="icon-btn" id="themeBtn" title="Toggle theme">🌓</button>
 </div></header>
 
@@ -224,15 +225,44 @@ function load(){
     const raw = localStorage.getItem(KEY);
     if(raw){ return normalize(JSON.parse(raw)); }
   }catch(e){}
-  return structuredClone(DEFAULT);
+  return normalize({});
 }
 function normalize(d){
   return {...structuredClone(DEFAULT), ...d,
     settings:{...DEFAULT.settings, ...(d.settings||{})},
     focus:{...DEFAULT.focus, ...(d.focus||{})},
-    sessions: Array.isArray(d.sessions) ? d.sessions : []};
+    sessions: Array.isArray(d.sessions) ? d.sessions : [],
+    log: (Array.isArray(d.log) ? d.log : []).map(l => l.id ? l : {...l, id: Math.random().toString(36).slice(2,10)+(l.date||'')}),
+    deleted: d.deleted || {}, meta: d.meta || {}};
 }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ toast('Could not save — storage is unavailable'); } }
+/* Change tracking for sync: every save() compares items with the last snapshot, stamps
+   changed ones with `updated`, and records deleted ids as tombstones. */
+const SYNCED_SETTINGS = ['intervals','reminderTime','shiftLate'];
+const pick = (o, keys) => Object.fromEntries(keys.map(k => [k, o[k]]));
+function sig(x){ const {updated, ...rest} = x; return JSON.stringify(rest); }
+function indexSnap(d){
+  const m = new Map();
+  d.topics.forEach(x => m.set(x.id, sig(x)));
+  d.sessions.forEach(x => m.set(x.id, sig(x)));
+  d.log.forEach(x => m.set(x.id, sig(x)));
+  m.set('@settings', JSON.stringify(pick(d.settings, SYNCED_SETTINGS)));
+  m.set('@focus', JSON.stringify(d.focus));
+  return m;
+}
+let snap = indexSnap(db);
+function stamp(){
+  const now = Date.now(), seen = new Set();
+  for(const x of [...db.topics, ...db.sessions, ...db.log]){
+    seen.add(x.id);
+    if(snap.get(x.id) !== sig(x)){ x.updated = now; delete db.deleted[x.id]; }
+  }
+  for(const k of snap.keys()) if(!k.startsWith('@') && !seen.has(k)) db.deleted[k] = now;
+  if(snap.get('@settings') !== JSON.stringify(pick(db.settings, SYNCED_SETTINGS))) db.meta.settingsUpdated = now;
+  if(snap.get('@focus') !== JSON.stringify(db.focus)) db.meta.focusUpdated = now;
+  snap = indexSnap(db);
+}
+function writeLocal(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ toast('Could not save — storage is unavailable'); } }
+function save(){ stamp(); writeLocal(); scheduleSync(); }
 
 /* ============ Dates ============ */
 const pad = n => String(n).padStart(2,'0');
@@ -284,7 +314,7 @@ function completeReview(topicId, idx, rating){
       t.reviews.splice(idx+1, 0, { interval:'extra', due:tom, done:null, rating:null, extra:true, xid:uid() });
     }
   }
-  db.log.push({ date:td, topicId, stage:r.interval, rating });
+  db.log.push({ id:uid(), date:td, topicId, stage:r.interval, rating });
   save();
 }
 function undoReview(topicId, idx){
@@ -522,6 +552,7 @@ function renderSettings(){
   const s = db.settings;
   const perm = 'Notification' in window ? Notification.permission : 'unsupported';
   return `<div class="settings">
+  ${renderSyncCard()}
   <div class="card">
     <b>🔔 Notifications</b>
     <p>Status: <b>${perm==='granted'?'Allowed':perm==='denied'?'Blocked in browser settings':perm==='unsupported'?'Not supported in this browser':'Not enabled yet'}</b></p>
@@ -539,8 +570,8 @@ function renderSettings(){
     <div class="switch" style="margin-top:8px"><span>If I review late, push the remaining reviews back by the same number of days</span><input type="checkbox" id="sShift" ${s.shiftLate?'checked':''}></div>
   </div>
   <div class="card">
-    <b>💾 Backup &amp; sync between devices</b>
-    <p>Your data is saved on this device. To move it to your phone or laptop, export a backup here and import it on the other device.</p>
+    <b>💾 Backup file</b>
+    <p>Download a copy of everything, or restore from a copy.</p>
     <div class="row" style="margin-top:8px;flex-wrap:wrap">
       <button class="btn" data-act="export">⬇️ Export backup</button>
       <button class="btn" data-act="import">⬆️ Import backup</button>
@@ -568,7 +599,7 @@ function openModal(html){
   $('#mbg').addEventListener('click', e => { if(e.target.id==='mbg') closeModal(); });
   const f = $('#modalRoot [autofocus]'); if(f && matchMedia('(min-width:700px)').matches) f.focus();
 }
-function closeModal(){ $('#modalRoot').innerHTML=''; }
+function closeModal(){ $('#modalRoot').innerHTML=''; if(pendingRender){ pendingRender=false; render(); } }
 
 function editTopic(id){
   const t = id ? getTopic(id) : null;
@@ -806,7 +837,7 @@ document.addEventListener('click', e => {
     if(a==='export') download(`revise-backup-${today()}.json`, JSON.stringify(db, null, 2), 'application/json');
     if(a==='import') $('#importFile').click();
     if(a==='install' && deferredInstall){ deferredInstall.prompt(); deferredInstall = null; }
-    if(a==='wipe' && confirm('Delete ALL topics and history on this device?')){ db = structuredClone(DEFAULT); save(); render(); toast('All data deleted'); }
+    if(a==='wipe' && confirm(sync.token ? 'Delete ALL topics and study records? Sync is on, so they will be deleted on your other devices too.' : 'Delete ALL topics and history on this device?')){ db = normalize({}); save(); render(); toast('All data deleted'); }
   }
 });
 document.addEventListener('input', e => {
@@ -1238,6 +1269,213 @@ setInterval(() => {
 }, 500);
 if(timer.running && Date.now() >= timer.endAt) setTimeout(() => finishPhase(timer.endAt), 0);
 
+/* ============ Cloud sync (private GitHub Gist) ============ */
+const SKEY = 'revise.sync', GIST_FILE = 'revise-data.json';
+let sync = (() => { try{ return JSON.parse(localStorage.getItem(SKEY)||'{}'); }catch(e){ return {}; } })();
+let syncState = 'idle', syncErr = '', syncTimer = null, syncing = false, syncAgain = false, pendingRender = false;
+function saveSyncCfg(){ try{ localStorage.setItem(SKEY, JSON.stringify(sync)); }catch(e){} }
+
+async function gh(path, opts = {}){
+  const res = await fetch('https://api.github.com' + path, { ...opts, cache:'no-store',
+    headers:{ 'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + sync.token, ...(opts.body ? {'Content-Type':'application/json'} : {}) } });
+  if(res.status === 401){ const e = new Error('auth'); e.status = 401; throw e; }
+  if(!res.ok){ const e = new Error('GitHub error ' + res.status); e.status = res.status; throw e; }
+  return res.json();
+}
+// Merge two copies: newest version of each item wins; deletions (tombstones) win over older versions.
+function mergeData(a, b){
+  const del = {...(a.deleted||{})};
+  for(const [k,v] of Object.entries(b.deleted||{})) if(!(del[k] >= v)) del[k] = v;
+  const cutoff = Date.now() - 90*864e5;
+  for(const k in del) if(del[k] < cutoff) delete del[k];
+  const mergeArr = (x, y) => {
+    const m = new Map();
+    for(const it of [...(x||[]), ...(y||[])]){ const c = m.get(it.id); if(!c || (it.updated||0) > (c.updated||0)) m.set(it.id, it); }
+    return [...m.values()].filter(it => !(del[it.id] && del[it.id] >= (it.updated||0)));
+  };
+  const out = {...a, topics:mergeArr(a.topics, b.topics), sessions:mergeArr(a.sessions, b.sessions), log:mergeArr(a.log, b.log), deleted:del, meta:{...a.meta}};
+  if((b.meta?.settingsUpdated||0) > (a.meta?.settingsUpdated||0)){ out.settings = {...a.settings, ...pick(b.settings||{}, SYNCED_SETTINGS)}; out.meta.settingsUpdated = b.meta.settingsUpdated; }
+  if((b.meta?.focusUpdated||0) > (a.meta?.focusUpdated||0)){ out.focus = {...a.focus, ...(b.focus||{})}; out.meta.focusUpdated = b.meta.focusUpdated; }
+  return out;
+}
+const byId = arr => [...arr].sort((x,y) => x.id < y.id ? -1 : 1);
+const core = d => JSON.stringify([byId(d.topics), byId(d.sessions), byId(d.log), Object.entries(d.deleted).sort(), pick(d.settings, SYNCED_SETTINGS), d.focus]);
+const payload = d => JSON.stringify({ app:'revise', version:1, savedAt:Date.now(), topics:d.topics, sessions:d.sessions, log:d.log,
+  deleted:d.deleted, meta:d.meta, settings:pick(d.settings, SYNCED_SETTINGS), focus:d.focus });
+
+async function readRemote(){
+  const g = await gh('/gists/' + sync.gistId);
+  const f = g.files && g.files[GIST_FILE];
+  if(!f) return null;
+  const text = f.truncated ? await (await fetch(f.raw_url, {cache:'no-store'})).text() : f.content;
+  try{ return JSON.parse(text); }catch(e){ return null; }
+}
+async function createGist(){
+  const g = await gh('/gists', { method:'POST', body: JSON.stringify({ description:'Revise app data (used to sync your devices)', public:false, files:{ [GIST_FILE]:{ content: payload(db) } } }) });
+  sync.gistId = g.id; saveSyncCfg();
+}
+async function syncNow(){
+  if(!sync.token || !sync.gistId) return;
+  if(syncing){ syncAgain = true; return; }
+  clearTimeout(syncTimer); syncTimer = null;
+  if(!navigator.onLine){ setSyncState('offline'); return; }
+  syncing = true; setSyncState('syncing');
+  try{
+    let remote = null;
+    try{ remote = await readRemote(); }
+    catch(e){ if(e.status === 404){ await createGist(); } else throw e; }
+    const before = core(db);
+    const r = remote ? normalize(remote) : null;
+    if(r){ db = normalize(mergeData(db, r)); snap = indexSnap(db); writeLocal(); }
+    if(!r || core(r) !== core(db)){
+      await gh('/gists/' + sync.gistId, { method:'PATCH', body: JSON.stringify({ files:{ [GIST_FILE]:{ content: payload(db) } } }) });
+    }
+    sync.last = Date.now(); saveSyncCfg(); syncErr = ''; setSyncState('ok');
+    if(core(db) !== before) refreshAfterSync();
+  }catch(e){
+    syncErr = e.status === 401 ? 'GitHub did not accept your token (it may have expired). Disconnect and connect again with a new token.'
+            : e.status === 403 || e.status === 404 ? 'Your token does not have permission to use Gists. Make sure the "gist" box is ticked.'
+            : 'Could not reach GitHub — will retry automatically.';
+    setSyncState('error');
+  }finally{
+    syncing = false;
+    if(syncAgain){ syncAgain = false; syncNow(); }
+  }
+}
+function scheduleSync(){
+  if(!sync.token) return;
+  clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, 2000);
+  if(!syncing) setSyncState('pending');
+}
+function refreshAfterSync(){
+  const a = document.activeElement;
+  if($('#modalRoot').innerHTML || (a && a.closest('#view') && /INPUT|TEXTAREA|SELECT/.test(a.tagName))) pendingRender = true;
+  else render();
+}
+function ago(ts){
+  if(!ts) return 'never';
+  const s = Math.round((Date.now()-ts)/1000);
+  return s < 10 ? 'just now' : s < 60 ? `${s}s ago` : s < 3600 ? `${Math.round(s/60)} min ago` : s < 86400 ? `${Math.round(s/3600)} h ago` : new Date(ts).toLocaleString();
+}
+function syncStatusText(){
+  if(syncState === 'error') return '⚠️ ' + syncErr;
+  if(syncState === 'offline') return '📴 Offline — changes are saved and will sync when you are back online.';
+  if(syncState === 'syncing' || syncState === 'pending') return '🔄 Syncing…';
+  return `✅ Up to date · last synced ${ago(sync.last)}`;
+}
+function setSyncState(st){
+  syncState = st;
+  const b = $('#syncBtn');
+  if(b){
+    b.classList.toggle('hidden', !sync.token);
+    b.textContent = {syncing:'☁️ ⟳', pending:'☁️ …', ok:'☁️ ✓', error:'☁️ ⚠️', offline:'☁️ ✕', idle:'☁️'}[st] || '☁️';
+    b.title = syncStatusText();
+  }
+  const el = $('#syncStatus'); if(el) el.textContent = syncStatusText();
+}
+const encodeCode = () => btoa(JSON.stringify({t:sync.token, g:sync.gistId})).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+function decodeCode(c){
+  try{ const o = JSON.parse(atob(c.trim().replace(/-/g,'+').replace(/_/g,'/'))); if(o.t && o.g) return o; }catch(e){}
+  return null;
+}
+const syncLink = () => `${location.origin}${location.pathname}#sync=${encodeCode()}`;
+
+async function connectSync(input){
+  input = (input||'').trim();
+  if(!input){ toast('Paste your GitHub token or a sync code'); return; }
+  const fromLink = input.match(/#sync=([\w-]+)/);
+  const code = decodeCode(fromLink ? fromLink[1] : input);
+  sync = code ? { token:code.t, gistId:code.g } : { token:input };
+  try{
+    const me = await gh('/user'); sync.user = me.login;
+    if(!sync.gistId){
+      const list = await gh('/gists?per_page=100');
+      const found = list.find(g => g.files && g.files[GIST_FILE]);
+      if(found) sync.gistId = found.id; else await createGist();
+    }
+    saveSyncCfg();
+    await syncNow();
+    if(syncState === 'error') throw Object.assign(new Error(syncErr), {shown:true});
+    toast('☁️ Sync is on — this device is now linked');
+    render();
+  }catch(e){
+    sync = {}; saveSyncCfg(); setSyncState('idle');
+    toast(e.shown ? e.message : e.status === 401 ? 'GitHub did not accept that token' : 'Could not connect: ' + e.message);
+  }
+}
+function renderSyncCard(){
+  if(!sync.token) return `<div class="card">
+    <b>☁️ Sync phone &amp; laptop</b>
+    <p>Keep the same topics, reviews and study records on all your devices. Everything is stored in a <b>private Gist on your own GitHub account</b> — no other server involved.</p>
+    <ol style="font-size:13px;padding-left:18px;margin:8px 0;color:var(--muted)">
+      <li><a href="https://github.com/settings/tokens/new?scopes=gist&description=Revise%20sync" target="_blank" rel="noopener">Create a GitHub token</a> (the <b>gist</b> box is already ticked). Set <b>Expiration</b> to <i>No expiration</i>, click <b>Generate token</b>, and copy it.</li>
+      <li>Paste it below and press <b>Connect</b>.</li>
+      <li>On your other device, use <b>Link another device</b> — you don't need a second token.</li>
+    </ol>
+    <input type="password" id="syncInput" placeholder="Paste token (ghp_…) or a sync code" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="row" style="margin-top:8px"><button class="btn primary" data-act="syncConnect">Connect</button></div>
+  </div>`;
+  return `<div class="card">
+    <b>☁️ Sync is on</b>${sync.user ? ` <small style="color:var(--muted)">· GitHub @${esc(sync.user)}</small>` : ''}
+    <p id="syncStatus">${esc(syncStatusText())}</p>
+    <div class="row" style="flex-wrap:wrap;margin-top:8px">
+      <button class="btn" data-act="syncNow">🔄 Sync now</button>
+      <button class="btn" data-act="syncLink">📱 Link another device</button>
+      <button class="btn ghost danger" data-act="syncOff">Disconnect</button>
+    </div>
+    <div id="linkBox" class="hidden" style="margin-top:12px;text-align:center">
+      <p>Scan with your phone camera, or open this link on the other device:</p>
+      <div id="qr" style="display:inline-block;background:#fff;padding:10px;border-radius:10px;margin:6px 0"></div>
+      <input type="text" id="linkText" readonly value="" style="font-size:12px">
+      <div class="row" style="margin-top:8px;flex-wrap:wrap">
+        <button class="btn small" data-act="copyLink">Copy link</button>
+        <button class="btn small" data-act="copyCode">Copy sync code</button>
+      </div>
+      <p style="text-align:left">📌 <b>iPhone home-screen app:</b> it keeps its own storage, so open the installed app → Settings → paste the <b>sync code</b> there.<br>🔒 This link works like a password for your Revise data — only open it on your own devices.</p>
+    </div>
+  </div>`;
+}
+function loadScript(src){ return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+async function showLinkBox(){
+  const box = $('#linkBox'); box.classList.toggle('hidden'); if(box.classList.contains('hidden')) return;
+  $('#linkText').value = syncLink();
+  try{
+    if(!window.QRCode) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js');
+    $('#qr').innerHTML = ''; new QRCode($('#qr'), { text: syncLink(), width:200, height:200, correctLevel: QRCode.CorrectLevel.L });
+  }catch(e){ $('#qr').outerHTML = '<p>(QR code needs an internet connection — use the link instead.)</p>'; }
+}
+async function copy(text, what){
+  try{ await navigator.clipboard.writeText(text); toast(what + ' copied'); }
+  catch(e){ const i = $('#linkText'); i.value = text; i.select(); toast('Press Ctrl+C / Copy to copy'); }
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-act]')?.dataset.act;
+  if(a === 'syncConnect') connectSync($('#syncInput').value);
+  if(a === 'syncNow') syncNow();
+  if(a === 'syncLink') showLinkBox();
+  if(a === 'copyLink') copy(syncLink(), 'Link');
+  if(a === 'copyCode') copy(encodeCode(), 'Sync code');
+  if(a === 'syncOff' && confirm('Stop syncing this device? Your data stays on this device and in your GitHub Gist.')){ sync = {}; saveSyncCfg(); setSyncState('idle'); render(); }
+});
+$('#syncBtn').onclick = () => { if(syncState === 'error'){ tab = 'settings'; render(); } syncNow(); };
+function checkSyncHash(){
+  const m = location.hash.match(/sync=([\w-]+)/);
+  if(!m) return false;
+  history.replaceState(null, '', location.pathname + location.search);
+  const c = decodeCode(m[1]);
+  if(c && (!sync.token || sync.gistId !== c.g) && confirm('Link this device to your Revise sync? Your data from this device will be merged in.')){ connectSync(m[1]); return true; }
+  return false;
+}
+function initSync(){
+  addEventListener('hashchange', checkSyncHash);
+  setSyncState('idle');
+  if(!checkSyncHash() && sync.token) syncNow();
+  document.addEventListener('visibilitychange', () => { if(sync.token) syncNow(); });
+  addEventListener('online', () => syncNow());
+  setInterval(() => { if(sync.token && !document.hidden) syncNow(); }, 60000);
+  setInterval(() => { const el = $('#syncStatus'); if(el && syncState === 'ok') el.textContent = syncStatusText(); }, 15000);
+}
+
 /* ============ PWA ============ */
 let deferredInstall = null;
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; const b=$('#installBtn'); if(b) b.classList.remove('hidden'); });
@@ -1251,6 +1489,7 @@ setInterval(() => { if(today()!==lastDay){ lastDay=today(); render(); } checkRem
 
 applyTheme();
 render();
+initSync();
 setTimeout(checkReminder, 1500);
 </script>
 </body>

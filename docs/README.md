@@ -43,6 +43,19 @@ Web apps can't schedule a notification for an exact future time when they're ful
 - For reminders that **always** arrive, use **Settings → Export all reviews to calendar**, or **📅 Add to calendar** on a single topic.
   Your phone's calendar then alerts you on each review day. Re-exporting updates the same events instead of duplicating them.
 
+## Sync between phone and laptop
+Revise keeps the same data on all your devices by storing it in a **private Gist on your own GitHub account**. There's no other server.
+
+1. On your laptop, open the app → **Settings → ☁️ Sync phone & laptop**
+2. Click **Create a GitHub token** (the `gist` permission is already ticked), set Expiration to *No expiration*, click **Generate token** and copy it
+3. Paste the token and press **Connect**
+4. Press **📱 Link another device** and scan the QR code with your phone (or open the link on it)
+   - If you installed the app on an iPhone home screen, open the installed app → Settings → paste the **sync code** instead
+
+Changes sync a couple of seconds after you make them, whenever the app is opened, and every minute while it's open.
+If two devices edit offline, the changes are merged: the newest version of each item wins, and deletions sync too.
+The device's timer state, notification settings and theme stay per device.
+
 ## Data
-Everything is stored on your device (localStorage). Nothing is sent to a server.
-Use **Settings → Export backup / Import backup** to copy your topics between phone and laptop.
+Data is stored on each device (localStorage). If sync is on, a copy is also kept in your private Gist.
+**Settings → Export backup / Import backup** still works for a manual backup file.
