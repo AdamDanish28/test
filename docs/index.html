@@ -770,9 +770,9 @@ function exportIcs(topics, name){
 
 /* ============ Notifications ============ */
 let swReg = null;
-async function notify(title, body, tag='revise-due'){
+async function notify(title, body, tag='revise-due', sticky=false){
   if(!('Notification' in window) || Notification.permission!=='granted') return false;
-  const opts = { body, icon:'icon-192.png', badge:'icon-192.png', tag };
+  const opts = { body, icon:'icon-192.png', badge:'icon-192.png', tag, renotify:true, requireInteraction:sticky, silent:false, vibrate:[300,120,300] };
   try{
     if(swReg){ await swReg.showNotification(title, opts); return true; }
   }catch(e){}
@@ -931,7 +931,7 @@ let timer = loadTimer();
 function loadTimer(){
   try{ return {...TIMER_BASE, ...JSON.parse(localStorage.getItem(TKEY)||'{}')}; }catch(e){ return {...TIMER_BASE}; }
 }
-function saveTimer(){ try{ localStorage.setItem(TKEY, JSON.stringify(timer)); }catch(e){} }
+function saveTimer(){ try{ localStorage.setItem(TKEY, JSON.stringify(timer)); }catch(e){} armClock(); }
 const phaseMin = p => p==='study' ? db.focus.study : p==='long' ? db.focus.longBrk : db.focus.brk;
 const phaseName = p => p==='study' ? 'Focus' : p==='long' ? 'Long break' : 'Short break';
 const isActive = () => timer.remaining != null; // a phase has been started (running or paused)
@@ -941,26 +941,85 @@ const clock = ms => { const s = Math.ceil(ms/1000); return `${pad(Math.floor(s/6
 const fmtMin = m => { m = Math.round(m); return m < 60 ? `${m}m` : `${Math.floor(m/60)}h${m%60 ? ' '+(m%60)+'m' : ''}`; };
 const hm = ts => new Date(ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 
-let audioCtx = null;
+let audioCtx = null, chimeEl = null, chimePrimed = false;
+// A ~2.5 s alarm (two rounds of three rising tones), generated as a WAV so it plays through a normal <audio> element
+function chimeUrl(){
+  const sr = 22050, n = Math.round(sr*2.6), buf = new ArrayBuffer(44+n*2), v = new DataView(buf);
+  const str = (o, t) => [...t].forEach((c, k) => v.setUint8(o+k, c.charCodeAt(0)));
+  str(0,'RIFF'); v.setUint32(4,36+n*2,true); str(8,'WAVEfmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); str(36,'data'); v.setUint32(40,n*2,true);
+  const notes = [[0,660],[.22,880],[.44,1320],[1.3,660],[1.52,880],[1.74,1320]];
+  for(let i=0;i<n;i++){
+    const t = i/sr; let x = 0;
+    for(const [st,f] of notes){ const d = t-st; if(d>=0 && d<.8){ const env = Math.min(1,d/.01)*Math.exp(-d*5); x += env*(Math.sin(2*Math.PI*f*d)*.7 + Math.sin(4*Math.PI*f*d)*.2); } }
+    v.setInt16(44+i*2, Math.max(-1,Math.min(1,x*.45))*32767, true);
+  }
+  return URL.createObjectURL(new Blob([buf], {type:'audio/wav'}));
+}
+// Browsers only allow sound after the user has interacted, so "unlock" the alarm on the first tap/click.
+function primeChime(){
+  try{
+    audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+  }catch(e){}
+  if(chimePrimed) return;
+  try{
+    chimeEl ||= Object.assign(new Audio(chimeUrl()), {preload:'auto'});
+    chimeEl.muted = true;
+    chimeEl.play().then(() => { chimeEl.pause(); chimeEl.currentTime = 0; chimeEl.muted = false; chimePrimed = true; }).catch(() => { chimeEl.muted = false; });
+  }catch(e){}
+}
+['pointerdown','keydown','touchend'].forEach(ev => addEventListener(ev, primeChime, {capture:true, passive:true}));
+function webChime(){
+  try{
+    audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();
+    audioCtx.resume?.();
+    [0,.22,.44,1.3,1.52,1.74].forEach((t, k) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.frequency.value = [660,880,1320][k%3]; o.type = 'sine';
+      g.gain.setValueAtTime(.0001, audioCtx.currentTime+t);
+      g.gain.exponentialRampToValueAtTime(.4, audioCtx.currentTime+t+.01);
+      g.gain.exponentialRampToValueAtTime(.0001, audioCtx.currentTime+t+.7);
+      o.connect(g).connect(audioCtx.destination); o.start(audioCtx.currentTime+t); o.stop(audioCtx.currentTime+t+.75);
+    });
+  }catch(e){}
+}
 function chime(){
   if(!db.focus.sound) return;
   try{
-    audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();
-    [0, .25, .5].forEach((t, k) => {
-      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.frequency.value = [660, 880, 990][k]; o.type = 'sine';
-      g.gain.setValueAtTime(.0001, audioCtx.currentTime+t);
-      g.gain.exponentialRampToValueAtTime(.3, audioCtx.currentTime+t+.02);
-      g.gain.exponentialRampToValueAtTime(.0001, audioCtx.currentTime+t+.4);
-      o.connect(g).connect(audioCtx.destination); o.start(audioCtx.currentTime+t); o.stop(audioCtx.currentTime+t+.45);
-    });
+    chimeEl ||= Object.assign(new Audio(chimeUrl()), {preload:'auto'});
+    chimeEl.muted = false; chimeEl.volume = 1; chimeEl.currentTime = 0;
+    chimeEl.play().catch(webChime);
+  }catch(e){ webChime(); }
+  try{ navigator.vibrate?.([300,120,300,120,300]); }catch(e){}
+}
+// Flash the tab title until the user comes back, so a hidden tab is noticeable
+let flashT = null;
+function flashTitle(msg){
+  clearInterval(flashT); if(!document.hidden) return;
+  let on = false;
+  flashT = setInterval(() => {
+    if(!document.hidden){ clearInterval(flashT); updateBadge(); return; }
+    on = !on; document.title = on ? msg : 'Revise';
+  }, 1000);
+}
+
+/* Web Worker clock: timers in background tabs are slowed down (up to 1 min late) on laptops,
+   but worker timers are not, so the end of a session is caught on time. */
+let clockWorker = null;
+function armClock(){
+  try{
+    if(!clockWorker){
+      clockWorker = new Worker(URL.createObjectURL(new Blob(["let t=null;onmessage=e=>{clearTimeout(t);if(e.data>0)t=setTimeout(()=>postMessage(1),e.data)}"], {type:'text/javascript'})));
+      clockWorker.onmessage = () => { if(timer.running && Date.now() >= timer.endAt) finishPhase(timer.endAt); };
+    }
+    clockWorker.postMessage(timer.running ? Math.max(1, timer.endAt - Date.now() + 25) : 0);
   }catch(e){}
-  try{ navigator.vibrate?.([200,100,200]); }catch(e){}
 }
 
 function startPause(){
-  try{ audioCtx ||= new (window.AudioContext||window.webkitAudioContext)(); audioCtx.resume(); }catch(e){}
-  if('Notification' in window && Notification.permission==='default') Notification.requestPermission();
+  primeChime();
+  if('Notification' in window && Notification.permission==='default') Notification.requestPermission().then(() => { if(tab==='focus') render(); });
   if(timer.running){ // pause
     timer.remaining = Math.max(0, timer.endAt - Date.now()); timer.running = false;
   } else {
@@ -1007,7 +1066,8 @@ function finishPhase(at){
 }
 function notifyFocus(title, body){
   if(document.visibilityState==='visible') toast(title + ' — ' + body);
-  notify(title, body, 'revise-focus');
+  notify(title, body, 'revise-focus', true);
+  flashTitle('⏰ ' + title);
 }
 function skipPhase(){
   if(timer.phase==='study'){
@@ -1072,6 +1132,19 @@ function topicOptions(subject, selected){
 }
 const minutesOn = d => db.sessions.filter(s => ymd(new Date(s.start))===d).reduce((a,s)=>a+s.minutes, 0);
 
+function alertStatus(){
+  const p = 'Notification' in window ? Notification.permission : 'unsupported';
+  const msg = p==='granted' ? 'Pop-up notifications are on.'
+    : p==='denied' ? 'Notifications are blocked for this site. Click the lock / settings icon left of the address bar → Notifications → Allow, then reload.'
+    : p==='unsupported' ? 'This browser can\'t show notifications — the sound will still play.'
+    : 'Pop-up notifications are off.';
+  return `<div style="margin-top:6px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:13px">
+    <div style="color:var(--muted)">${msg}${p==='granted' ? ' If you still don\'t see them, check that your computer allows notifications from your browser (Windows: Settings → Notifications; Mac: System Settings → Notifications) and that Do Not Disturb / Focus is off.' : ''}</div>
+    <div class="row" style="margin-top:8px;flex-wrap:wrap">
+      ${p==='default' ? `<button class="btn small primary" data-f="allowNotif">${ic('bell',15)}Turn on notifications</button>` : ''}
+      <button class="btn small" data-f="testAlert">${ic('bell',15)}Test alert</button>
+    </div></div>`;
+}
 function renderFocus(){
   const f = db.focus, td = today();
   const C = 2*Math.PI*110;
@@ -1136,6 +1209,7 @@ function renderFocus(){
         <div class="num"><input type="number" id="fGoal" min="5" max="1440" step="5" value="${f.goal}"><span>minutes</span></div>
         <div class="switch" style="margin-top:10px"><span>Auto-start the next session / break</span><input type="checkbox" id="fAuto" ${f.autoStart?'checked':''}></div>
         <div class="switch"><span>Sound &amp; vibration when time's up</span><input type="checkbox" id="fSound" ${f.sound?'checked':''}></div>
+        ${alertStatus()}
         <div class="switch"><span>Show timer on lock screen &amp; notification bar<br><small style="color:var(--muted)">Keeps the timer alive when you leave the app</small></span><input type="checkbox" id="fNow" ${f.nowPlaying?'checked':''}></div>
         <label>Background sound while timing</label>
         <select id="fNoise">${[['silent','Silent'],['white','White noise'],['pink','Soft noise (rain-like)'],['brown','Brown noise (deep)']].map(([v,l])=>`<option value="${v}" ${f.noise===v?'selected':''}>${l}</option>`).join('')}</select>
@@ -1258,6 +1332,8 @@ document.addEventListener('click', e => {
   if(d.f==='start') startPause();
   if(d.f==='skip') skipPhase();
   if(d.f==='pip') popOut();
+  if(d.f==='testAlert'){ chime(); if(Notification?.permission==='granted') notify('Revise timer test', 'This is how you will be alerted when a session ends.', 'revise-focus', false); else toast('Sound played — desktop notifications are not turned on'); }
+  if(d.f==='allowNotif'){ enableNotif(); }
   if(d.f==='stop') stopTimer();
   if(d.f==='preset'){ f[d.k] = +d.v; save(); render(); }
   if(d.f==='add') editSession();
@@ -1302,6 +1378,7 @@ document.addEventListener('change', e => {
 });
 // Timer heartbeat
 let wasRunning = timer.running;
+armClock();
 setInterval(() => {
   if(timer.running && Date.now() >= timer.endAt) finishPhase(timer.endAt);
   updateTimerUI(); updateExternal();
