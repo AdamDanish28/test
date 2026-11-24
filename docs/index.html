@@ -5,67 +5,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Revise — Spaced Repetition</title>
 <meta name="description" content="Spaced repetition planner using the 1-3-7-14-30 schedule.">
-<meta name="theme-color" content="#4f46e5">
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
 :root{
-  --bg:#f6f7fb; --card:#ffffff; --text:#1c1f2a; --muted:#6b7280; --line:#e5e7ef;
-  --accent:#4f46e5; --accent-soft:#eef0ff; --ok:#16a34a; --ok-soft:#e7f7ec;
-  --warn:#d97706; --warn-soft:#fdf3e2; --bad:#dc2626; --bad-soft:#fdeaea;
-  --shadow:0 1px 2px rgba(20,20,40,.06),0 4px 16px rgba(20,20,40,.05);
+  --bg:#000; --card:#0b0b0b; --card2:#121212; --text:#f4f4f4; --muted:#8b8b8b; --line:#222;
+  --accent:#fff; --accent-soft:#161616; --ok:#fff; --ok-soft:#161616; --warn:#e6e6e6; --warn-soft:#161616; --bad:#fff; --bad-soft:#161616;
+  --glow:0 0 6px rgba(255,255,255,.55),0 0 22px rgba(255,255,255,.18);
+  --glow-sm:0 0 4px rgba(255,255,255,.45);
+  --tglow:0 0 8px rgba(255,255,255,.65),0 0 24px rgba(255,255,255,.25);
+  --on-accent:#000; --shadow:none;
+  color-scheme:dark;
 }
-:root[data-theme="dark"]{
-  --bg:#0f1117; --card:#181b24; --text:#e8eaf0; --muted:#9aa1b2; --line:#2a2f3c;
-  --accent:#8b86ff; --accent-soft:#25264a; --ok:#4ade80; --ok-soft:#173023;
-  --warn:#fbbf24; --warn-soft:#3a2e12; --bad:#f87171; --bad-soft:#3b1a1a;
-  --shadow:0 1px 2px rgba(0,0,0,.3);
+:root[data-theme="light"]{
+  --bg:#fff; --card:#fff; --card2:#f5f5f5; --text:#0a0a0a; --muted:#6e6e6e; --line:#e4e4e4;
+  --accent:#000; --accent-soft:#f2f2f2; --ok:#000; --ok-soft:#f2f2f2; --warn:#333; --warn-soft:#f2f2f2; --bad:#000; --bad-soft:#f2f2f2;
+  --glow:0 0 0 1px #000,0 6px 18px rgba(0,0,0,.12); --glow-sm:none; --tglow:none; --on-accent:#fff;
+  color-scheme:light;
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0f1117; --card:#181b24; --text:#e8eaf0; --muted:#9aa1b2; --line:#2a2f3c;
-    --accent:#8b86ff; --accent-soft:#25264a; --ok:#4ade80; --ok-soft:#173023;
-    --warn:#fbbf24; --warn-soft:#3a2e12; --bad:#f87171; --bad-soft:#3b1a1a;
-    --shadow:0 1px 2px rgba(0,0,0,.3);
-  }
-}
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
-body{background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  padding-bottom:calc(72px + env(safe-area-inset-bottom));}
+body{background:var(--bg);color:var(--text);font:15px/1.5 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:-.005em;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit}
-header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
-.hwrap{max-width:960px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px}
-.brand{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px}
-.brand img{width:26px;height:26px}
+a{color:var(--text)}
+.ic{display:inline-block;vertical-align:-4px;flex-shrink:0}
+.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+header{position:sticky;top:0;z-index:5;background:rgba(0,0,0,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+:root[data-theme="light"] header{background:rgba(255,255,255,.85)}
+.hwrap{max-width:960px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.brand{font-weight:700;font-size:17px;display:flex;align-items:center;gap:10px;letter-spacing:.18em;text-transform:uppercase;text-shadow:var(--tglow)}
+.brand img{width:26px;height:26px;border-radius:7px;box-shadow:var(--glow-sm)}
 .spacer{flex:1}
-main{max-width:960px;margin:0 auto;padding:16px}
-h2{font-size:17px;margin:20px 0 10px}
+main{max-width:960px;margin:0 auto;padding:18px 16px}
+h2{font-size:12px;margin:26px 2px 10px;font-weight:600;text-transform:uppercase;letter-spacing:.16em;color:var(--muted)}
 h2:first-child{margin-top:4px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px}
-.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 14px;cursor:pointer;white-space:nowrap}
-.btn:hover{border-color:var(--accent)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.small{padding:5px 10px;font-size:13px}
-.btn.ghost{background:transparent;border-color:transparent}
-.btn.danger{color:var(--bad)}
-.icon-btn{border:none;background:transparent;cursor:pointer;padding:6px;border-radius:8px;font-size:18px;line-height:1}
-.icon-btn:hover{background:var(--accent-soft)}
-nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:6;background:var(--card);border-top:1px solid var(--line);
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:transparent;border-radius:999px;padding:9px 16px;cursor:pointer;white-space:nowrap;transition:.15s}
+.btn:hover{border-color:var(--text)}
+.btn.primary{border-color:var(--accent);color:var(--text);box-shadow:var(--glow);text-shadow:var(--glow-sm)}
+.btn.primary:hover{background:var(--accent);color:var(--on-accent);text-shadow:none}
+.btn.small{padding:6px 12px;font-size:13px}
+.btn.ghost{border-color:transparent}
+.btn.danger{color:var(--muted)}
+.btn.danger:hover{color:var(--text);border-color:var(--text)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.icon-btn{border:none;background:transparent;cursor:pointer;padding:7px;border-radius:999px;line-height:1;color:var(--muted);display:inline-flex;align-items:center;gap:4px;font-size:12px}
+.icon-btn:hover{color:var(--text);background:var(--card2)}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:6;background:rgba(0,0,0,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);
   display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
-nav.tabs button{flex:1;max-width:160px;border:none;background:none;padding:9px 4px 8px;cursor:pointer;color:var(--muted);
-  display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px}
-nav.tabs button span.i{font-size:20px;line-height:1}
-nav.tabs button.active{color:var(--accent);font-weight:600}
-.fab{position:fixed;right:18px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:7;width:56px;height:56px;border-radius:50%;
-  border:none;background:var(--accent);color:#fff;font-size:28px;box-shadow:0 6px 20px rgba(79,70,229,.4);cursor:pointer}
+:root[data-theme="light"] nav.tabs{background:rgba(255,255,255,.92)}
+nav.tabs button{flex:1;max-width:150px;border:none;background:none;padding:10px 2px 8px;cursor:pointer;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+nav.tabs button.active{color:var(--text)}
+nav.tabs button.active .ic{filter:drop-shadow(0 0 4px rgba(255,255,255,.9)) drop-shadow(0 0 10px rgba(255,255,255,.4))}
+:root[data-theme="light"] nav.tabs button.active .ic{filter:none}
+.fab{position:fixed;right:18px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:7;width:56px;height:56px;border-radius:50%;
+  border:none;background:var(--accent);color:var(--on-accent);cursor:pointer;box-shadow:var(--glow);display:flex;align-items:center;justify-content:center}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.stat{padding:12px}
-.stat .n{font-size:24px;font-weight:700}
-.stat .l{color:var(--muted);font-size:12px}
+.stat{padding:14px}
+.stat .n{font-size:28px;font-weight:600;font-family:"JetBrains Mono",ui-monospace,monospace;text-shadow:var(--tglow);display:flex;align-items:center;gap:6px}
+.stat .l{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.12em}
 @media (max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
 .list{display:flex;flex-direction:column;gap:10px}
 .item{display:flex;gap:12px;align-items:flex-start}
@@ -73,116 +79,116 @@ nav.tabs button.active{color:var(--accent);font-weight:600}
 .item .title{font-weight:600;word-break:break-word}
 .item .desc{color:var(--muted);font-size:13px;margin-top:2px;white-space:pre-wrap;word-break:break-word;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.item .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
-.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--text)}
-.chip .dot{width:8px;height:8px;border-radius:50%}
-.badge{font-size:12px;padding:2px 8px;border-radius:999px;font-weight:600}
-.badge.over{background:var(--bad-soft);color:var(--bad)}
-.badge.today{background:var(--warn-soft);color:var(--warn)}
-.badge.up{background:var(--accent-soft);color:var(--accent)}
-.badge.done{background:var(--ok-soft);color:var(--ok)}
+.item .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--text)}
+.chip .dot{width:7px;height:7px;border-radius:50%;box-shadow:0 0 6px currentColor}
+.badge{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;letter-spacing:.04em;border:1px solid var(--line);color:var(--muted)}
+.badge.over{background:var(--accent);color:var(--on-accent);border-color:var(--accent);box-shadow:var(--glow)}
+.badge.today{color:var(--text);border-color:var(--accent);box-shadow:var(--glow);text-shadow:var(--glow-sm)}
+.badge.up{color:var(--muted)}
+.badge.done{color:var(--muted)}
 .actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.stages{display:flex;gap:4px;margin-top:8px}
-.stage{flex:1;height:6px;border-radius:3px;background:var(--line)}
-.stage.done{background:var(--ok)}
-.stage.over{background:var(--bad)}
-.stage.today{background:var(--warn)}
-.empty{text-align:center;color:var(--muted);padding:28px 10px}
+.stages{display:flex;gap:4px;margin-top:12px}
+.stage{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.stage.done{background:var(--accent);box-shadow:var(--glow-sm)}
+.stage.over{background:repeating-linear-gradient(90deg,var(--accent) 0 4px,transparent 4px 8px)}
+.stage.today{background:var(--muted)}
+.empty{text-align:center;color:var(--muted);padding:30px 12px}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .toolbar input,.toolbar select{flex:1;min-width:140px}
-input[type=text],input[type=date],input[type=time],input[type=search],select,textarea{
-  width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 11px;outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+input[type=text],input[type=password],input[type=date],input[type=time],input[type=search],input[type=number],select,textarea{
+  width:100%;border:1px solid var(--line);background:var(--card2);border-radius:12px;padding:10px 12px;outline:none;transition:.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:var(--glow-sm)}
+input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px}
 textarea{min-height:90px;resize:vertical}
-label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+label{display:block;font-size:11px;color:var(--muted);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.12em}
 /* calendar */
-.cal-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.cal-head .m{font-weight:700;font-size:16px;flex:1;text-align:center}
+.cal-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.cal-head .m{font-weight:600;font-size:15px;flex:1;text-align:center;letter-spacing:.14em;text-transform:uppercase;text-shadow:var(--tglow)}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.cal .dow{text-align:center;font-size:12px;color:var(--muted);padding:4px 0}
-.cal .d{min-height:62px;border-radius:10px;border:1px solid var(--line);background:var(--card);padding:5px;cursor:pointer;
-  display:flex;flex-direction:column;gap:3px;text-align:left}
-.cal .d.out{opacity:.4}
-.cal .d.today{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
-.cal .d.sel{background:var(--accent-soft)}
-.cal .d .num{font-size:12px;font-weight:600}
+.cal .dow{text-align:center;font-size:10px;color:var(--muted);padding:4px 0;letter-spacing:.12em;text-transform:uppercase}
+.cal .d{min-height:62px;border-radius:12px;border:1px solid transparent;background:var(--card2);padding:6px;cursor:pointer;
+  display:flex;flex-direction:column;gap:4px;text-align:left;color:var(--text)}
+.cal .d.out{opacity:.3}
+.cal .d.today{border-color:var(--accent);box-shadow:var(--glow)}
+.cal .d.sel{background:var(--text);color:var(--bg)}
+.cal .d .num{font-size:12px;font-weight:600;font-family:"JetBrains Mono",ui-monospace,monospace}
 .cal .d .dots{display:flex;flex-wrap:wrap;gap:3px}
-.cal .d .dots i{width:7px;height:7px;border-radius:50%;display:block}
-.cal .d .cnt{font-size:11px;color:var(--muted)}
+.cal .d .dots i{width:6px;height:6px;border-radius:50%;display:block;box-shadow:0 0 5px currentColor}
+.cal .d .cnt{font-size:10px;color:var(--muted)}
 @media (max-width:600px){.cal .d{min-height:48px;padding:4px}}
 /* modal */
-.modal-bg{position:fixed;inset:0;background:rgba(10,10,20,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:20;display:flex;align-items:flex-end;justify-content:center}
 @media (min-width:700px){.modal-bg{align-items:center}}
-.modal{background:var(--card);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
-@media (min-width:700px){.modal{border-radius:18px}}
-.modal h3{margin:0 0 4px;font-size:18px}
-.modal .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.modal{background:var(--card);border:1px solid var(--line);border-bottom:none;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -1px 0 rgba(255,255,255,.35),0 -12px 40px rgba(255,255,255,.06)}
+@media (min-width:700px){.modal{border-radius:22px;border-bottom:1px solid var(--line)}}
+.modal h3{margin:0 0 6px;font-size:19px;font-weight:600}
+.modal .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
 .preview{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.preview .chip{background:var(--bg);border:1px solid var(--line)}
-.timeline{display:flex;flex-direction:column;gap:8px;margin-top:10px}
-.tl{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px}
+.timeline{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.tl{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
 .tl .when{flex:1}
 .tl .when small{color:var(--muted);display:block}
 .row{display:flex;gap:10px}
 .row>*{flex:1}
-.toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top));background:var(--text);color:var(--bg);
-  padding:10px 16px;border-radius:10px;z-index:30;font-size:14px;max-width:90vw;text-align:center}
+.toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(68px + env(safe-area-inset-top));background:var(--text);color:var(--bg);
+  padding:10px 18px;border-radius:999px;z-index:30;font-size:14px;max-width:92vw;text-align:center;box-shadow:var(--glow);font-weight:500}
 .settings .card{margin-bottom:12px}
+.settings .card>b{font-size:12px;text-transform:uppercase;letter-spacing:.14em}
 .settings p{margin:6px 0;color:var(--muted);font-size:13px}
 .switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0}
 .switch span{font-size:14px}
 .rate{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-.rate button{padding:12px 6px;border-radius:12px;border:1px solid var(--line);background:var(--card);cursor:pointer}
-.rate button b{display:block;font-size:20px}
-.rate button:hover{border-color:var(--accent)}
-.banner{background:var(--accent-soft);border-radius:12px;padding:10px 12px;margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.rate button{padding:14px 6px;border-radius:14px;border:1px solid var(--line);background:transparent;cursor:pointer}
+.rate button b{display:block;font-size:15px}
+.rate button:hover{border-color:var(--accent);box-shadow:var(--glow)}
+.banner{border:1px solid var(--accent);box-shadow:var(--glow);border-radius:14px;padding:12px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .banner .t{flex:1;min-width:180px;font-size:14px}
 .hidden{display:none!important}
-.bars{display:flex;align-items:flex-end;gap:4px;height:90px;margin-top:8px}
-.bars div{flex:1;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px;opacity:.85}
-.bars-l{display:flex;gap:4px;font-size:10px;color:var(--muted)}
+.bars{display:flex;align-items:flex-end;gap:5px;height:90px;margin-top:10px}
+.bars div{flex:1;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px;box-shadow:var(--glow-sm)}
+.bars-l{display:flex;gap:5px;font-size:10px;color:var(--muted);margin-top:4px}
 .bars-l span{flex:1;text-align:center}
 /* focus / pomodoro */
 .focus-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:760px){.focus-grid{grid-template-columns:1fr}}
-.timer{display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 14px}
-.ring{position:relative;width:240px;height:240px;max-width:70vw;max-height:70vw}
-.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-.ring circle{fill:none;stroke-width:12}
+.timer{display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 16px}
+.ring{position:relative;width:250px;height:250px;max-width:72vw;max-height:72vw}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.ring circle{fill:none;stroke-width:6}
 .ring .track{stroke:var(--line)}
-.ring .prog{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .3s linear}
-.ring.brk .prog{stroke:var(--ok)}
-.ring .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.ring .time{font-size:48px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-1px}
-.ring .phase{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600}
-.rounds{display:flex;gap:6px}
-.rounds i{width:10px;height:10px;border-radius:50%;background:var(--line);display:block}
-.rounds i.on{background:var(--accent)}
-.ctrls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.ctrls .btn{min-width:92px}
-.ctrls .btn.big{padding:12px 28px;font-size:16px;font-weight:600}
-.presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.presets button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:13px}
-.presets button.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.num{display:flex;align-items:center;gap:6px}
-.num input{width:70px;text-align:center;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px}
+.ring .prog{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .4s linear;filter:drop-shadow(0 0 4px rgba(255,255,255,.9)) drop-shadow(0 0 12px rgba(255,255,255,.45))}
+:root[data-theme="light"] .ring .prog{filter:none}
+.ring.brk .prog{stroke-dasharray:2 10!important;stroke-linecap:round}
+.ring .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.ring .time{font-size:52px;font-weight:500;font-family:"JetBrains Mono",ui-monospace,monospace;letter-spacing:-2px;text-shadow:var(--tglow)}
+.ring .phase{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.22em;font-weight:600}
+.rounds{display:flex;gap:7px}
+.rounds i{width:7px;height:7px;border-radius:50%;border:1px solid var(--muted);display:block}
+.rounds i.on{background:var(--accent);border-color:var(--accent);box-shadow:var(--glow-sm)}
+.ctrls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.ctrls .btn.big{padding:13px 34px;font-size:15px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.presets button{border:1px solid var(--line);background:transparent;border-radius:999px;padding:4px 12px;cursor:pointer;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace}
+.presets button.on{border-color:var(--accent);box-shadow:var(--glow);text-shadow:var(--glow-sm)}
+.num{display:flex;align-items:center;gap:8px}
+.num input{width:78px!important;text-align:center;font-family:"JetBrains Mono",ui-monospace,monospace}
 .num span{color:var(--muted);font-size:13px}
-input:disabled,select:disabled,.presets button:disabled{opacity:.5;cursor:not-allowed}
-.goal{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:8px}
-.goal div{height:100%;background:var(--ok);border-radius:5px}
-.day-h{display:flex;justify-content:space-between;align-items:baseline;margin:16px 2px 6px;font-weight:600}
-.day-h small{color:var(--muted);font-weight:500}
-.rec{display:flex;gap:10px;align-items:center;padding:10px 12px}
+.goal{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:10px}
+.goal div{height:100%;background:var(--accent);box-shadow:var(--glow);border-radius:2px}
+.day-h{display:flex;justify-content:space-between;align-items:baseline;margin:18px 2px 8px;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600}
+.day-h small{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--text)}
+.rec{display:flex;gap:10px;align-items:center;padding:12px 14px}
 .rec+.rec{border-top:1px solid var(--line)}
 .rec .body{flex:1;min-width:0}
-.rec .tm{font-size:13px;color:var(--muted)}
-.rec .dur{font-weight:700;font-variant-numeric:tabular-nums;min-width:58px;text-align:right}
-.rec input[type=checkbox]{width:18px;height:18px}
+.rec .tm{font-size:12px;color:var(--muted);margin-top:3px}
+.rec .dur{font-weight:500;font-family:"JetBrains Mono",ui-monospace,monospace;min-width:58px;text-align:right;text-shadow:var(--tglow)}
 .recs{padding:0}
-.selbar{position:sticky;top:58px;z-index:4;display:flex;gap:8px;align-items:center;background:var(--accent-soft);border-radius:12px;padding:8px 12px;margin-bottom:8px;flex-wrap:wrap}
+.selbar{position:sticky;top:64px;z-index:4;display:flex;gap:8px;align-items:center;background:var(--card2);border:1px solid var(--accent);border-radius:999px;padding:6px 8px 6px 16px;margin-bottom:8px;flex-wrap:wrap}
 .selbar .t{flex:1}
-.toast .undo{background:none;border:none;color:var(--accent);font-weight:700;margin-left:10px;cursor:pointer}
-:root[data-theme="dark"] .toast .undo{color:#4f46e5}
+.toast .undo{background:none;border:none;color:var(--bg);font-weight:700;margin-left:10px;cursor:pointer;text-decoration:underline}
+.big-num{font-size:26px;font-weight:500;font-family:"JetBrains Mono",ui-monospace,monospace;text-shadow:var(--tglow)}
+.cap{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.12em}
 </style>
 </head>
 <body>
@@ -190,33 +196,62 @@ input:disabled,select:disabled,.presets button:disabled{opacity:.5;cursor:not-al
   <div class="brand"><img src="icon.svg" alt="">Revise</div>
   <div class="spacer"></div>
   <button class="icon-btn hidden" id="syncBtn" title="Sync now" style="font-size:14px"></button>
-  <button class="icon-btn" id="themeBtn" title="Toggle theme">🌓</button>
+  <button class="icon-btn" id="themeBtn" title="Light / dark" data-ic="contrast"></button>
 </div></header>
 
 <main id="view"></main>
 
-<button class="fab" id="fab" title="Add topic" aria-label="Add topic">+</button>
+<button class="fab" id="fab" title="Add topic" aria-label="Add topic" data-ic="plus"></button>
 
 <nav class="tabs">
-  <button data-tab="today" class="active"><span class="i">🏠</span>Today</button>
-  <button data-tab="focus"><span class="i">⏱️</span>Focus</button>
-  <button data-tab="calendar"><span class="i">📅</span>Calendar</button>
-  <button data-tab="topics"><span class="i">📚</span>Topics</button>
-  <button data-tab="stats"><span class="i">📈</span>Stats</button>
-  <button data-tab="settings"><span class="i">⚙️</span>Settings</button>
+  <button data-tab="today" class="active"><span class="i" data-ic="home"></span>Today</button>
+  <button data-tab="focus"><span class="i" data-ic="timer"></span>Focus</button>
+  <button data-tab="calendar"><span class="i" data-ic="calendar"></span>Calendar</button>
+  <button data-tab="topics"><span class="i" data-ic="book"></span>Topics</button>
+  <button data-tab="stats"><span class="i" data-ic="chart"></span>Stats</button>
+  <button data-tab="settings"><span class="i" data-ic="sliders"></span>Settings</button>
 </nav>
 
 <div id="modalRoot"></div>
 
 <script>
+const ICONS = {
+  home:'<path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/>',
+  timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2h5"/>',
+  calendar:'<rect x="3" y="4.5" width="18" height="17" rx="3"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/>',
+  book:'<path d="M4 19V5a2 2 0 0 1 2-2h14v15H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h14"/>',
+  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  sliders:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+  contrast:'<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  trash:'<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>',
+  play:'<path d="M7 4.5v15l12-7.5z" fill="currentColor"/>',
+  pause:'<path d="M7 4h3.5v16H7zM13.5 4H17v16h-3.5z" fill="currentColor" stroke="none"/>',
+  skip:'<path d="M5 5l10 7-10 7z" fill="currentColor"/><path d="M19 5v14"/>',
+  stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',
+  pip:'<rect x="2" y="4" width="20" height="16" rx="3"/><rect x="12" y="11" width="7" height="6" rx="1.5" fill="currentColor"/>',
+  cloud:'<path d="M7 19h10.5a4.5 4.5 0 0 0 .5-8.97A6 6 0 0 0 6.34 9.5 4.75 4.75 0 0 0 7 19z"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>',
+  close:'<path d="M6 6l12 12M18 6L6 18"/>',
+  flame:'<path d="M12 22c4 0 7-2.7 7-6.8 0-4.5-4-6.7-5-11.2-2.5 2-3.5 4.5-3.5 6.5C9 9.5 8 8.5 7.5 7 6 9 5 11.2 5 15.2 5 19.3 8 22 12 22z"/>',
+  download:'<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
+  upload:'<path d="M12 21V9M7 14l5-5 5 5M4 3h16"/>',
+  link:'<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4L12 18.4"/>',
+  refresh:'<path d="M20 11a8 8 0 0 0-14.7-4.4L3 9M3 4v5h5M4 13a8 8 0 0 0 14.7 4.4L21 15M21 20v-5h-5"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  select:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 12l3 3 5-6"/>'
+};
+const ic = (n, sz = 20) => `<svg class="ic" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]||''}</svg>`;
 /* ============ Storage ============ */
 const KEY = 'revise.v1';
 const DEFAULT = {
   topics: [],
-  settings: { intervals:[1,3,7,14,30], reminderTime:'08:00', notify:false, shiftLate:false, theme:'auto' },
+  settings: { intervals:[1,3,7,14,30], reminderTime:'08:00', notify:false, shiftLate:false, theme:'dark' },
   log: [], // {date, topicId, stage, rating}
   // Pomodoro settings and study-session records
-  focus: { study:25, brk:5, longBrk:15, longEvery:4, autoStart:false, sound:true, goal:120 },
+  focus: { study:25, brk:5, longBrk:15, longEvery:4, autoStart:false, sound:true, goal:120, nowPlaying:true, noise:'silent' },
   sessions: [] // {id, start, end, minutes, subject, topicId, topicTitle, note, completed, manual}
 };
 let db = load();
@@ -292,7 +327,7 @@ function status(r){
 }
 function subjectColor(name){
   let h = 0; for(const c of (name||'').toLowerCase()) h = (h*31 + c.charCodeAt(0)) % 360;
-  return `hsl(${h} 70% 55%)`;
+  return `hsl(${h} 100% 66%)`;
 }
 function subjects(){ return [...new Set(db.topics.map(t => t.subject).filter(Boolean))].sort((a,b)=>a.localeCompare(b)); }
 function getTopic(id){ return db.topics.find(t => t.id === id); }
@@ -352,7 +387,7 @@ function toast(msg, undo){
 function stageLabel(r){ return r.extra ? 'Extra review' : `Day ${r.interval}`; }
 function chip(subject){
   if(!subject) return '';
-  return `<span class="chip"><span class="dot" style="background:${subjectColor(subject)}"></span>${esc(subject)}</span>`;
+  return `<span class="chip"><span class="dot" style="background:${subjectColor(subject)};color:${subjectColor(subject)}"></span>${esc(subject)}</span>`;
 }
 function stagesBar(t){
   return `<div class="stages">${t.reviews.map(r => `<div class="stage ${status(r)}" title="${stageLabel(r)} · ${fmt(r.due)}"></div>`).join('')}</div>`;
@@ -367,7 +402,7 @@ function render(){
   document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab===tab));
   const v = $('#view');
   if(tab==='today') v.innerHTML = renderToday();
-  if(tab==='focus'){ v.innerHTML = renderFocus(); updateTimerUI(); }
+  if(tab==='focus'){ v.innerHTML = renderFocus(); updateTimerUI(); prepPipVideo(); }
   $('#fab').classList.toggle('hidden', tab==='focus');
   if(tab==='calendar') v.innerHTML = renderCalendar();
   if(tab==='topics') v.innerHTML = renderTopics();
@@ -395,20 +430,21 @@ function reviewRow({t, r, i}){
 }
 function renderToday(){
   const td = today();
-  const pend = allPending().filter(x => !x.t.archived);
+  const seen = new Set(); // one card per topic: its earliest pending review
+  const pend = allPending().filter(x => !x.t.archived && !seen.has(x.t.id) && seen.add(x.t.id));
   const over = pend.filter(x => x.r.due < td);
   const due = pend.filter(x => x.r.due === td);
   const week = pend.filter(x => x.r.due > td && x.r.due <= addDays(td, 7));
   const doneToday = db.log.filter(l => l.date === td).length;
   let banner = '';
   if('Notification' in window && Notification.permission === 'default' && !db.settings.dismissedNotif){
-    banner = `<div class="banner"><div class="t">🔔 Turn on reminders so you get notified when reviews are due.</div>
+    banner = `<div class="banner"><div class="t">Turn on reminders so you get notified when reviews are due.</div>
       <button class="btn primary small" data-act="enableNotif">Enable</button>
       <button class="btn ghost small" data-act="dismissNotif">Later</button></div>`;
   }
   if(!db.topics.length){
     return banner + `<div class="card empty">
-      <div style="font-size:42px">🧠</div>
+      <div style="color:var(--text);filter:drop-shadow(0 0 8px rgba(255,255,255,.6))">${ic('calendar',44)}</div>
       <h2 style="margin:8px 0">Welcome to Revise</h2>
       <p>Add something you learned today. You'll be reminded to review it after<br><b>${db.settings.intervals.join(' · ')}</b> days.</p>
       <button class="btn primary" data-act="add">Add your first topic</button>
@@ -419,12 +455,12 @@ function renderToday(){
     <div class="card stat"><div class="n" style="color:var(--bad)">${over.length}</div><div class="l">Overdue</div></div>
     <div class="card stat"><div class="n" style="color:var(--warn)">${due.length}</div><div class="l">Due today</div></div>
     <div class="card stat"><div class="n" style="color:var(--ok)">${doneToday}</div><div class="l">Reviewed today</div></div>
-    <div class="card stat"><div class="n">🔥 ${streak()}</div><div class="l">Day streak</div></div>
+    <div class="card stat"><div class="n">${ic('flame',22)}${streak()}</div><div class="l">Day streak</div></div>
   </div>
   ${over.length ? `<h2>Overdue</h2><div class="list">${over.map(reviewRow).join('')}</div>` : ''}
   <h2>Today · ${fmt(td)}</h2>
   ${due.length ? `<div class="list">${due.map(reviewRow).join('')}</div>` :
-    `<div class="card empty">${over.length ? 'Nothing new today — clear the overdue ones above.' : '🎉 All caught up for today!'}</div>`}
+    `<div class="card empty">${over.length ? 'Nothing new today — clear the overdue ones above.' : 'All caught up for today!'}</div>`}
   <h2>Coming up this week</h2>
   ${week.length ? `<div class="list">${week.map(reviewRow).join('')}</div>` : `<div class="card empty">No reviews in the next 7 days.</div>`}`;
 }
@@ -448,7 +484,7 @@ function renderCalendar(){
   for(let k=0;k<42;k++){
     const d = new Date(start); d.setDate(start.getDate()+k);
     const s = ymd(d); const items = byDay[s] || [];
-    const dots = items.slice(0,6).map(x => `<i style="background:${x.r.done ? 'var(--ok)' : subjectColor(x.t.subject)}"></i>`).join('');
+    const dots = items.slice(0,6).map(x => `<i style="background:${x.r.done ? 'var(--muted)' : subjectColor(x.t.subject)};color:${x.r.done ? 'transparent' : subjectColor(x.t.subject)}"></i>`).join('');
     cells += `<button class="d ${d.getMonth()!==m?'out':''} ${s===td?'today':''} ${s===calSel?'sel':''}" data-day="${s}">
       <span class="num">${d.getDate()}</span><span class="dots">${dots}</span>${items.length>6?`<span class="cnt">+${items.length-6}</span>`:''}</button>`;
   }
@@ -471,7 +507,7 @@ function doneRow({t,r,i}){
     <div class="meta">${chip(t.subject)}<span class="chip">${stageLabel(r)}</span><span class="badge done">✓ Reviewed ${fmt(r.done)}${r.rating?` · ${rateEmoji(r.rating)}`:''}</span></div>
   </div></div>`;
 }
-const rateEmoji = r => ({easy:'😄 Easy', ok:'🙂 Okay', hard:'😣 Hard'})[r] || '';
+const rateEmoji = r => ({easy:'Easy', ok:'Okay', hard:'Hard'})[r] || '';
 
 /* ============ Topics ============ */
 function renderTopics(){
@@ -499,7 +535,7 @@ function topicRow(t){
   const badge = n ? `<span class="badge ${status(n)}">${status(n)==='up' ? 'Next: '+fmt(n.due) : rel(n.due)}</span>` : `<span class="badge done">✓ Completed</span>`;
   return `<div class="card item" data-open="${t.id}" style="cursor:pointer">
     <div class="body">
-      <div class="title">${t.pinned?'📌 ':''}${esc(t.title)}</div>
+      <div class="title">${t.pinned?'':''}${esc(t.title)}</div>
       ${t.description ? `<div class="desc">${esc(t.description)}</div>` : ''}
       <div class="meta">${chip(t.subject)}${badge}<span class="chip">${done}/${t.reviews.length} reviews</span></div>
       ${stagesBar(t)}
@@ -536,9 +572,9 @@ function renderStats(){
   </div>
   <h2>How it felt</h2>
   <div class="card"><div class="row" style="text-align:center">
-    <div><b style="font-size:20px">${rc.easy}</b><br><small>😄 Easy</small></div>
-    <div><b style="font-size:20px">${rc.ok}</b><br><small>🙂 Okay</small></div>
-    <div><b style="font-size:20px">${rc.hard}</b><br><small>😣 Hard</small></div>
+    <div><div class="big-num">${rc.easy}</div><div class="cap">Easy</div></div>
+    <div><div class="big-num">${rc.ok}</div><div class="cap">Okay</div></div>
+    <div><div class="big-num">${rc.hard}</div><div class="cap">Hard</div></div>
   </div></div>
   <h2>By subject</h2>
   ${subs.length ? `<div class="list">${subs.map(x=>`<div class="card">
@@ -554,32 +590,32 @@ function renderSettings(){
   return `<div class="settings">
   ${renderSyncCard()}
   <div class="card">
-    <b>🔔 Notifications</b>
+    <b>Notifications</b>
     <p>Status: <b>${perm==='granted'?'Allowed':perm==='denied'?'Blocked in browser settings':perm==='unsupported'?'Not supported in this browser':'Not enabled yet'}</b></p>
     <div class="switch"><span>Daily reminder</span><input type="checkbox" id="sNotify" ${s.notify?'checked':''}></div>
     <label>Reminder time</label><input type="time" id="sTime" value="${s.reminderTime}">
     <p>Browser notifications fire when Revise is open or installed on your device. For reminders that <b>always</b> arrive — even when the app is closed — add your reviews to your phone/laptop calendar:</p>
-    <div class="row" style="margin-top:8px"><button class="btn" data-act="icsAll">📅 Export all reviews to calendar (.ics)</button></div>
+    <div class="row" style="margin-top:8px"><button class="btn" data-act="icsAll">${ic('calendar',16)}Export reviews to calendar (.ics)</button></div>
     <div class="row" style="margin-top:8px"><button class="btn" data-act="testNotif">Send a test notification</button></div>
   </div>
   <div class="card">
-    <b>🗓️ Schedule</b>
+    <b>Schedule</b>
     <p>Days after learning when each review is due. Applies to new topics.</p>
     <input type="text" id="sInt" value="${s.intervals.join(', ')}">
     <div class="row" style="margin-top:8px"><button class="btn small" data-act="resetInt">Reset to 1, 3, 7, 14, 30</button></div>
     <div class="switch" style="margin-top:8px"><span>If I review late, push the remaining reviews back by the same number of days</span><input type="checkbox" id="sShift" ${s.shiftLate?'checked':''}></div>
   </div>
   <div class="card">
-    <b>💾 Backup file</b>
+    <b>Backup file</b>
     <p>Download a copy of everything, or restore from a copy.</p>
     <div class="row" style="margin-top:8px;flex-wrap:wrap">
-      <button class="btn" data-act="export">⬇️ Export backup</button>
-      <button class="btn" data-act="import">⬆️ Import backup</button>
+      <button class="btn" data-act="export">${ic('download',16)}Export backup</button>
+      <button class="btn" data-act="import">${ic('upload',16)}Import backup</button>
     </div>
     <input type="file" id="importFile" accept="application/json,.json" class="hidden">
   </div>
   <div class="card">
-    <b>📱 Install the app</b>
+    <b>Install the app</b>
     <p><b>iPhone:</b> open in Safari → Share → <i>Add to Home Screen</i> (needed for notifications on iOS).<br>
        <b>Android:</b> Chrome menu ⋮ → <i>Install app</i>.<br>
        <b>Laptop:</b> Chrome/Edge address bar → install icon.</p>
@@ -587,7 +623,7 @@ function renderSettings(){
   </div>
   <div class="card">
     <b>Theme</b>
-    <select id="sTheme" style="margin-top:8px">${['auto','light','dark'].map(x=>`<option ${x===s.theme?'selected':''}>${x}</option>`).join('')}</select>
+    <select id="sTheme" style="margin-top:8px">${[['dark','Neon (black)'],['light','Light (white)']].map(([v,l])=>`<option value="${v}" ${v===(s.theme==='light'?'light':'dark')?'selected':''}>${l}</option>`).join('')}</select>
   </div>
   <div class="card"><button class="btn danger" data-act="wipe">Delete all data</button></div>
   </div>`;
@@ -653,7 +689,7 @@ function showTopic(id){
   const t = getTopic(id); if(!t) return;
   openModal(`<div style="display:flex;gap:8px;align-items:flex-start">
       <div style="flex:1"><h3>${esc(t.title)}</h3><div class="meta" style="display:flex;gap:6px;flex-wrap:wrap">${chip(t.subject)}<span class="chip">Learned ${fmt(t.learned)}</span></div></div>
-      <button class="icon-btn" data-m="cancel" aria-label="Close">✕</button>
+      <button class="icon-btn" data-m="cancel" aria-label="Close">${ic('close')}</button>
     </div>
     ${t.description ? `<div style="white-space:pre-wrap;margin-top:12px;word-break:break-word">${linkify(esc(t.description))}</div>` : ''}
     <div class="timeline">${t.reviews.map((r,i)=>{
@@ -668,8 +704,8 @@ function showTopic(id){
     <div class="foot">
       <button class="btn danger" data-m="delete" data-id="${t.id}">Delete</button>
       <button class="btn" data-m="archive" data-id="${t.id}">${t.archived?'Unarchive':'Archive'}</button>
-      <button class="btn" data-m="ics" data-id="${t.id}">📅 Add to calendar</button>
-      <button class="btn" data-m="studyThis" data-id="${t.id}">⏱️ Study this</button>
+      <button class="btn" data-m="ics" data-id="${t.id}">${ic('calendar',16)}Calendar</button>
+      <button class="btn" data-m="studyThis" data-id="${t.id}">${ic('timer',16)}Study this</button>
       <button class="btn primary" data-m="edit" data-id="${t.id}">Edit</button>
     </div>`);
 }
@@ -680,13 +716,13 @@ function reviewModal(id, i){
   openModal(`<h3>Review: ${esc(t.title)}</h3>
     <div class="meta" style="display:flex;gap:6px;flex-wrap:wrap">${chip(t.subject)}<span class="chip">${stageLabel(r)}</span><span class="chip">Due ${fmt(r.due)}</span></div>
     <p style="color:var(--muted);font-size:13px;margin-top:12px">Try to recall the key points from memory first, then reveal your notes.</p>
-    <button class="btn" id="reveal" style="width:100%">👀 Reveal notes</button>
+    <button class="btn" id="reveal" style="width:100%">${ic('eye',16)}Reveal notes</button>
     <div id="notes" class="hidden card" style="margin-top:10px;white-space:pre-wrap;word-break:break-word">${t.description ? linkify(esc(t.description)) : '<i>No notes for this topic.</i>'}</div>
     <p style="margin:16px 0 0;font-weight:600">How well did you remember it?</p>
     <div class="rate">
-      <button data-rate="hard" data-id="${id}" data-i="${i}"><b>😣</b>Hard<br><small style="color:var(--muted)">+ extra review tomorrow</small></button>
-      <button data-rate="ok" data-id="${id}" data-i="${i}"><b>🙂</b>Okay</button>
-      <button data-rate="easy" data-id="${id}" data-i="${i}"><b>😄</b>Easy</button>
+      <button data-rate="hard" data-id="${id}" data-i="${i}"><b>Hard</b><small style="color:var(--muted)">+ extra review tomorrow</small></button>
+      <button data-rate="ok" data-id="${id}" data-i="${i}"><b>Okay</b><small style="color:var(--muted)">on schedule</small></button>
+      <button data-rate="easy" data-id="${id}" data-i="${i}"><b>Easy</b><small style="color:var(--muted)">nailed it</small></button>
     </div>
     <div class="foot"><button class="btn" data-m="cancel">Cancel</button></div>`);
   $('#reveal').onclick = () => { $('#notes').classList.remove('hidden'); $('#reveal').classList.add('hidden'); };
@@ -711,7 +747,7 @@ function buildIcs(topics){
       `DTSTAMP:${stamp}`,
       `DTSTART:${d}T${hh}${mm}00`,
       'DURATION:PT20M',
-      fold(`SUMMARY:${icsEscape(`📖 Review: ${t.title}${t.subject?' ('+t.subject+')':''} — ${stageLabel(r)}`)}`),
+      fold(`SUMMARY:${icsEscape(`Review: ${t.title}${t.subject?' ('+t.subject+')':''} — ${stageLabel(r)}`)}`),
       fold(`DESCRIPTION:${icsEscape((t.description||'') + `\n\nLearned ${t.learned}. ${stageLabel(r)} of the ${db.settings.intervals.join('-')} schedule.`)}`),
       'BEGIN:VALARM','ACTION:DISPLAY',fold(`DESCRIPTION:${icsEscape('Review: '+t.title)}`),'TRIGGER:PT0M','END:VALARM',
       'END:VEVENT');
@@ -753,7 +789,7 @@ function dueSummary(){
   const d = dueNow();
   if(!d.length) return null;
   const names = d.slice(0,3).map(x=>x.t.title).join(', ');
-  return { title:`📖 ${d.length} review${d.length>1?'s':''} due`, body: names + (d.length>3?` and ${d.length-3} more`:'') };
+  return { title:`${d.length} review${d.length>1?'s':''} due`, body: names + (d.length>3?` and ${d.length-3} more`:'') };
 }
 // Fires once per day, after the reminder time, while the app is open/opened.
 function checkReminder(force){
@@ -798,7 +834,7 @@ document.addEventListener('click', e => {
   if(d.rate){
     completeReview(d.id, +d.i, d.rate); closeModal(); render();
     const t = getTopic(d.id); const n = nextReview(t);
-    toast(n ? `Nice! Next review ${rel(n.due).toLowerCase()} (${fmt(n.due)})` : '🏆 All reviews complete for this topic!');
+    toast(n ? `Nice! Next review ${rel(n.due).toLowerCase()} (${fmt(n.due)})` : 'All reviews complete for this topic!');
     return;
   }
   if(d.open){ showTopic(d.open); return; }
@@ -831,7 +867,7 @@ document.addEventListener('click', e => {
     if(a==='add') editTopic();
     if(a==='enableNotif') enableNotif();
     if(a==='dismissNotif'){ db.settings.dismissedNotif = true; save(); render(); }
-    if(a==='testNotif'){ if(Notification?.permission==='granted') notify('🔔 Revise test', dueSummary()?.body || 'Notifications are working!'); else enableNotif(); }
+    if(a==='testNotif'){ if(Notification?.permission==='granted') notify('Revise test', dueSummary()?.body || 'Notifications are working!'); else enableNotif(); }
     if(a==='icsAll') exportIcs(db.topics.filter(t=>!t.archived), 'revise-reviews.ics');
     if(a==='resetInt'){ db.settings.intervals=[1,3,7,14,30]; save(); render(); toast('Schedule reset'); }
     if(a==='export') download(`revise-backup-${today()}.json`, JSON.stringify(db, null, 2), 'application/json');
@@ -881,13 +917,11 @@ document.addEventListener('keydown', e => {
   if(e.key==='n' && !$('#modalRoot').innerHTML && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); editTopic(); }
 });
 $('#fab').onclick = () => editTopic();
-$('#themeBtn').onclick = () => {
-  const cur = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
-  db.settings.theme = cur==='dark' ? 'light' : 'dark'; save(); applyTheme(); if(tab==='settings') render();
-};
+$('#themeBtn').onclick = () => { db.settings.theme = db.settings.theme==='light' ? 'dark' : 'light'; save(); applyTheme(); if(tab==='settings') render(); };
 function applyTheme(){
-  const t = db.settings.theme;
-  if(t==='auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+  const light = db.settings.theme === 'light';
+  if(light) document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme;
+  document.querySelector('meta[name=theme-color]').content = light ? '#ffffff' : '#000000';
 }
 
 /* ============ Focus (Pomodoro) ============ */
@@ -934,7 +968,7 @@ function startPause(){
     if(timer.phase==='study' && !timer.sessStart) timer.sessStart = Date.now();
     timer.endAt = Date.now() + timer.remaining; timer.running = true;
   }
-  saveTimer(); updateTimerUI();
+  saveTimer(); updateTimerUI(); nowPlayingFromGesture();
 }
 function studiedMs(){ return timer.phase==='study' && isActive() ? totalMs() - remainingMs() : 0; }
 function recordSession(ms, end, completed){
@@ -962,12 +996,12 @@ function finishPhase(at){
     const long = timer.round % db.focus.longEvery === 0;
     setPhase(long ? 'long' : 'break', auto);
     chime();
-    notifyFocus('✅ Focus session done', `${s ? fmtMin(s.minutes)+' recorded. ' : ''}Time for a ${phaseMin(timer.phase)} min ${long?'long ':''}break.`);
+    notifyFocus('Focus session done', `${s ? fmtMin(s.minutes)+' recorded. ' : ''}Time for a ${phaseMin(timer.phase)} min ${long?'long ':''}break.`);
   } else {
     timer.round = timer.phase==='long' ? 1 : timer.round + 1;
     setPhase('study', auto);
     chime();
-    notifyFocus('⏰ Break is over', `Ready for ${db.focus.study} more minutes of focus?`);
+    notifyFocus('Break is over', `Ready for ${db.focus.study} more minutes of focus?`);
   }
   if(tab==='focus') render(); else updateTimerUI();
 }
@@ -1007,7 +1041,7 @@ function updateTimerUI(){
   const C = 2*Math.PI*110;
   $('#tProg').style.strokeDashoffset = C * (1 - rem/tot);
   $('#tRing').classList.toggle('brk', timer.phase!=='study');
-  $('#tStart').textContent = timer.running ? '⏸ Pause' : isActive() ? '▶ Resume' : '▶ Start';
+  $('#tStart').innerHTML = timer.running ? ic('pause',16)+'Pause' : isActive() ? ic('play',16)+'Resume' : ic('play',16)+'Start';
   $('#tStop').disabled = !isActive() && timer.round===1 && timer.phase==='study';
 }
 
@@ -1060,8 +1094,9 @@ function renderFocus(){
         <button class="btn primary big" id="tStart" data-f="start"></button>
       </div>
       <div class="ctrls">
-        <button class="btn" data-f="skip">⏭ ${timer.phase==='study'?'Skip to break':'Skip break'}</button>
-        <button class="btn" id="tStop" data-f="stop">⏹ Stop</button>
+        <button class="btn small" data-f="skip">${ic('skip',15)}${timer.phase==='study'?'Skip to break':'Skip break'}</button>
+        <button class="btn small" id="tStop" data-f="stop">${ic('stop',15)}Stop</button>
+        <button class="btn small" data-f="pip" title="Float the timer over other apps">${ic('pip',15)}Pop out</button>
       </div>
       <div style="width:100%">
         <label>Subject</label>
@@ -1075,13 +1110,13 @@ function renderFocus(){
     </div>
     <div style="display:flex;flex-direction:column;gap:12px">
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:baseline"><b>Today</b><small style="color:var(--muted)">🔥 ${streakD} day streak</small></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><b>Today</b><small style="color:var(--muted);display:flex;align-items:center;gap:4px">${ic('flame',14)}${streakD} day streak</small></div>
         <div class="row" style="margin-top:8px">
           <div><div style="font-size:24px;font-weight:700">${fmtMin(todayMin)}</div><small style="color:var(--muted)">focused · ${todayN} session${todayN===1?'':'s'}</small></div>
           <div><div style="font-size:24px;font-weight:700">${fmtMin(weekMin)}</div><small style="color:var(--muted)">last 7 days</small></div>
         </div>
         <div class="goal"><div style="width:${Math.min(100, todayMin/f.goal*100)}%"></div></div>
-        <small style="color:var(--muted)">Daily goal: ${fmtMin(todayMin)} / ${fmtMin(f.goal)}${todayMin>=f.goal?' 🎉':''}</small>
+        <small style="color:var(--muted)">Daily goal: ${fmtMin(todayMin)} / ${fmtMin(f.goal)}${todayMin>=f.goal?' ':''}</small>
         <div class="bars" style="height:70px">${mins.map((m,k)=>`<div style="height:${m/max*100}%;${days[k]===td?'':'opacity:.55'}" title="${fmt(days[k])}: ${fmtMin(m)}"></div>`).join('')}</div>
         <div class="bars-l">${days.map(x=>`<span>${parse(x).toLocaleDateString(undefined,{weekday:'narrow'})}</span>`).join('')}</div>
       </div>
@@ -1101,15 +1136,18 @@ function renderFocus(){
         <div class="num"><input type="number" id="fGoal" min="5" max="1440" step="5" value="${f.goal}"><span>minutes</span></div>
         <div class="switch" style="margin-top:10px"><span>Auto-start the next session / break</span><input type="checkbox" id="fAuto" ${f.autoStart?'checked':''}></div>
         <div class="switch"><span>Sound &amp; vibration when time's up</span><input type="checkbox" id="fSound" ${f.sound?'checked':''}></div>
+        <div class="switch"><span>Show timer on lock screen &amp; notification bar<br><small style="color:var(--muted)">Keeps the timer alive when you leave the app</small></span><input type="checkbox" id="fNow" ${f.nowPlaying?'checked':''}></div>
+        <label>Background sound while timing</label>
+        <select id="fNoise">${[['silent','Silent'],['white','White noise'],['pink','Soft noise (rain-like)'],['brown','Brown noise (deep)']].map(([v,l])=>`<option value="${v}" ${f.noise===v?'selected':''}>${l}</option>`).join('')}</select>
         ${isActive() ? '<p style="font-size:12px;color:var(--muted);margin:6px 0 0">New lengths apply from the next session.</p>' : ''}
       </div>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin:22px 0 10px;flex-wrap:wrap">
     <h2 style="margin:0;flex:1">Study records</h2>
-    <button class="btn small" data-f="add">＋ Add</button>
-    <button class="btn small" data-f="select">${recF.selecting?'Done':'☑ Select'}</button>
-    <button class="btn small" data-f="csv">⬇ CSV</button>
+    <button class="btn small" data-f="add">${ic('plus',15)}Add</button>
+    <button class="btn small" data-f="select">${recF.selecting?'Done':ic('select',15)+'Select'}</button>
+    <button class="btn small" data-f="csv">${ic('download',15)}CSV</button>
   </div>
   <div class="toolbar">
     <input type="search" id="rq" placeholder="Search subject, topic, note…" value="${esc(recF.q)}">
@@ -1136,10 +1174,10 @@ function renderRecords(){
     const all = list.every(s=>recF.sel.has(s.id));
     html += `<div class="selbar"><span class="t"><b>${recF.sel.size}</b> selected</span>
       <button class="btn small" data-f="selAll">${all?'Clear':'Select all'}</button>
-      <button class="btn small danger" data-f="delSel" ${recF.sel.size?'':'disabled'}>🗑 Delete</button></div>`;
+      <button class="btn small danger" data-f="delSel" ${recF.sel.size?'':'disabled'}>${ic('trash',15)}Delete</button></div>`;
   }
   const row = s => {
-    const st = s.manual ? '✍️ Added manually' : s.completed ? '✓ Completed' : '⏹ Stopped early';
+    const st = s.manual ? 'Added manually' : s.completed ? '✓ Completed' : 'Stopped early';
     return `<div class="rec">
       ${recF.selecting ? `<input type="checkbox" data-sel="${s.id}" ${recF.sel.has(s.id)?'checked':''}>` : ''}
       <div class="body">
@@ -1148,7 +1186,7 @@ function renderRecords(){
         <div class="tm">${recF.sort==='new'||recF.sort==='old' ? '' : fmt(ymd(new Date(s.start)))+' · '}${hm(s.start)}–${hm(s.end)} · ${st}</div>
       </div>
       <div class="dur">${fmtMin(s.minutes)}</div>
-      ${recF.selecting ? '' : `<button class="icon-btn" data-f="edit" data-id="${s.id}" title="Edit">✏️</button><button class="icon-btn" data-f="del" data-id="${s.id}" title="Delete">🗑️</button>`}
+      ${recF.selecting ? '' : `<button class="icon-btn" data-f="edit" data-id="${s.id}" title="Edit">${ic('edit',18)}</button><button class="icon-btn" data-f="del" data-id="${s.id}" title="Delete">${ic('trash',18)}</button>`}
     </div>`;
   };
   if(recF.sort==='new' || recF.sort==='old'){
@@ -1219,6 +1257,7 @@ document.addEventListener('click', e => {
   const d = el.dataset, f = db.focus;
   if(d.f==='start') startPause();
   if(d.f==='skip') skipPhase();
+  if(d.f==='pip') popOut();
   if(d.f==='stop') stopTimer();
   if(d.f==='preset'){ f[d.k] = +d.v; save(); render(); }
   if(d.f==='add') editSession();
@@ -1248,6 +1287,8 @@ document.addEventListener('change', e => {
   if(id==='fGoal') clampSet('goal', 5, 1440);
   if(id==='fAuto'){ f.autoStart = e.target.checked; save(); }
   if(id==='fSound'){ f.sound = e.target.checked; save(); if(f.sound) chime(); }
+  if(id==='fNow'){ f.nowPlaying = e.target.checked; save(); if(!f.nowPlaying) stopNowPlaying(); else if(timer.running) nowPlayingFromGesture(); }
+  if(id==='fNoise'){ f.noise = e.target.value; save(); if(timer.running) nowPlayingFromGesture(); }
   if(id==='fcTopic'){
     timer.topicId = e.target.value; const t = getTopic(timer.topicId);
     if(t && !timer.subject.trim() && t.subject){ timer.subject = t.subject; $('#fcSub').value = t.subject; }
@@ -1263,11 +1304,164 @@ document.addEventListener('change', e => {
 let wasRunning = timer.running;
 setInterval(() => {
   if(timer.running && Date.now() >= timer.endAt) finishPhase(timer.endAt);
-  updateTimerUI();
+  updateTimerUI(); updateExternal();
   if(wasRunning && !timer.running) updateBadge();
   wasRunning = timer.running;
 }, 500);
 if(timer.running && Date.now() >= timer.endAt) setTimeout(() => finishPhase(timer.endAt), 0);
+
+/* ============ Pop-out timer + lock screen / notification bar ============ */
+/* 1) "Now Playing": a looping (silent or noise) audio track plus the Media Session API.
+      iOS & Android then show the timer on the lock screen / notification shade with a live
+      progress bar and play/pause/skip buttons — and the audio keeps the timer alive in the background.
+   2) Pop out: Document Picture-in-Picture (Chrome/Edge desktop) or video Picture-in-Picture. */
+let bgAudio = null, npKey = '';
+const noiseUrls = {};
+function noiseUrl(kind){
+  if(noiseUrls[kind]) return noiseUrls[kind];
+  const sr = 22050, n = sr * 12, fade = sr / 2, m = n - fade;
+  let b0=0,b1=0,b2=0,brown=0; const raw = new Float32Array(n);
+  for(let i=0;i<n;i++){
+    const w = Math.random()*2-1;
+    if(kind==='white') raw[i] = w*.18;
+    else if(kind==='pink'){ b0=.99765*b0+w*.099046; b1=.963*b1+w*.2965164; b2=.57*b2+w*1.0526913; raw[i]=(b0+b1+b2+w*.1848)*.05; }
+    else if(kind==='brown'){ brown=(brown+.02*w)/1.02; raw[i]=brown*1.6; }
+    else raw[i] = w * .00008; // practically silent, but a real audio track so the OS shows "Now Playing"
+  }
+  for(let i=0;i<fade;i++){ const t=i/fade; raw[i] = raw[i]*t + raw[m+i]*(1-t); } // seamless loop
+  const buf = new ArrayBuffer(44 + m*2), v = new DataView(buf);
+  const str = (o, t) => [...t].forEach((c, k) => v.setUint8(o+k, c.charCodeAt(0)));
+  str(0,'RIFF'); v.setUint32(4, 36+m*2, true); str(8,'WAVEfmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); str(36,'data'); v.setUint32(40,m*2,true);
+  for(let i=0;i<m;i++) v.setInt16(44+i*2, Math.max(-1,Math.min(1,raw[i]))*32767, true);
+  return noiseUrls[kind] = URL.createObjectURL(new Blob([buf], {type:'audio/wav'}));
+}
+function nowPlayingFromGesture(){ // call from a click/tap so the browser allows audio
+  if(!db.focus.nowPlaying) return;
+  if(!timer.running){ bgAudio?.pause(); updateMediaSession(true); return; }
+  try{
+    if(!bgAudio){ bgAudio = new Audio(); bgAudio.loop = true; bgAudio.preload = 'auto'; bgAudio.setAttribute('playsinline',''); }
+    const kind = db.focus.noise || 'silent';
+    if(bgAudio.dataset.kind !== kind){ bgAudio.src = noiseUrl(kind); bgAudio.dataset.kind = kind; }
+    bgAudio.play().catch(()=>{});
+  }catch(e){}
+  setupMediaSession(); updateMediaSession(true);
+}
+function stopNowPlaying(){
+  try{ bgAudio?.pause(); }catch(e){}
+  if('mediaSession' in navigator){ try{ navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; }catch(e){} }
+  npKey = '';
+}
+let msReady = false;
+function setupMediaSession(){
+  if(msReady || !('mediaSession' in navigator)) return; msReady = true;
+  const h = (a, fn) => { try{ navigator.mediaSession.setActionHandler(a, fn); }catch(e){} };
+  h('play', () => { if(!timer.running) startPause(); });
+  h('pause', () => { if(timer.running) startPause(); });
+  h('nexttrack', () => { skipPhase(); setTimeout(nowPlayingFromGesture, 50); });
+  h('stop', () => stopTimer());
+}
+function updateMediaSession(force){
+  if(!('mediaSession' in navigator) || !db.focus.nowPlaying) return;
+  if(!isActive() && timer.phase==='study' && !timer.running){ if(npKey) stopNowPlaying(); return; }
+  const rem = remainingMs(), tot = totalMs(), minsLeft = Math.ceil(rem/60000);
+  const key = [timer.phase, timer.running, minsLeft, timer.subject].join('|');
+  if(force || key !== npKey){
+    npKey = key;
+    try{
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: `${phaseName(timer.phase)} · ${minsLeft} min left${timer.running?'':' (paused)'}`,
+        artist: timer.subject ? `${timer.subject}${timer.topicId && getTopic(timer.topicId) ? ' — '+getTopic(timer.topicId).title : ''}` : 'Revise focus timer',
+        album: 'Revise',
+        artwork: [{src:'icon-192.png', sizes:'192x192', type:'image/png'},{src:'icon-512.png', sizes:'512x512', type:'image/png'}]
+      });
+      navigator.mediaSession.playbackState = timer.running ? 'playing' : 'paused';
+    }catch(e){}
+  }
+  try{ navigator.mediaSession.setPositionState({ duration: tot/1000, position: Math.min(tot, tot-rem)/1000, playbackRate: 1 }); }catch(e){}
+}
+
+/* --- Pop out --- */
+let pipWin = null, pipVideo = null, pipCanvas = null, pipCtx = null;
+const hasDocPip = () => 'documentPictureInPicture' in window;
+function prepPipVideo(){
+  if(hasDocPip() || pipVideo) return;
+  const v = document.createElement('video');
+  if(!(document.pictureInPictureEnabled || v.webkitSupportsPresentationMode)) return;
+  try{
+    pipCanvas = document.createElement('canvas'); pipCanvas.width = 480; pipCanvas.height = 270; pipCtx = pipCanvas.getContext('2d');
+    drawPip();
+    v.muted = true; v.playsInline = true; v.setAttribute('playsinline',''); v.autoplay = true;
+    v.srcObject = pipCanvas.captureStream(10);
+    v.style.cssText = 'position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:.01;pointer-events:none';
+    document.body.appendChild(v); v.play().catch(()=>{});
+    pipVideo = v;
+  }catch(e){ pipVideo = null; }
+}
+function drawPip(){
+  if(!pipCtx) return;
+  const c = pipCtx, W = 480, H = 270, rem = remainingMs(), tot = totalMs();
+  c.fillStyle = '#000'; c.fillRect(0,0,W,H);
+  c.textAlign = 'center'; c.fillStyle = '#8b8b8b'; c.font = '600 18px Inter, system-ui, sans-serif';
+  c.fillText((phaseName(timer.phase) + (isActive() && !timer.running ? ' · paused' : '')).toUpperCase().split('').join(String.fromCharCode(8202)), W/2, 62);
+  c.fillStyle = '#fff'; c.shadowColor = 'rgba(255,255,255,.8)'; c.shadowBlur = 24;
+  c.font = '500 104px "JetBrains Mono", ui-monospace, monospace'; c.fillText(clock(rem), W/2, 165);
+  c.shadowBlur = 0; c.fillStyle = '#222'; c.fillRect(60, 205, W-120, 4);
+  c.fillStyle = '#fff'; c.shadowBlur = 12; c.fillRect(60, 205, (W-120)*(1-rem/tot), 4); c.shadowBlur = 0;
+  if(timer.subject){ c.fillStyle = '#8b8b8b'; c.font = '16px Inter, system-ui, sans-serif'; c.fillText(timer.subject.slice(0,40), W/2, 242); }
+}
+const PIP_CSS = `body{margin:0;background:#000;color:#fff;font-family:Inter,system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden}
+.w{text-align:center;width:100%;padding:12px}.ph{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:#8b8b8b;font-weight:600}
+.t{font:500 clamp(36px,22vw,84px)/1.1 "JetBrains Mono",ui-monospace,monospace;text-shadow:0 0 8px rgba(255,255,255,.7),0 0 24px rgba(255,255,255,.3);margin:6px 0 10px}
+.b{height:3px;background:#222;border-radius:2px;margin:0 8%}.b div{height:100%;background:#fff;box-shadow:0 0 8px #fff;border-radius:2px}
+.c{display:flex;gap:8px;justify-content:center;margin-top:14px}.c button{background:none;color:#fff;border:1px solid #444;border-radius:999px;padding:6px 14px;font:inherit;font-size:12px;cursor:pointer;letter-spacing:.08em;text-transform:uppercase}
+.c button.p{border-color:#fff;box-shadow:0 0 6px rgba(255,255,255,.6)}.s{color:#8b8b8b;font-size:12px;margin-top:8px}`;
+function updatePipWindow(){
+  if(!pipWin) return;
+  const d = pipWin.document, rem = remainingMs(), tot = totalMs();
+  d.getElementById('pp').textContent = phaseName(timer.phase) + (isActive() && !timer.running ? ' · paused' : '');
+  d.getElementById('pt').textContent = clock(rem);
+  d.getElementById('pb').style.width = (100*(1-rem/tot)) + '%';
+  d.getElementById('ps').textContent = timer.running ? 'Pause' : isActive() ? 'Resume' : 'Start';
+  d.getElementById('psub').textContent = timer.subject || '';
+}
+async function popOut(){
+  try{
+    if(hasDocPip()){
+      if(pipWin){ pipWin.close(); pipWin = null; return; }
+      pipWin = await documentPictureInPicture.requestWindow({ width: 300, height: 260 });
+      const d = pipWin.document;
+      const st = d.createElement('style'); st.textContent = PIP_CSS; d.head.appendChild(st);
+      const fl = d.createElement('link'); fl.rel = 'stylesheet'; fl.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@500&display=swap'; d.head.appendChild(fl);
+      d.title = 'Revise timer';
+      d.body.innerHTML = '<div class="w"><div class="ph" id="pp"></div><div class="t" id="pt"></div><div class="b"><div id="pb"></div></div><div class="c"><button class="p" id="ps"></button><button id="pk">Skip</button></div><div class="s" id="psub"></div></div>';
+      d.getElementById('ps').onclick = () => startPause();
+      d.getElementById('pk').onclick = () => skipPhase();
+      pipWin.addEventListener('pagehide', () => { pipWin = null; });
+      updatePipWindow();
+      return;
+    }
+    prepPipVideo();
+    if(!pipVideo) throw new Error('unsupported');
+    if(document.pictureInPictureElement){ await document.exitPictureInPicture(); return; }
+    drawPip();
+    if(document.pictureInPictureEnabled && pipVideo.requestPictureInPicture){ await pipVideo.requestPictureInPicture(); setupMediaSession(); return; }
+    if(pipVideo.webkitSupportsPresentationMode?.('picture-in-picture')){ pipVideo.webkitSetPresentationMode('picture-in-picture'); return; }
+    throw new Error('unsupported');
+  }catch(e){
+    toast(db.focus.nowPlaying ? "Pop-out isn't supported in this browser. While the timer runs, it shows on your lock screen and notification bar instead."
+                              : "Pop-out isn't supported in this browser. Turn on 'Show timer on lock screen' in the timer settings instead.");
+  }
+}
+let lastPipDraw = 0;
+function updateExternal(){
+  updatePipWindow();
+  if(pipVideo && Date.now() - lastPipDraw > 450){ lastPipDraw = Date.now(); drawPip(); }
+  // keep audio in step with the timer (pausing is always allowed; playing may need a tap)
+  if(bgAudio && !timer.running && !bgAudio.paused) bgAudio.pause();
+  if(bgAudio && timer.running && bgAudio.paused && db.focus.nowPlaying) bgAudio.play().catch(()=>{});
+  updateMediaSession(false);
+}
 
 /* ============ Cloud sync (private GitHub Gist) ============ */
 const SKEY = 'revise.sync', GIST_FILE = 'revise-data.json';
@@ -1358,17 +1552,18 @@ function ago(ts){
   return s < 10 ? 'just now' : s < 60 ? `${s}s ago` : s < 3600 ? `${Math.round(s/60)} min ago` : s < 86400 ? `${Math.round(s/3600)} h ago` : new Date(ts).toLocaleString();
 }
 function syncStatusText(){
-  if(syncState === 'error') return '⚠️ ' + syncErr;
-  if(syncState === 'offline') return '📴 Offline — changes are saved and will sync when you are back online.';
-  if(syncState === 'syncing' || syncState === 'pending') return '🔄 Syncing…';
-  return `✅ Up to date · last synced ${ago(sync.last)}`;
+  if(syncState === 'error') return '' + syncErr;
+  if(syncState === 'offline') return 'Offline — changes are saved and will sync when you are back online.';
+  if(syncState === 'syncing' || syncState === 'pending') return 'Syncing…';
+  return `Up to date · last synced ${ago(sync.last)}`;
 }
 function setSyncState(st){
   syncState = st;
   const b = $('#syncBtn');
   if(b){
     b.classList.toggle('hidden', !sync.token);
-    b.textContent = {syncing:'☁️ ⟳', pending:'☁️ …', ok:'☁️ ✓', error:'☁️ ⚠️', offline:'☁️ ✕', idle:'☁️'}[st] || '☁️';
+    b.innerHTML = ic('cloud',20) + ({syncing:'…', pending:'…', ok:'', error:'!', offline:'×', idle:''}[st] || '');
+    b.style.color = st === 'error' ? 'var(--text)' : '';
     b.title = syncStatusText();
   }
   const el = $('#syncStatus'); if(el) el.textContent = syncStatusText();
@@ -1396,7 +1591,7 @@ async function connectSync(input){
     saveSyncCfg();
     await syncNow();
     if(syncState === 'error') throw Object.assign(new Error(syncErr), {shown:true});
-    toast('☁️ Sync is on — this device is now linked');
+    toast('Sync is on — this device is now linked');
     render();
   }catch(e){
     sync = {}; saveSyncCfg(); setSyncState('idle');
@@ -1405,7 +1600,7 @@ async function connectSync(input){
 }
 function renderSyncCard(){
   if(!sync.token) return `<div class="card">
-    <b>☁️ Sync phone &amp; laptop</b>
+    <b>Sync phone &amp; laptop</b>
     <p>Keep the same topics, reviews and study records on all your devices. Everything is stored in a <b>private Gist on your own GitHub account</b> — no other server involved.</p>
     <ol style="font-size:13px;padding-left:18px;margin:8px 0;color:var(--muted)">
       <li><a href="https://github.com/settings/tokens/new?scopes=gist&description=Revise%20sync" target="_blank" rel="noopener">Create a GitHub token</a> (the <b>gist</b> box is already ticked). Set <b>Expiration</b> to <i>No expiration</i>, click <b>Generate token</b>, and copy it.</li>
@@ -1416,11 +1611,11 @@ function renderSyncCard(){
     <div class="row" style="margin-top:8px"><button class="btn primary" data-act="syncConnect">Connect</button></div>
   </div>`;
   return `<div class="card">
-    <b>☁️ Sync is on</b>${sync.user ? ` <small style="color:var(--muted)">· GitHub @${esc(sync.user)}</small>` : ''}
+    <b>Sync is on</b>${sync.user ? ` <small style="color:var(--muted)">· GitHub @${esc(sync.user)}</small>` : ''}
     <p id="syncStatus">${esc(syncStatusText())}</p>
     <div class="row" style="flex-wrap:wrap;margin-top:8px">
-      <button class="btn" data-act="syncNow">🔄 Sync now</button>
-      <button class="btn" data-act="syncLink">📱 Link another device</button>
+      <button class="btn" data-act="syncNow">${ic('refresh',16)}Sync now</button>
+      <button class="btn" data-act="syncLink">${ic('link',16)}Link another device</button>
       <button class="btn ghost danger" data-act="syncOff">Disconnect</button>
     </div>
     <div id="linkBox" class="hidden" style="margin-top:12px;text-align:center">
@@ -1431,7 +1626,7 @@ function renderSyncCard(){
         <button class="btn small" data-act="copyLink">Copy link</button>
         <button class="btn small" data-act="copyCode">Copy sync code</button>
       </div>
-      <p style="text-align:left">📌 <b>iPhone home-screen app:</b> it keeps its own storage, so open the installed app → Settings → paste the <b>sync code</b> there.<br>🔒 This link works like a password for your Revise data — only open it on your own devices.</p>
+      <p style="text-align:left"><b>iPhone home-screen app:</b> it keeps its own storage, so open the installed app → Settings → paste the <b>sync code</b> there.<br>This link works like a password for your Revise data — only open it on your own devices.</p>
     </div>
   </div>`;
 }
@@ -1487,6 +1682,7 @@ document.addEventListener('visibilitychange', () => { if(!document.hidden){ rend
 let lastDay = today();
 setInterval(() => { if(today()!==lastDay){ lastDay=today(); render(); } checkReminder(); }, 60000);
 
+document.querySelectorAll('[data-ic]').forEach(el => el.innerHTML = ic(el.dataset.ic, el.id==='fab' ? 26 : 22));
 applyTheme();
 render();
 initSync();

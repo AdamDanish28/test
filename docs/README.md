@@ -25,7 +25,7 @@ Each topic you add gets reviews **1, 3, 7, 14 and 30 days** after the date you l
 - **Stats**: reviews over the last 14 days, on-time %, how reviews felt, and progress by subject
 - Custom schedule (1-3-7-14-30 is the default), with an option to push later reviews back when you review late
 - Backup export/import (JSON) to move data between devices
-- Dark mode and keyboard shortcuts (`n` new topic, `Ctrl/Cmd+Enter` save, `Esc` close)
+- Black & white neon design (with an optional light mode), and keyboard shortcuts (`n` new topic, `Ctrl/Cmd+Enter` save, `Esc` close)
 
 ## Hosting it (GitHub Pages, free)
 1. On GitHub, open the repo, then **Settings → Pages**
@@ -59,3 +59,11 @@ The device's timer state, notification settings and theme stay per device.
 ## Data
 Data is stored on each device (localStorage). If sync is on, a copy is also kept in your private Gist.
 **Settings → Export backup / Import backup** still works for a manual backup file.
+
+## Timer outside the app
+- **Pop out:** the button next to Stop floats the timer over other windows and apps.
+  It's a mini window with Pause/Skip in Chrome/Edge on a laptop, and Picture-in-Picture where the browser supports it
+- **Lock screen and notification bar:** while the timer runs, it shows as "Now Playing" with a live progress bar and play/pause/skip controls.
+  This works on iPhone (lock screen and Control Center) and Android (notification shade).
+  The timer keeps running in the background, and you can add white, soft or brown noise.
+  You can switch it off in Timer settings
