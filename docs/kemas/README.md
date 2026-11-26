@@ -7,6 +7,7 @@ A job board for shirt projects. Track every project from design to delivery, alo
 - **Order builder** based on the KEMAS sales kit: base price (RM14: round neck + free fabric) + fabric (free, premium +RM2, Lycra +RM4/6/10), and one or more shirt types per order, each with its own collar (round, V-neck, polo, NFL, retro, mandarin, raglan round neck, raglan collar), add-ons (Muslimah, oversize, backtape, numbering/naming, DTF label tag, pen pocket) and sizes XS–5XL. 3XL and above adds +RM4 automatically.
 - **Price list** you can edit (Board → Price list). Each project keeps the prices it was quoted at.
 - **Design photos**: add mockups or artwork to each project (stored on the device, and synced as private Gists when sync is on). The first photo shows on the board card.
+- **Buyers from Google Forms**: paste the form responses (or a CSV) into a project. The app reads each order (colours, sizes, combos, price, receipt), totals sizes per colour for the printer, tracks paid and collected, flags orders to check, and copies a pickup list.
 - **Copy order for printer** (no prices) and **Copy quote for client**, ready to paste into WhatsApp.
 - **Projects**: client, contact, due date, printer, shirt details, quantity by size (XS–3XL), price and cost per shirt, other costs, amount paid, notes and stage history.
 - **All jobs**: search and filter by stage.
