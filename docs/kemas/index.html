@@ -251,6 +251,31 @@ legend { font-family: var(--f-mono); font-size: 11px; letter-spacing: .09em; tex
 .pl-row .x2:hover { color: var(--bad); }
 .pl-head { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
 .share-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.bstats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.mini table { font-size: 13px; } .mini th, .mini td { padding: 7px 9px; }
+.btools { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 12px 0 8px; }
+.btools .search { flex: 1 1 180px; padding: 7px 10px; }
+.blist { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.blist:empty { display: none; }
+.buyer + .buyer { border-top: 1px solid var(--line); }
+.brow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; width: 100%; text-align: left; border: 0; background: transparent; padding: 10px 12px; }
+.brow:hover { background: var(--sunk); }
+.brow .bn { font-weight: 600; overflow-wrap: anywhere; }
+.brow .ba { font-family: var(--f-mono); font-size: 13px; text-align: right; white-space: nowrap; }
+.brow .bi { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.brow .bc { display: flex; gap: 4px; justify-content: flex-end; flex-wrap: wrap; }
+.bedit { padding: 12px; display: flex; flex-direction: column; gap: 12px; background: var(--paper); border-top: 1px dashed var(--line); }
+.bedit .field input, .bedit .field select, .bedit .field textarea { background: var(--surface); }
+.it { display: grid; grid-template-columns: minmax(0, 1fr) 84px 60px 34px; gap: 6px; align-items: center; }
+.it + .it { margin-top: 6px; }
+.links { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
+.links a { color: var(--accent); font-weight: 600; }
+.raw { font-size: 12.5px; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 7px; padding: 7px 9px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.imp-list { max-height: 46vh; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; }
+.imp-row { padding: 8px 12px; font-size: 13.5px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; }
+.imp-row + .imp-row { border-top: 1px solid var(--line); }
+.imp-row .why { grid-column: 1 / -1; font-size: 12px; color: var(--warn); }
+.imp-row.dupe { opacity: .55; }
 @media (max-width: 560px) { .line-box .grid2 { grid-template-columns: 1fr; } .line-box { padding: 10px; } }
 .size { display: flex; flex-direction: column; align-items: stretch; gap: 3px; }
 .size label { font-family: var(--f-mono); font-size: 12px; font-weight: 600; text-align: center; color: var(--muted); }
@@ -381,6 +406,12 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     return { unit, bigUnit: unit + num(pl.big), pcs, bigPcs, bySize, sale: pcs * unit + bigPcs * num(pl.big) };
   }
   const hasLines = p => Array.isArray(p.lines) && p.lines.length > 0;
+  const buyersOf = p => (Array.isArray(p.buyers) ? p.buyers : []);
+  function buyerCalc(p) {
+    let pcs = 0, amount = 0, paid = 0, check = 0, collected = 0;
+    buyersOf(p).forEach(b => { (b.items || []).forEach(it => (pcs += num(it.qty || 1))); amount += num(b.amount); if (b.paid) paid += num(b.amount); if ((b.flags || []).length) check++; if (b.collected) collected++; });
+    return { n: buyersOf(p).length, pcs, amount, paid, check, collected };
+  }
 
   const state = { projects: [], deleted: {}, currencyAt: "", priceList: null, priceListAt: "", currency: "RM", tab: "board", q: "", stageFilter: "active", mode: "loading", loaded: false };
 
@@ -388,8 +419,12 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   const esc = v => String(v ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
   const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
   const money = n => { const neg = n < 0; n = Math.abs(n); const s = n.toLocaleString(undefined, { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }); return (neg ? "−" : "") + state.currency + " " + s; };
-  const qtyOf = p => { if (hasLines(p)) return p.lines.reduce((a, l) => a + lineCalc(p, l).pcs, 0); const s = SIZES.reduce((a, k) => a + num(p.sizes && p.sizes[k]), 0); return s > 0 ? s : num(p.qty); };
+  const qtyOf = p => { if (buyersOf(p).length) return buyerCalc(p).pcs; if (hasLines(p)) return p.lines.reduce((a, l) => a + lineCalc(p, l).pcs, 0); const s = SIZES.reduce((a, k) => a + num(p.sizes && p.sizes[k]), 0); return s > 0 ? s : num(p.qty); };
   const calc = p => {
+    if (buyersOf(p).length) {
+      const bc = buyerCalc(p), sale = bc.amount + num(p.adjust), cost = bc.pcs * num(p.cost) + num(p.extra);
+      return { q: bc.pcs, sale, cost, profit: sale - cost, paid: bc.paid, balance: sale - bc.paid };
+    }
     const q = qtyOf(p);
     const sale = hasLines(p) ? p.lines.reduce((a, l) => a + lineCalc(p, l).sale, 0) + num(p.adjust) : q * num(p.price);
     const cost = q * num(p.cost) + num(p.extra);
@@ -485,6 +520,9 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   function cardHTML(p) {
     const s = stageOf(p.stage), c = calc(p), d = dueInfo(p);
     const chips = [`<span class="chip">${c.q.toLocaleString()} pcs</span>`];
+    const bcx = buyerCalc(p);
+    if (bcx.n) chips.push(`<span class="chip">${bcx.n} buyers</span>`);
+    if (bcx.check) chips.push(`<span class="chip warn">${bcx.check} to check</span>`);
     if (d) chips.push(`<span class="chip ${d.cls}">${esc(d.text)}</span>`);
     if (c.sale > 0 && c.balance > 0) chips.push(`<span class="chip warn">Owes ${esc(money(c.balance))}</span>`);
     else if (c.sale > 0 && c.balance <= 0) chips.push(`<span class="chip ok">Paid</span>`);
@@ -528,7 +566,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     let rows = state.projects.filter(p => {
       if (state.stageFilter === "active" && (p.stage === "done" || p.stage === "hold")) return false;
       if (!["active", "all"].includes(state.stageFilter) && p.stage !== state.stageFilter) return false;
-      if (q && ![p.code, p.name, p.client, p.contact, p.printer, p.shirt, p.notes].some(v => String(v || "").toLowerCase().includes(q))) return false;
+      if (q && ![p.code, p.name, p.client, p.contact, p.printer, p.shirt, p.notes, ...buyersOf(p).map(b => `${b.name} ${b.phone}`)].some(v => String(v || "").toLowerCase().includes(q))) return false;
       return true;
     }).sort((a, b) => String(b.code).localeCompare(String(a.code)));
     const tot = rows.reduce((a, p) => { const c = calc(p); a.q += c.q; a.sale += c.sale; a.bal += Math.max(0, c.balance); return a; }, { q: 0, sale: 0, bal: 0 });
@@ -703,6 +741,173 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     draw();
   }
 
+  /* ---------- buyers: group orders from Google Forms ---------- */
+  const COLOR_WORDS = [["maroon", "Maroon"], ["navy", "Navy"], ["black", "Black"], ["hitam", "Black"], ["white", "White"], ["putih", "White"], ["red", "Red"], ["merah", "Red"], ["blue", "Blue"], ["biru", "Blue"], ["green", "Green"], ["hijau", "Green"], ["yellow", "Yellow"], ["kuning", "Yellow"], ["grey", "Grey"], ["gray", "Grey"], ["kelabu", "Grey"], ["pink", "Pink"], ["purple", "Purple"], ["ungu", "Purple"], ["orange", "Orange"], ["oren", "Orange"], ["brown", "Brown"], ["coklat", "Brown"], ["cream", "Cream"], ["beige", "Beige"]];
+  const COLOR_MAP = Object.fromEntries(COLOR_WORDS);
+  const colorRe = () => new RegExp("\\b(" + COLOR_WORDS.map(c => c[0]).join("|") + ")\\b", "gi");
+  const normSize = x => { const u = x.toUpperCase(); return { XXL: "2XL", XXXL: "3XL", XXXXL: "4XL" }[u] || u; };
+  function sizesIn(text) {
+    const re = /(^|[^A-Za-z0-9])(XXXXL|XXXL|XXL|[2-5]XL|XS|XL|S|M|L)(?=[^A-Za-z0-9]|$)/gi, out = []; let m;
+    while ((m = re.exec(text))) out.push(normSize(m[2]));
+    return out;
+  }
+  const cleanText = t => String(t || "").replace(/（/g, "(").replace(/）/g, ")").replace(/，/g, ",").replace(/^"+|"+$/g, "").trim();
+  function parseItems(text) {
+    const t = cleanText(text), re = colorRe(), hits = []; let m;
+    while ((m = re.exec(t))) hits.push({ color: COLOR_MAP[m[1].toLowerCase()], start: m.index, end: m.index + m[0].length });
+    const items = [], unsized = [];
+    hits.forEach((h, i) => {
+      const seg = t.slice(h.end, i + 1 < hits.length ? hits[i + 1].start : t.length);
+      const sz = sizesIn(seg);
+      const q = +((seg.match(/(\d+)\s*(?:pcs?|pieces?|helai)\b/i) || [])[1] || 0);
+      if (!sz.length) unsized.push(h.color);
+      else if (sz.length === 1) items.push({ color: h.color, size: sz[0], qty: q > 1 && q <= 20 ? q : 1 });
+      else sz.forEach(x => items.push({ color: h.color, size: x, qty: 1 }));
+    });
+    return { items, unsized, colors: hits.map(h => h.color), sizes: sizesIn(t) };
+  }
+  const priceIn = t => { const m = String(t || "").match(/RM\s*(\d+(?:\.\d+)?)/i); return m ? +m[1] : 0; };
+  function fixPhone(x) { const t = String(x || "").replace(/\s+/g, " ").trim(), d = t.replace(/\D/g, ""); return /^1\d{8,9}$/.test(d) ? "0" + d : t; }
+  const waLink = phone => { let d = String(phone || "").replace(/\D/g, ""); if (d.startsWith("0")) d = "6" + d; return d.length >= 10 ? "https://wa.me/" + d : ""; };
+  function rowToBuyer(r) {
+    let P = parseItems(r.details);
+    if (!P.colors.length) P = parseItems(r.type);
+    const items = P.items.slice();
+    if (P.unsized.length) {
+      const pool = sizesIn(cleanText(r.size)).length ? sizesIn(cleanText(r.size)) : P.sizes;
+      P.unsized.forEach((c, i) => { const sz = pool.length === P.unsized.length ? pool[i] : pool[0]; if (sz) items.push({ color: c, size: sz, qty: 1 }); });
+    }
+    const pcs = items.reduce((a, it) => a + it.qty, 0);
+    const priceText = r.type2 || r.type;
+    const amount = priceIn(r.type2) || priceIn(r.type);
+    const expected = /combo|2 colou?rs?/i.test(priceText || "") ? 2 : 1;
+    const flags = [];
+    if (!items.length) flags.push("Couldn't read the colour or size");
+    else if (amount && pcs !== expected) flags.push(`${pcs} pcs but paid the ${expected === 2 ? "combo" : "single"} price`);
+    if (!amount) flags.push("No price");
+    if (!r.receipt) flags.push("No receipt");
+    return {
+      id: "b" + Math.random().toString(36).slice(2, 10), ts: r.ts || "", name: cleanText(r.name) || "No name", phone: fixPhone(r.phone), place: cleanText(r.place),
+      items, amount, paid: !!r.receipt, receipt: /^https:\/\//.test(r.receipt || "") ? r.receipt.trim() : "", note: cleanText(r.note), flags, collected: false,
+      src: [cleanText(r.type), cleanText(r.size) && "Size: " + cleanText(r.size), cleanText(r.details)].filter(Boolean).join("\n"),
+    };
+  }
+  function parseDelimited(text) {
+    const first = text.split(/\r?\n/, 1)[0], delim = first.includes("\t") ? "\t" : ",";
+    const rows = []; let row = [], cell = "", q = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (q) { if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; }
+      else if (ch === '"' && cell === "") q = true;
+      else if (ch === delim) { row.push(cell); cell = ""; }
+      else if (ch === "\n" || ch === "\r") { if (ch === "\r" && text[i + 1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; }
+      else cell += ch;
+    }
+    if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+    return rows.map(r => r.map(c => c.trim())).filter(r => r.some(Boolean));
+  }
+  function mapHeader(cells) {
+    const idx = {};
+    cells.forEach((h, i) => {
+      const x = h.toLowerCase();
+      if (/timestamp|cap masa/.test(x)) idx.ts ??= i;
+      else if (/receipt|resit|bukti|proof|payment|bayaran/.test(x)) idx.receipt ??= i;
+      else if (/additional|detail|reconfirm|butiran/.test(x)) idx.details ??= i;
+      else if (/order type|jenis|package|pakej|order/.test(x)) { if (idx.type == null) idx.type = i; else idx.type2 ??= i; }
+      else if (/phone|tel|whatsapp|\bhp\b/.test(x)) idx.phone ??= i;
+      else if (/size|saiz|ukuran/.test(x)) idx.size ??= i;
+      else if (/college|kolej|residen|address|alamat|blok|block|campus/.test(x)) idx.place ??= i;
+      else if (/nama|name/.test(x)) idx.name ??= i;
+      else if (/column|note|remark|catatan|nota/.test(x)) idx.note ??= i;
+    });
+    return idx;
+  }
+  const FORM_DEFAULT = { ts: 0, name: 1, phone: 2, place: 3, type: 4, size: 5, details: 6, type2: 7, receipt: 8, note: 9 };
+  function parseOrders(text) {
+    const rows = parseDelimited(text);
+    if (!rows.length) return [];
+    const h = mapHeader(rows[0]);
+    const hasHeader = h.name != null && (h.size != null || h.details != null || h.type != null);
+    const map = hasHeader ? h : FORM_DEFAULT;
+    return rows.slice(hasHeader ? 1 : 0).map(r => { const o = {}; Object.entries(map).forEach(([k, i]) => (o[k] = r[i] || "")); return o; })
+      .filter(o => o.name || o.details || o.type).map(rowToBuyer);
+  }
+  const buyerKey = b => `${String(b.ts || "").trim()}|${String(b.name || "").trim().toLowerCase()}`;
+  const itemsText = b => (b.items || []).map(it => `${it.color} ${it.size}${num(it.qty) > 1 ? " ×" + num(it.qty) : ""}`).join(", ");
+  function sizeTotals(buyers) {
+    const t = {}, sizes = new Set();
+    buyers.forEach(b => (b.items || []).forEach(it => { const c = it.color || "Other"; t[c] = t[c] || {}; t[c][it.size] = (t[c][it.size] || 0) + num(it.qty || 1); sizes.add(it.size); }));
+    const order = [...SIZES.filter(x => sizes.has(x)), ...[...sizes].filter(x => !SIZES.includes(x))];
+    return { t, order, colors: Object.keys(t) };
+  }
+  function totalsTable(buyers) {
+    const { t, order, colors } = sizeTotals(buyers);
+    if (!colors.length) return "";
+    const tot = k => colors.reduce((a, c) => a + (t[c][k] || 0), 0), rowSum = c => order.reduce((a, k) => a + (t[c][k] || 0), 0);
+    return `<div class="tablebox mini"><table><thead><tr><th>Colour</th>${order.map(k => `<th class="num">${esc(k)}</th>`).join("")}<th class="num">Total</th></tr></thead>
+      <tbody>${colors.map(c => `<tr><td>${esc(c)}</td>${order.map(k => `<td class="num">${t[c][k] || ""}</td>`).join("")}<td class="num"><b>${rowSum(c)}</b></td></tr>`).join("")}</tbody>
+      <tfoot><tr><td>Total</td>${order.map(k => `<td class="num">${tot(k)}</td>`).join("")}<td class="num">${colors.reduce((a, c) => a + rowSum(c), 0)}</td></tr></tfoot></table></div>`;
+  }
+  function syncLinesFromBuyers(d) {
+    const bs = buyersOf(d);
+    if (!bs.length) { d.lines.forEach(l => delete l.auto); return; }
+    const { t, colors } = sizeTotals(bs);
+    const tmpl = d.lines.find(l => !l.auto) || d.lines[0] || newLine(d.pl);
+    const out = colors.map(c => {
+      const ex = d.lines.find(l => (l.label || "").toLowerCase() === c.toLowerCase());
+      const l = ex || { ...clone(tmpl), id: newLine(d.pl).id, label: c };
+      l.sizes = { ...t[c] }; l.pieces = ""; l.auto = true; return l;
+    });
+    const keep = d.lines.filter(l => !out.includes(l) && !l.auto && (l.label || Object.keys(l.sizes || {}).length || num(l.pieces)));
+    d.lines = [...out, ...keep];
+  }
+  function openImport(existing, onAdd) {
+    const wrap = document.createElement("div"); wrap.className = "scrim"; wrap.style.zIndex = "60";
+    wrap.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="imp-title">
+      <div class="sheet-head"><div><div class="code">GOOGLE FORM</div><h2 id="imp-title">Import buyer orders</h2></div><button type="button" class="x" data-imp="close" aria-label="Close">×</button></div>
+      <div class="sheet-body">
+        <ol class="steps">
+          <li>Open the form's responses in Google Sheets.</li>
+          <li>Select all the cells, header row included, and copy (<b>⌘A</b> then <b>⌘C</b> on a laptop; on a phone, tap the corner box and choose Copy).</li>
+          <li>Paste below. Orders you already imported are skipped, so you can paste the whole sheet again later to add new ones.</li>
+        </ol>
+        <div class="field"><label for="imp-text">Paste rows here</label><textarea id="imp-text" style="min-height:140px;font-family:var(--f-mono);font-size:12.5px" placeholder="Timestamp	NAMA	PHONE NUMBER	…"></textarea></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><label class="btn small" for="imp-file">Or choose a CSV file</label><input id="imp-file" type="file" accept=".csv,.tsv,text/csv,text/plain" hidden><span class="note">In Google Sheets: File → Download → CSV.</span></div>
+        <div id="imp-out"></div>
+      </div>
+      <div class="sheet-foot"><span class="spacer"></span><button type="button" class="btn" data-imp="close">Cancel</button><button type="button" class="btn primary" data-imp="add" disabled>Add orders</button></div>
+    </div>`;
+    document.body.appendChild(wrap);
+    const keys = new Set(existing.map(buyerKey));
+    let parsed = [];
+    const out = wrap.querySelector("#imp-out"), addBtn = wrap.querySelector('[data-imp="add"]');
+    function preview(text) {
+      parsed = text.trim() ? parseOrders(text) : [];
+      // "biru" / "blue" means the navy shirt when the order has navy
+      if ([...existing, ...parsed].some(b => (b.items || []).some(it => it.color === "Navy"))) parsed.forEach(b => b.items.forEach(it => { if (it.color === "Blue") it.color = "Navy"; }));
+      const fresh = parsed.filter(b => !keys.has(buyerKey(b)));
+      const dupes = parsed.length - fresh.length;
+      if (!parsed.length) { out.innerHTML = text.trim() ? `<p class="err">No orders found. Copy the rows straight from Google Sheets, with the header row.</p>` : ""; addBtn.disabled = true; addBtn.textContent = "Add orders"; return; }
+      const pcs = fresh.reduce((a, b) => a + b.items.reduce((x, it) => x + it.qty, 0), 0), amt = fresh.reduce((a, b) => a + b.amount, 0), chk = fresh.filter(b => b.flags.length).length;
+      out.innerHTML = `<div class="bstats"><span class="chip">${fresh.length} new orders</span><span class="chip">${pcs} pcs</span><span class="chip">${esc(money(amt))}</span>${chk ? `<span class="chip warn">${chk} to check</span>` : ""}${dupes ? `<span class="chip">${dupes} already added</span>` : ""}</div>
+        ${totalsTable(fresh)}
+        <div class="imp-list" style="margin-top:10px">${[...parsed].sort((a, b) => (b.flags.length ? 1 : 0) - (a.flags.length ? 1 : 0)).map(b => { const dup = keys.has(buyerKey(b)); return `<div class="imp-row ${dup ? "dupe" : ""}"><span><b>${esc(b.name)}</b> · ${esc(itemsText(b) || "?")}</span><span class="mono">${esc(money(b.amount))}</span>${dup ? `<span class="why" style="color:var(--muted)">Already in this project</span>` : b.flags.length ? `<span class="why">${esc(b.flags.join(" · "))}</span>` : ""}</div>`; }).join("")}</div>`;
+      addBtn.disabled = !fresh.length; addBtn.textContent = fresh.length ? `Add ${fresh.length} order${fresh.length === 1 ? "" : "s"}` : "Nothing new to add";
+    }
+    let tmr = 0;
+    wrap.querySelector("#imp-text").addEventListener("input", e => { clearTimeout(tmr); const v = e.target.value; tmr = setTimeout(() => preview(v), 200); });
+    wrap.querySelector("#imp-file").addEventListener("change", async e => { const f = e.target.files && e.target.files[0]; if (!f) return; const t = await f.text(); wrap.querySelector("#imp-text").value = t; preview(t); });
+    const close = () => { wrap.remove(); document.removeEventListener("keydown", onKey, true); };
+    const onKey = e => { if (e.key === "Escape") { e.stopImmediatePropagation(); close(); } };
+    document.addEventListener("keydown", onKey, true);
+    wrap.addEventListener("click", e => {
+      const b = e.target.closest("[data-imp]"); if (!b) return;
+      if (b.dataset.imp === "close") close();
+      if (b.dataset.imp === "add") { const fresh = parsed.filter(x => !keys.has(buyerKey(x))); onAdd(fresh); close(); }
+    });
+    setTimeout(() => wrap.querySelector("#imp-text").focus(), 0);
+  }
+
   /* ---------- modal ---------- */
   function copyText(text) {
     const fallback = () => { const t = document.createElement("textarea"); t.value = text; t.style.position = "fixed"; t.style.opacity = "0"; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); } catch (_) {} t.remove(); };
@@ -723,7 +928,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         const opts = [pick(pl.collars, l.collar).name, ...(pl.sleeves && l.sleeve ? [pick(pl.sleeves, l.sleeve).name] : []), ...(l.addons || []).map(id => ((pl.addons || []).find(x => x.id === id) || {}).name).filter(Boolean)];
         out.push("");
         out.push(`${i + 1}. ${l.label ? l.label + ": " : ""}${opts.join(", ")}`);
-        out.push(`   ${lc.bySize ? sizesText(l) + " = " : ""}${lc.pcs} pcs`);
+        out.push(`   ${lc.bySize ? sizesText(l) + " = " : ""}${lc.pcs} ${lc.pcs === 1 ? "pc" : "pcs"}`);
         if (withPrices) out.push(`   ${money(lc.unit)}/pc${lc.bigPcs ? ` · 3XL+ ${money(lc.bigUnit)}/pc` : ""} → ${money(lc.sale)}`);
       });
       out.push("");
@@ -786,6 +991,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
           <div class="field"><label for="f-paid">Paid so far</label><input id="f-paid" name="paid" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.paid)}"><span class="help">Deposits + payments</span></div>
         </div>
         <div class="calc" id="m-calc" style="margin-top:12px"></div></fieldset>
+        <fieldset><legend>Buyers</legend><div id="m-buyers"></div></fieldset>
         <fieldset><legend>Design photos</legend>
           <div class="photos" id="m-photos"></div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="btn small" for="m-photo-in" id="m-photo-btn">+ Add photos</label><input id="m-photo-in" type="file" accept="image/*" multiple hidden><span class="note" id="m-photo-note">Mockups, artwork or the printed sample. Tap a photo to see it full size.</span></div>
@@ -812,9 +1018,9 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       const pl = draft.pl, many = draft.lines.length > 1;
       return draft.lines.map((l, i) => `<div class="line-box" data-line="${i}">
         <div class="line-head"><b>Type ${i + 1}</b>
-          <input class="inp" data-k="label" value="${esc(l.label)}" placeholder="Name, e.g. Players or Muslimah" aria-label="Shirt type ${i + 1} name">
-          <button type="button" class="linkbtn" data-act="dup">Duplicate</button>
-          ${many ? `<button type="button" class="linkbtn danger" data-act="del">Remove</button>` : ""}
+          <input class="inp" data-k="label" value="${esc(l.label)}" placeholder="Name, e.g. Players or Muslimah" aria-label="Shirt type ${i + 1} name" ${l.auto ? "readonly" : ""}>
+          ${l.auto ? `<span class="chip">From buyers</span>` : `<button type="button" class="linkbtn" data-act="dup">Duplicate</button>
+          ${many ? `<button type="button" class="linkbtn danger" data-act="del">Remove</button>` : ""}`}
         </div>
         <div class="grid2">
           <div class="field"><label for="ln-${l.id}-collar">Collar</label><select id="ln-${l.id}-collar" data-k="collar">${opt(pl.collars, l.collar, nameWithPrice)}</select></div>
@@ -822,10 +1028,10 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         </div>
         <div><div class="sub-label">Add-ons</div><div class="toggles">${(pl.addons || []).map(a => `<button type="button" class="toggle" data-addon="${esc(a.id)}" aria-pressed="${(l.addons || []).includes(a.id)}">${esc(a.name)}<small>${esc(plus(a.price))}</small></button>`).join("")}</div></div>
         <div><div class="sub-label">Sizes</div>
-          <div class="sizes">${SIZES.map((k, si) => `<div class="size"><label for="ln-${l.id}-${k}" class="${si >= bi() && num(pl.big) ? "big" : ""}">${k}</label><input id="ln-${l.id}-${k}" data-size="${k}" type="number" min="0" inputmode="numeric" value="${esc((l.sizes || {})[k] || "")}"></div>`).join("")}</div>
+          <div class="sizes">${SIZES.map((k, si) => `<div class="size"><label for="ln-${l.id}-${k}" class="${si >= bi() && num(pl.big) ? "big" : ""}">${k}</label><input id="ln-${l.id}-${k}" data-size="${k}" type="number" min="0" inputmode="numeric" value="${esc((l.sizes || {})[k] || "")}" ${l.auto ? "disabled" : ""}></div>`).join("")}</div>
           ${num(pl.big) ? `<div class="help" style="font-size:12px;color:var(--warn);margin-top:4px">${esc(pl.bigFrom)} and above ${esc(plus(pl.big))} per shirt</div>` : ""}
         </div>
-        <div class="field" style="max-width:260px"><label for="ln-${l.id}-pcs">Or total pieces</label><input id="ln-${l.id}-pcs" data-k="pieces" type="number" min="0" inputmode="numeric" value="${esc(l.pieces)}"><span class="help">When the client hasn't sent sizes yet</span></div>
+        <div class="field" style="max-width:260px" ${l.auto ? "hidden" : ""}><label for="ln-${l.id}-pcs">Or total pieces</label><input id="ln-${l.id}-pcs" data-k="pieces" type="number" min="0" inputmode="numeric" value="${esc(l.pieces)}"><span class="help">When the client hasn't sent sizes yet</span></div>
         <div class="line-sum" data-sum></div>
       </div>`).join("");
     }
@@ -839,10 +1045,13 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       readTop();
       document.querySelectorAll("#m-lines [data-line]").forEach(box => {
         const l = draft.lines[+box.dataset.line], lc = lineCalc(draft, l);
+        if (buyersOf(draft).length) { box.querySelector("[data-sum]").innerHTML = `<span><b>${lc.pcs}</b> ${lc.pcs === 1 ? "pc" : "pcs"}</span><span>${l.auto ? "Sizes add up from the buyer orders" : "Not counted: this project uses buyer orders"}</span>`; return; }
         box.querySelector("[data-sum]").innerHTML = `<span><b>${esc(money(lc.unit))}</b> / pc</span>${lc.bigPcs ? `<span>${esc(draft.pl.bigFrom)}+ <b>${esc(money(lc.bigUnit))}</b> / pc</span>` : ""}<span><b>${lc.pcs}</b> pcs</span><span>Subtotal <b>${esc(money(lc.sale))}</b></span>`;
         const pcsIn = box.querySelector('[data-k="pieces"]'); pcsIn.disabled = lc.bySize; pcsIn.placeholder = lc.bySize ? "Using sizes" : "";
       });
       const c = calc(draft);
+      const fp = $("#f-paid"), hasB = buyersOf(draft).length > 0;
+      fp.disabled = hasB; if (hasB) fp.value = c.paid; fp.nextElementSibling.textContent = hasB ? "Adds up buyers marked paid" : "Deposits + payments";
       $("#m-calc").innerHTML = [["Pieces", c.q.toLocaleString()], ["Sale", money(c.sale)], ["Cost", money(c.cost)], ["Profit", money(c.profit)], ["Balance", c.sale ? (c.balance > 0 ? money(c.balance) : "Paid") : "—"]]
         .map(([k, v]) => `<div><div class="k">${k}</div><div class="v ${k === "Profit" ? (c.profit >= 0 ? "pos" : "neg") : ""}">${esc(v)}</div></div>`).join("");
       const stale = stable(draft.pl) !== stable(state.priceList);
@@ -876,6 +1085,104 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       }
       note.textContent = files.length ? "Photo added. Tap Save to keep it." : note.textContent;
       drawPhotos();
+    });
+    draft.buyers = draft.buyers || [];
+    let openB = null, bFilter = "all", bQuery = "";
+    const knownColors = () => [...new Set([...draft.buyers.flatMap(b => (b.items || []).map(it => it.color)), "Maroon", "Navy", "Black", "White"].filter(Boolean))];
+    function buyerRow(b) {
+      const fl = (b.flags || []).length;
+      const head = `<button type="button" class="brow" data-bopen="${esc(b.id)}" aria-expanded="${openB === b.id}"><span class="bn">${esc(b.name)}</span><span class="ba">${esc(money(num(b.amount)))}</span><span class="bi">${esc(itemsText(b) || "No items")}${b.place ? " · " + esc(b.place) : ""}</span><span class="bc">${fl ? `<span class="chip warn">Check</span>` : ""}${b.paid ? "" : `<span class="chip bad">Unpaid</span>`}${b.collected ? `<span class="chip ok">Collected</span>` : ""}</span></button>`;
+      if (openB !== b.id) return `<div class="buyer">${head}</div>`;
+      const wa = waLink(b.phone);
+      return `<div class="buyer">${head}<div class="bedit" data-bid="${esc(b.id)}">
+        ${fl ? `<div class="banner" data-tone="warn" style="margin:0">${esc(b.flags.join(" · "))} <button type="button" class="linkbtn" data-bact="ok">Mark as checked</button></div>` : ""}
+        ${b.src ? `<div><div class="sub-label">What they wrote</div><div class="raw">${esc(b.src)}</div>${b.note ? `<div class="raw" style="margin-top:4px">Note: ${esc(b.note)}</div>` : ""}</div>` : ""}
+        <div><div class="sub-label">Shirts</div>
+          ${(b.items || []).map((it, i) => `<div class="it" data-it="${i}"><input class="inp" data-itf="color" list="b-colors" value="${esc(it.color)}" aria-label="Colour"><select class="inp" data-itf="size" aria-label="Size">${SIZES.map(k => `<option ${k === it.size ? "selected" : ""}>${k}</option>`).join("")}</select><input class="inp" data-itf="qty" type="number" min="1" inputmode="numeric" value="${esc(it.qty || 1)}" aria-label="Quantity"><button type="button" class="x2" data-bact="rmit" aria-label="Remove shirt" style="border:0;background:transparent;font-size:18px;color:var(--muted)">×</button></div>`).join("")}
+          <button type="button" class="linkbtn" data-bact="addit">+ Add shirt</button></div>
+        <div class="grid2">
+          <div class="field"><label>Name</label><input data-bf="name" value="${esc(b.name)}"></div>
+          <div class="field"><label>Phone</label><input data-bf="phone" value="${esc(b.phone)}" inputmode="tel"></div>
+          <div class="field"><label>College / address</label><input data-bf="place" value="${esc(b.place)}"></div>
+          <div class="field"><label>Amount (${esc(state.currency)})</label><input data-bf="amount" type="number" step="0.01" inputmode="decimal" value="${esc(b.amount)}"></div>
+        </div>
+        <div class="toggles"><button type="button" class="toggle" data-btog="paid" aria-pressed="${!!b.paid}">Paid</button><button type="button" class="toggle" data-btog="collected" aria-pressed="${!!b.collected}">Collected</button></div>
+        <div class="links">${wa ? `<a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}${b.phone ? `<a href="tel:${esc(String(b.phone).replace(/[^\d+]/g, ""))}">Call</a>` : ""}${b.receipt ? `<a href="${esc(b.receipt)}" target="_blank" rel="noopener">Open receipt</a>` : ""}</div>
+        <div style="display:flex;gap:8px"><span class="spacer" style="flex:1"></span><button type="button" class="btn small danger" data-bact="del">Delete buyer</button></div>
+      </div></div>`;
+    }
+    function filteredBuyers() {
+      const q = bQuery.trim().toLowerCase();
+      return draft.buyers.filter(b => {
+        if (bFilter === "check" && !(b.flags || []).length) return false;
+        if (bFilter === "unpaid" && b.paid) return false;
+        if (bFilter === "uncollected" && b.collected) return false;
+        if (q && !`${b.name} ${b.phone} ${b.place} ${itemsText(b)}`.toLowerCase().includes(q)) return false;
+        return true;
+      });
+    }
+    function drawBuyerTop() {
+      const top = $("#b-top"); if (!top) return;
+      const bc = buyerCalc(draft);
+      top.innerHTML = `<div class="bstats"><span class="chip">${bc.n} buyers</span><span class="chip">${bc.pcs} pcs</span><span class="chip">${esc(money(bc.amount))}</span>${bc.check ? `<span class="chip warn">${bc.check} to check</span>` : ""}${bc.amount - bc.paid > 0 ? `<span class="chip bad">${esc(money(bc.amount - bc.paid))} unpaid</span>` : ""}<span class="chip ${bc.collected === bc.n ? "ok" : ""}">${bc.collected}/${bc.n} collected</span></div>${totalsTable(draft.buyers)}`;
+    }
+    function drawBuyerList() { const l = $("#b-list"); if (l) l.innerHTML = filteredBuyers().map(buyerRow).join("") || `<p class="note" style="padding:10px 12px">No buyers match.</p>`; }
+    function drawBuyers() {
+      const box = $("#m-buyers");
+      if (!draft.buyers.length) {
+        box.innerHTML = `<p class="note" style="margin-bottom:10px">Selling to lots of people through a Google Form? Import their orders and the app adds up the sizes per colour, tracks who paid, and who has collected.</p>
+          <div class="share-row"><button type="button" class="btn small" data-bact="import">Import from Google Form</button><button type="button" class="btn small" data-bact="addb">+ Add buyer</button></div>`;
+        return;
+      }
+      const filters = [["all", "All"], ["check", "To check"], ["unpaid", "Unpaid"], ["uncollected", "Not collected"]];
+      box.innerHTML = `<div id="b-top"></div>
+        <div class="btools"><input class="search inp" id="b-search" type="search" placeholder="Search buyers…" value="${esc(bQuery)}" aria-label="Search buyers">${filters.map(([k, l]) => `<button type="button" class="filter" data-bfilter="${k}" aria-pressed="${bFilter === k}">${l}</button>`).join("")}</div>
+        <div class="blist" id="b-list"></div>
+        <datalist id="b-colors">${knownColors().map(c => `<option value="${esc(c)}">`).join("")}</datalist>
+        <div class="share-row" style="margin-top:10px"><button type="button" class="btn small" data-bact="import">Import more</button><button type="button" class="btn small" data-bact="addb">+ Add buyer</button><button type="button" class="btn small" data-bact="pickup">Copy pickup list</button></div>`;
+      drawBuyerTop(); drawBuyerList();
+    }
+    function buyersChanged(structural) { syncLinesFromBuyers(draft); drawLines(); if (structural) drawBuyers(); else drawBuyerTop(); }
+    drawBuyers();
+    const findB = id => draft.buyers.find(b => b.id === id);
+    $("#m-buyers").addEventListener("input", e => {
+      const t = e.target;
+      if (t.id === "b-search") { bQuery = t.value; drawBuyerList(); return; }
+      const ed = t.closest("[data-bid]"); if (!ed) return;
+      const b = findB(ed.dataset.bid); if (!b) return;
+      if (t.dataset.bf) { b[t.dataset.bf] = t.dataset.bf === "amount" ? num(t.value) : t.value; drawBuyerTop(); updCalc(); return; }
+      const row = t.closest("[data-it]");
+      if (row && t.dataset.itf) { const it = b.items[+row.dataset.it]; it[t.dataset.itf] = t.dataset.itf === "qty" ? Math.max(1, num(t.value) || 1) : t.value.trim(); buyersChanged(false); }
+    });
+    $("#m-buyers").addEventListener("change", e => {
+      const t = e.target; if (t.dataset.itf !== "size" && t.dataset.itf !== "color") return;
+      const ed = t.closest("[data-bid]"), row = t.closest("[data-it]"); const b = ed && findB(ed.dataset.bid);
+      if (b && row) { b.items[+row.dataset.it][t.dataset.itf] = t.value.trim(); buyersChanged(false); }
+    });
+    $("#m-buyers").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.tagName === "INPUT") e.preventDefault(); });
+    $("#m-buyers").addEventListener("click", e => {
+      const t = e.target.closest("button"); if (!t) return;
+      if (t.dataset.bopen) { openB = openB === t.dataset.bopen ? null : t.dataset.bopen; drawBuyerList(); return; }
+      if (t.dataset.bfilter) { bFilter = t.dataset.bfilter; drawBuyers(); return; }
+      const ed = t.closest("[data-bid]"), b = ed && findB(ed.dataset.bid);
+      if (t.dataset.btog && b) { b[t.dataset.btog] = !b[t.dataset.btog]; t.setAttribute("aria-pressed", String(!!b[t.dataset.btog])); drawBuyerTop(); updCalc(); return; }
+      const act = t.dataset.bact; if (!act) return;
+      if (act === "import") { openImport(draft.buyers, fresh => { draft.buyers.push(...fresh); buyersChanged(true); updCalc(); toast(`${fresh.length} order${fresh.length === 1 ? "" : "s"} added. Tap Save to keep them.`); }); return; }
+      if (act === "addb") { const nb = { id: "b" + Math.random().toString(36).slice(2, 10), ts: new Date().toLocaleString(), name: "", phone: "", place: "", items: [{ color: knownColors()[0] || "", size: "M", qty: 1 }], amount: 0, paid: false, receipt: "", note: "", flags: [], collected: false, src: "" }; draft.buyers.unshift(nb); openB = nb.id; bFilter = "all"; buyersChanged(true); updCalc(); const inp = document.querySelector(`[data-bid="${nb.id}"] [data-bf="name"]`); if (inp) inp.focus(); return; }
+      if (act === "pickup") {
+        const groups = {};
+        [...draft.buyers].sort((a, b2) => a.name.localeCompare(b2.name)).forEach(x => { const g = x.place || "No college given"; (groups[g] = groups[g] || []).push(x); });
+        const txt = [`${draft.code} ${draft.name} · pickup list`, ""].concat(...Object.keys(groups).sort().map(g => [`${g} (${groups[g].length})`, ...groups[g].map(x => `${x.collected ? "✓" : "☐"} ${x.name} · ${itemsText(x)}${x.paid ? "" : " · UNPAID"}${x.phone ? " · " + x.phone : ""}`), ""])).join("\n");
+        copyText(txt).then(() => toast("Pickup list copied")); return;
+      }
+      if (!b) return;
+      if (act === "ok") { b.flags = []; buyersChanged(true); return; }
+      if (act === "addit") { b.items.push({ color: (b.items[0] || {}).color || knownColors()[0] || "", size: "M", qty: 1 }); buyersChanged(true); return; }
+      if (act === "rmit") { b.items.splice(+t.closest("[data-it]").dataset.it, 1); buyersChanged(true); return; }
+      if (act === "del") {
+        if (!t.classList.contains("armed")) { t.classList.add("armed"); t.textContent = "Tap again to delete"; return; }
+        draft.buyers = draft.buyers.filter(x => x.id !== b.id); openB = null; buyersChanged(true); updCalc(); return;
+      }
     });
     form.addEventListener("input", e => {
       const box = e.target.closest("[data-line]");
