@@ -295,7 +295,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   const stageOf = id => ALL.find(s => s.id === id) || STAGES[0];
   const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
   const DEFAULT_PL = {
-    base: "",
+    base: 14,
     fabrics: [
       { id: "mini-eyelet", name: "Mini Eyelet", note: "160 gsm", price: 0 },
       { id: "interlock", name: "Interlock", note: "160 gsm", price: 0 },
@@ -317,9 +317,6 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       { id: "nfl", name: "NFL", price: 4 },
       { id: "retro", name: "Retro", price: 5 },
       { id: "mandarin", name: "Mandarin", price: 5 },
-    ],
-    sleeves: [
-      { id: "normal", name: "Normal sleeve", price: 0 },
       { id: "raglan-round", name: "Raglan round neck", price: 3 },
       { id: "raglan-collar", name: "Raglan collar", price: 5 },
     ],
@@ -334,14 +331,26 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     bigFrom: "3XL", big: 4,
   };
   const clone = o => JSON.parse(JSON.stringify(o));
+  // older saved price lists: raglan was a sleeve option and the base price was blank
+  function normalizePL(src) {
+    const pl = clone(src || DEFAULT_PL);
+    if (pl.base === "" || pl.base == null) pl.base = DEFAULT_PL.base;
+    if (Array.isArray(pl.sleeves)) {
+      pl.collars = pl.collars || [];
+      pl.sleeves.filter(x => num(x.price) > 0).forEach(x => { if (!pl.collars.some(c => c.id === x.id)) pl.collars.push({ id: x.id, name: x.name, price: x.price }); });
+      delete pl.sleeves;
+    }
+    ["fabrics", "collars", "addons"].forEach(k => { if (!Array.isArray(pl[k]) || !pl[k].length) pl[k] = clone(DEFAULT_PL[k]); });
+    return pl;
+  }
   const pick = (list, id) => (list || []).find(x => x.id === id) || (list || [])[0] || { id: "", name: "", price: 0 };
   const plus = n => (num(n) ? "+" + money(num(n)).replace(state.currency + " ", state.currency) : "free");
   const fabricLabel = f => f.name + (f.note ? ` · ${f.note}` : "");
-  const newLine = pl => ({ id: "l" + Math.random().toString(36).slice(2, 8), label: "", collar: pl.collars[0] ? pl.collars[0].id : "", sleeve: pl.sleeves[0] ? pl.sleeves[0].id : "", addons: [], sizes: {}, pieces: "" });
+  const newLine = pl => ({ id: "l" + Math.random().toString(36).slice(2, 8), label: "", collar: pl.collars[0] ? pl.collars[0].id : "", addons: [], sizes: {}, pieces: "" });
   const bigIdx = pl => { const i = SIZES.indexOf(pl.bigFrom || "3XL"); return i < 0 ? SIZES.length : i; };
   function unitOf(p, line) {
     const pl = p.pl || state.priceList;
-    return num(p.base) + num(pick(pl.fabrics, p.fabric).price) + num(pick(pl.collars, line.collar).price) + num(pick(pl.sleeves, line.sleeve).price)
+    return num(p.base) + num(pick(pl.fabrics, p.fabric).price) + num(pick(pl.collars, line.collar).price) + (pl.sleeves && line.sleeve ? num(pick(pl.sleeves, line.sleeve).price) : 0)
       + (line.addons || []).reduce((a, id) => a + num(((pl.addons || []).find(x => x.id === id) || {}).price), 0);
   }
   function lineCalc(p, line) {
@@ -426,7 +435,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       const byId = new Map(state.projects.map(p => [p.id, p]));
       d.projects.forEach(p => { if (p && typeof p === "object") { const id = String(p.id || "p-" + Math.random().toString(36).slice(2)); const old = byId.get(id); if (!old || String(p.updatedAt) >= String(old.updatedAt)) byId.set(id, { ...p, id }); } });
       state.projects = [...byId.values()];
-      if (d.priceList && String(d.priceListAt || "") > String(state.priceListAt || "")) { state.priceList = d.priceList; state.priceListAt = d.priceListAt; }
+      if (d.priceList && String(d.priceListAt || "") > String(state.priceListAt || "")) { state.priceList = normalizePL(d.priceList); state.priceListAt = d.priceListAt; }
       if (d.currency) { state.currency = String(d.currency).slice(0, 5); state.currencyAt = new Date().toISOString(); }
       persist(); render(); toast(`Imported ${d.projects.length} project${d.projects.length === 1 ? "" : "s"}`);
     } catch (_) { toast("That file isn't a KEMAS backup."); }
@@ -579,7 +588,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         <tbody>${rows.map(p => { const c = calc(p); return `<tr class="click" data-open="${esc(p.id)}" tabindex="0"><td class="mono" style="color:var(--muted);font-size:12.5px">${esc(p.code)}</td><td><div class="t1">${esc(p.name)}</div><div class="t2">${esc(p.client || "—")}</div></td><td class="num">${c.q}</td><td class="num">${esc(money(Math.round(avgPrice(p) * 100) / 100))}</td><td class="num">${esc(money(c.sale))}</td><td class="num">${esc(money(c.cost))}</td><td class="num ${c.profit >= 0 ? "pos" : "neg"}">${esc(money(c.profit))}</td><td class="num">${c.sale ? Math.round(c.profit / c.sale * 100) + "%" : "—"}</td></tr>`; }).join("")}</tbody>
         <tfoot><tr><td></td><td>Total</td><td class="num">${t.q}</td><td></td><td class="num">${esc(money(t.sale))}</td><td class="num">${esc(money(t.cost))}</td><td class="num ${t.profit >= 0 ? "pos" : "neg"}">${esc(money(t.profit))}</td><td class="num">${t.sale ? Math.round(t.profit / t.sale * 100) + "%" : "—"}</td></tr></tfoot>
       </table></div>` : ""}
-      <div class="settings-row"><button class="btn small" type="button" data-pricelist>Edit price list</button><span>Fabrics, collars, sleeves and add-ons from your sales kit.</span></div>
+      <div class="settings-row"><button class="btn small" type="button" data-pricelist>Edit price list</button><span>Base price, fabrics, collars and add-ons from your sales kit.</span></div>
       <div class="settings-row"><label for="currency">Currency shown as</label><input id="currency" value="${esc(state.currency)}" maxlength="5"><span>e.g. RM, $, SGD</span></div>
       <div class="settings-row"><span>Projects sync through your GitHub when sync is on. A backup file is a spare copy.</span><button class="btn small" type="button" id="export-btn">Export backup</button><label class="btn small" for="import-file">Import backup</label><input id="import-file" type="file" accept="application/json,.json" hidden></div>`;
   }
@@ -616,7 +625,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       out.push(`Fabric: ${fabricLabel(pick(pl.fabrics, p.fabric))}`);
       p.lines.forEach((l, i) => {
         const lc = lineCalc(p, l);
-        const opts = [pick(pl.collars, l.collar).name, pick(pl.sleeves, l.sleeve).name, ...(l.addons || []).map(id => ((pl.addons || []).find(x => x.id === id) || {}).name).filter(Boolean)];
+        const opts = [pick(pl.collars, l.collar).name, ...(pl.sleeves && l.sleeve ? [pick(pl.sleeves, l.sleeve).name] : []), ...(l.addons || []).map(id => ((pl.addons || []).find(x => x.id === id) || {}).name).filter(Boolean)];
         out.push("");
         out.push(`${i + 1}. ${l.label ? l.label + ": " : ""}${opts.join(", ")}`);
         out.push(`   ${lc.bySize ? sizesText(l) + " = " : ""}${lc.pcs} pcs`);
@@ -665,7 +674,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         </div></fieldset>
         <fieldset><legend>Order</legend>
           <div class="grid2">
-            <div class="field"><label for="f-base">Base price per shirt (${esc(state.currency)})</label><input id="f-base" name="base" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.base)}"><span class="help">Round neck, free fabric, before add-ons</span></div>
+            <div class="field"><label for="f-base">Base price per shirt (${esc(state.currency)})</label><input id="f-base" name="base" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.base)}"><span class="help">Round neck + free fabric. Usually ${esc(money(num(state.priceList.base)))}</span></div>
             <div class="field"><label for="f-fabric">Fabric</label><select id="f-fabric" name="fabric">${opt(draft.pl.fabrics, draft.fabric, x => `${fabricLabel(x)} (${plus(x.price)})`)}</select><span class="help">Same fabric for the whole order</span></div>
           </div>
           <div class="lines" id="m-lines" style="margin-top:12px"></div>
@@ -710,7 +719,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         </div>
         <div class="grid2">
           <div class="field"><label for="ln-${l.id}-collar">Collar</label><select id="ln-${l.id}-collar" data-k="collar">${opt(pl.collars, l.collar, nameWithPrice)}</select></div>
-          <div class="field"><label for="ln-${l.id}-sleeve">Sleeve</label><select id="ln-${l.id}-sleeve" data-k="sleeve">${opt(pl.sleeves, l.sleeve, nameWithPrice)}</select></div>
+          ${pl.sleeves && pl.sleeves.length ? `<div class="field"><label for="ln-${l.id}-sleeve">Sleeve</label><select id="ln-${l.id}-sleeve" data-k="sleeve">${opt(pl.sleeves, l.sleeve, nameWithPrice)}</select></div>` : ""}
         </div>
         <div><div class="sub-label">Add-ons</div><div class="toggles">${(pl.addons || []).map(a => `<button type="button" class="toggle" data-addon="${esc(a.id)}" aria-pressed="${(l.addons || []).includes(a.id)}">${esc(a.name)}<small>${esc(plus(a.price))}</small></button>`).join("")}</div></div>
         <div><div class="sub-label">Sizes</div>
@@ -767,7 +776,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         const pl = clone(state.priceList);
         const has = (list, id) => (list || []).some(x => x.id === id);
         if (!has(pl.fabrics, draft.fabric)) draft.fabric = pl.fabrics[0] ? pl.fabrics[0].id : "";
-        draft.lines.forEach(l => { if (!has(pl.collars, l.collar)) l.collar = pl.collars[0] ? pl.collars[0].id : ""; if (!has(pl.sleeves, l.sleeve)) l.sleeve = pl.sleeves[0] ? pl.sleeves[0].id : ""; l.addons = (l.addons || []).filter(id => has(pl.addons, id)); });
+        draft.lines.forEach(l => { if (!has(pl.collars, l.collar)) l.collar = pl.collars[0] ? pl.collars[0].id : ""; if (l.sleeve && /raglan/.test(l.sleeve) && has(pl.collars, l.sleeve)) l.collar = l.sleeve; delete l.sleeve; l.addons = (l.addons || []).filter(id => has(pl.addons, id)); });
         draft.pl = pl;
         $("#f-fabric").innerHTML = opt(pl.fabrics, draft.fabric, x => `${fabricLabel(x)} (${plus(x.price)})`);
         drawLines(); toast("Updated to current prices"); return;
@@ -801,7 +810,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   }
 
   /* ---------- price list editor ---------- */
-  const PL_SECTIONS = [["fabrics", "Fabrics", true], ["collars", "Collars", false], ["sleeves", "Sleeves", false], ["addons", "Add-ons", false]];
+  const PL_SECTIONS = [["fabrics", "Fabrics", true], ["collars", "Collars", false], ["addons", "Add-ons", false]];
   function openPriceList() {
     const draft = clone(state.priceList);
     const root = $("#modal-root"); const lastFocus = document.activeElement;
@@ -814,7 +823,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     function draw() {
       body.innerHTML = `<p class="note" style="font-size:14px">Prices are per shirt, added on top of the base price. New projects use this list. Projects you already made keep their own prices.</p>
         <div class="grid2">
-          <div class="field"><label for="pl-base">Default base price (${esc(state.currency)})</label><input id="pl-base" data-top="base" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.base)}"><span class="help">Filled in for new projects. You can change it per project.</span></div>
+          <div class="field"><label for="pl-base">Base price (${esc(state.currency)})</label><input id="pl-base" data-top="base" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.base)}"><span class="help">Round neck + free fabric. Filled in for new projects.</span></div>
           <div class="field"><label for="pl-big">Big size charge (${esc(state.currency)})</label><div style="display:flex;gap:6px"><select id="pl-bigfrom" data-top="bigFrom" class="inp" style="max-width:110px" aria-label="From size">${SIZES.map(k => `<option ${k === draft.bigFrom ? "selected" : ""}>${k}</option>`).join("")}</select><input id="pl-big" data-top="big" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.big)}"></div><span class="help">This size and above, per shirt</span></div>
         </div>
         ${PL_SECTIONS.map(([key, title, note]) => `<fieldset class="pl-sec"><legend>${title}</legend>
@@ -951,7 +960,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       const merged = merge(local, remote);
       if (sig(merged) !== sig(local)) {
         state.projects = merged.projects; state.deleted = merged.deleted; state.currency = merged.currency; state.currencyAt = merged.currencyAt;
-        if (merged.priceListAt && merged.priceList) { state.priceList = merged.priceList; state.priceListAt = merged.priceListAt; }
+        if (merged.priceListAt && merged.priceList) { state.priceList = normalizePL(merged.priceList); state.priceListAt = merged.priceListAt; }
         persistLocal(); render();
       }
       if (sig(merged) !== sig(remote)) {
@@ -1051,10 +1060,10 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   render();
 
   function boot() {
-    state.priceList = clone(DEFAULT_PL);
+    state.priceList = normalizePL(DEFAULT_PL);
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) { const d = JSON.parse(raw); state.projects = Array.isArray(d.projects) ? d.projects : []; state.deleted = d.deleted || {}; state.currencyAt = d.currencyAt || ""; if (d.priceList) { state.priceList = d.priceList; state.priceListAt = d.priceListAt || ""; } if (d.currency) state.currency = String(d.currency); }
+      if (raw) { const d = JSON.parse(raw); state.projects = Array.isArray(d.projects) ? d.projects : []; state.deleted = d.deleted || {}; state.currencyAt = d.currencyAt || ""; if (d.priceList) { state.priceList = normalizePL(d.priceList); state.priceListAt = d.priceListAt || ""; } if (d.currency) state.currency = String(d.currency); }
     } catch (_) { banner("This browser is blocking storage, so projects can't be saved. Turn off Private Browsing and reopen the app.", "warn"); }
     state.loaded = true; state.mode = "local";
     render();

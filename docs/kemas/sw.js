@@ -1,5 +1,5 @@
 // KEMAS APPAREL service worker: lets the app open offline
-const CACHE = 'kemas-shell-v3';
+const CACHE = 'kemas-shell-v4';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
