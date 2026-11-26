@@ -134,6 +134,24 @@ main { padding-block: 0 64px; }
 .card:hover { border-color: var(--muted); border-left-color: var(--c); }
 .card .row1 { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
 .card .code { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); letter-spacing: .04em; }
+.card .top { display: flex; gap: 10px; align-items: flex-start; }
+.card .top > div { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.thumb { width: 54px; height: 54px; object-fit: cover; border-radius: 6px; background: var(--sunk); flex: none; border: 1px solid var(--line); }
+.photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; margin-bottom: 10px; }
+.photos:empty { display: none; }
+.ph { position: relative; aspect-ratio: 1; max-width: 100%; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--sunk); padding: 0; }
+.ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ph .badge { position: absolute; left: 4px; bottom: 4px; font-family: var(--f-mono); font-size: 10px; padding: 1px 5px; border-radius: 4px; background: rgba(0,0,0,.6); color: #fff; }
+.viewer { position: fixed; inset: 0; z-index: 70; background: rgba(6,8,12,.94); display: flex; flex-direction: column; padding: calc(env(safe-area-inset-top, 0px) + 10px) max(12px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 12px) max(12px, env(safe-area-inset-left, 0px)); }
+.viewer .vbar { display: flex; gap: 8px; align-items: center; color: #fff; }
+.viewer .vbar .cnt { font-family: var(--f-mono); font-size: 13px; margin-right: auto; opacity: .8; }
+.viewer .vbtn { border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #fff; padding: 8px 12px; border-radius: 8px; font-weight: 600; font-size: 14px; }
+.viewer .vbtn.armed { background: #c0302a; border-color: #c0302a; }
+.viewer .stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; position: relative; margin-top: 10px; }
+.viewer .stage img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; }
+.viewer .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 99px; border: 0; background: rgba(255,255,255,.14); color: #fff; font-size: 22px; }
+.viewer .nav.prev { left: 0; } .viewer .nav.next { right: 0; }
+.viewer .hint { color: rgba(255,255,255,.65); font-size: 12.5px; text-align: center; margin-top: 8px; }
 .card .name { font-weight: 700; font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; }
 .card .client { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
 .chips { display: flex; flex-wrap: wrap; gap: 5px; }
@@ -472,9 +490,11 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     else if (c.sale > 0 && c.balance <= 0) chips.push(`<span class="chip ok">Paid</span>`);
     return `<article class="card" style="--c:var(${s.c})" data-open="${esc(p.id)}" tabindex="0" aria-label="${esc(p.name)}">
       <div class="row1"><span class="code">${esc(p.code)}</span>${p.printer && p.stage === "print" ? `<span class="code">@ ${esc(p.printer)}</span>` : ""}</div>
-      <div class="name">${esc(p.name || "Untitled")}</div>
-      ${p.client ? `<div class="client">${esc(p.client)}</div>` : ""}
-      ${specLine(p) ? `<div class="client" style="font-size:12.5px">${esc(specLine(p))}</div>` : ""}
+      <div class="top"><div>
+        <div class="name">${esc(p.name || "Untitled")}</div>
+        ${p.client ? `<div class="client">${esc(p.client)}</div>` : ""}
+        ${specLine(p) ? `<div class="client" style="font-size:12.5px">${esc(specLine(p))}</div>` : ""}
+      </div>${(p.photos || []).length ? `<img class="thumb" data-ph="${esc(p.photos[0].id)}" alt="Design photo">` : ""}</div>
       <div class="chips">${chips.join("")}</div>
       ${s.next ? `<button class="next" type="button" data-advance="${esc(p.id)}">Next: ${esc(s.next)} →</button>` : ""}
     </article>`;
@@ -605,7 +625,82 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     }
     const hadFocus = document.activeElement && document.activeElement.id === "search";
     v.innerHTML = state.tab === "board" ? renderBoard() : state.tab === "jobs" ? renderJobs() : renderMoney();
+    hydratePhotos(v);
     if (hadFocus) { const s = $("#search"); s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
+  }
+
+  /* ---------- design photos ---------- */
+  const photoDB = (() => {
+    let dbp = null;
+    const open = () => dbp || (dbp = new Promise((res, rej) => { const r = indexedDB.open("kemas-photos", 1); r.onupgradeneeded = () => r.result.createObjectStore("photos"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }));
+    const run = (mode, fn) => open().then(db => new Promise((res, rej) => { const t = db.transaction("photos", mode); const req = fn(t.objectStore("photos")); t.oncomplete = () => res(req && req.result); t.onerror = () => rej(t.error); }));
+    return { get: k => run("readonly", st => st.get(k)).catch(() => null), set: (k, v) => run("readwrite", st => st.put(v, k)), del: k => run("readwrite", st => st.delete(k)).catch(() => {}) };
+  })();
+  const photoMem = new Map(), photoLoading = new Map();
+  const MAX_PHOTOS = 12;
+  function findPhoto(id, extra) { for (const p of [...(extra || []), ...state.projects]) { const ph = (p.photos || []).find(x => x.id === id); if (ph) return ph; } return null; }
+  function photoURL(ph) {
+    if (!ph) return Promise.resolve(null);
+    if (photoMem.has(ph.id)) return Promise.resolve(photoMem.get(ph.id));
+    if (photoLoading.has(ph.id)) return photoLoading.get(ph.id);
+    const job = (async () => {
+      let d = await photoDB.get(ph.id);
+      if (!d && ph.raw && /^https:\/\/gist\.githubusercontent\.com\//.test(ph.raw)) {
+        try { const t = await (await fetch(ph.raw, { cache: "force-cache" })).text(); if (t.startsWith("data:image/")) { d = t; photoDB.set(ph.id, d).catch(() => {}); } } catch (_) {}
+      }
+      if (d) photoMem.set(ph.id, d);
+      photoLoading.delete(ph.id);
+      return d || null;
+    })();
+    photoLoading.set(ph.id, job);
+    return job;
+  }
+  function hydratePhotos(root, extra) {
+    root.querySelectorAll("img[data-ph]").forEach(img => {
+      if (img.dataset.done) return; img.dataset.done = "1";
+      photoURL(findPhoto(img.dataset.ph, extra)).then(u => { if (u) img.src = u; else img.alt = "Photo not downloaded yet"; });
+    });
+  }
+  async function shrinkImage(file) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error("bad image")); i.src = url; });
+      const MAX = 1600, k = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * k)), h = Math.max(1, Math.round(img.naturalHeight * k));
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      const ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
+      let q = 0.82, d = c.toDataURL("image/jpeg", q);
+      while (d.length > 600000 && q > 0.5) { q -= 0.1; d = c.toDataURL("image/jpeg", q); }
+      return { data: d, w, h };
+    } finally { URL.revokeObjectURL(url); }
+  }
+  function openViewer(list, index, onRemove) {
+    const root = document.createElement("div"); root.className = "viewer"; root.setAttribute("role", "dialog"); root.setAttribute("aria-label", "Design photo");
+    document.body.appendChild(root);
+    let i = index;
+    const draw = () => {
+      const ph = list[i];
+      root.innerHTML = `<div class="vbar"><span class="cnt">${i + 1} / ${list.length}</span>${onRemove ? `<button class="vbtn" type="button" data-v="rm">Remove</button>` : ""}<button class="vbtn" type="button" data-v="close" aria-label="Close">Close</button></div>
+        <div class="stage">${list.length > 1 ? `<button class="nav prev" type="button" data-v="prev" aria-label="Previous">‹</button>` : ""}<img data-ph="${esc(ph.id)}" alt="Design photo ${i + 1}">${list.length > 1 ? `<button class="nav next" type="button" data-v="next" aria-label="Next">›</button>` : ""}</div>
+        <div class="hint">Press and hold the photo to save it or send it.</div>`;
+      const img = root.querySelector("img"); photoURL(ph).then(u => { if (u) img.src = u; else img.alt = "This photo hasn't downloaded yet. Check your internet."; });
+    };
+    const close = () => { root.remove(); document.removeEventListener("keydown", onKey, true); };
+    const onKey = e => { if (e.key === "Escape") { e.stopImmediatePropagation(); close(); } else if (e.key === "ArrowRight") { i = (i + 1) % list.length; draw(); } else if (e.key === "ArrowLeft") { i = (i - 1 + list.length) % list.length; draw(); } };
+    document.addEventListener("keydown", onKey, true);
+    root.addEventListener("click", e => {
+      const b = e.target.closest("[data-v]"); if (!b) return;
+      const v = b.dataset.v;
+      if (v === "close") close();
+      else if (v === "next") { i = (i + 1) % list.length; draw(); }
+      else if (v === "prev") { i = (i - 1 + list.length) % list.length; draw(); }
+      else if (v === "rm") {
+        if (!b.classList.contains("armed")) { b.classList.add("armed"); b.textContent = "Tap again to remove"; return; }
+        onRemove(list[i]); list.splice(i, 1);
+        if (!list.length) close(); else { i = Math.min(i, list.length - 1); draw(); }
+      }
+    });
+    draw();
   }
 
   /* ---------- modal ---------- */
@@ -691,6 +786,10 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
           <div class="field"><label for="f-paid">Paid so far</label><input id="f-paid" name="paid" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.paid)}"><span class="help">Deposits + payments</span></div>
         </div>
         <div class="calc" id="m-calc" style="margin-top:12px"></div></fieldset>
+        <fieldset><legend>Design photos</legend>
+          <div class="photos" id="m-photos"></div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="btn small" for="m-photo-in" id="m-photo-btn">+ Add photos</label><input id="m-photo-in" type="file" accept="image/*" multiple hidden><span class="note" id="m-photo-note">Mockups, artwork or the printed sample. Tap a photo to see it full size.</span></div>
+        </fieldset>
         <fieldset><legend>Send</legend><div class="share-row">
           <button type="button" class="btn small" id="m-copy-print">Copy order for printer</button>
           <button type="button" class="btn small" id="m-copy-quote">Copy quote for client</button>
@@ -750,6 +849,34 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       $("#m-plnote").innerHTML = stale ? `<p class="note">This project uses the prices from when it was created. <button type="button" class="linkbtn" id="m-plupdate">Use current price list</button></p>` : "";
     }
     drawLines();
+    draft.photos = draft.photos || [];
+    const removedPhotos = [];
+    function drawPhotos() {
+      const box = $("#m-photos");
+      box.innerHTML = draft.photos.map((ph, i) => `<button type="button" class="ph" data-phi="${i}" aria-label="Open photo ${i + 1}"><img data-ph="${esc(ph.id)}" alt="">${ph.gist || !sync.token ? "" : `<span class="badge">not synced yet</span>`}</button>`).join("");
+      hydratePhotos(box, [draft]);
+      $("#m-photo-btn").hidden = draft.photos.length >= MAX_PHOTOS;
+    }
+    drawPhotos();
+    $("#m-photos").addEventListener("click", e => {
+      const b = e.target.closest("[data-phi]"); if (!b) return;
+      openViewer(draft.photos, +b.dataset.phi, ph => { removedPhotos.push(ph); setTimeout(drawPhotos, 0); });
+    });
+    $("#m-photo-in").addEventListener("change", async e => {
+      const files = [...(e.target.files || [])].slice(0, MAX_PHOTOS - draft.photos.length); e.target.value = "";
+      const note = $("#m-photo-note");
+      for (const [n, f] of files.entries()) {
+        note.textContent = `Adding photo ${n + 1} of ${files.length}…`;
+        try {
+          const { data, w, h } = await shrinkImage(f);
+          const id = "ph" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+          await photoDB.set(id, data); photoMem.set(id, data);
+          draft.photos.push({ id, w, h, at: new Date().toISOString() });
+        } catch (_) { toast("That file couldn't be opened as a photo."); }
+      }
+      note.textContent = files.length ? "Photo added. Tap Save to keep it." : note.textContent;
+      drawPhotos();
+    });
     form.addEventListener("input", e => {
       const box = e.target.closest("[data-line]");
       if (box) {
@@ -799,6 +926,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       e.preventDefault(); readTop();
       if (!draft.name) { $("#name-err").hidden = false; $("#f-name").focus(); return; }
       const { id, ...data } = draft;
+      removedPhotos.forEach(ph => { photoDB.del(ph.id); photoMem.delete(ph.id); if (ph.gist && sync.token) gh(`/gists/${encodeURIComponent(ph.gist)}`, { method: "DELETE" }).catch(() => {}); });
       delete data.sizes; delete data.qty; delete data.price;
       if (isNew) { data.createdAt = new Date().toISOString(); data.history = [{ stage: data.stage, at: data.createdAt }]; }
       else if (p.stage !== data.stage) data.history = [...(data.history || []), { stage: data.stage, at: new Date().toISOString() }];
@@ -929,7 +1057,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   }
 
   async function findOrCreateGist() {
-    for (let page = 1; page <= 5; page++) {
+    for (let page = 1; page <= 30; page++) {
       const list = await gh(`/gists?per_page=100&page=${page}`);
       const hit = list.find(g => g.files && g.files[FILE]);
       if (hit) return hit.id;
@@ -937,6 +1065,21 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     }
     const g = await gh("/gists", { method: "POST", body: JSON.stringify({ description: DESC, public: false, files: { [FILE]: { content: JSON.stringify(snapshot()) } } }) });
     return g.id;
+  }
+  async function uploadPendingPhotos() {
+    let changed = false;
+    for (const p of state.projects) {
+      for (const ph of p.photos || []) {
+        if (ph.gist) continue;
+        const data = await photoDB.get(ph.id);
+        if (!data) continue;
+        const name = `kemas-photo-${ph.id}.txt`;
+        const g = await gh("/gists", { method: "POST", body: JSON.stringify({ description: `KEMAS APPAREL photo · ${p.code || ""} ${p.name || ""}`.trim(), public: false, files: { [name]: { content: data } } }) });
+        ph.gist = g.id; ph.raw = g.files && g.files[name] ? g.files[name].raw_url : "";
+        p.updatedAt = new Date().toISOString(); changed = true;
+      }
+    }
+    if (changed) { persistLocal(); render(); }
   }
   async function readRemote() {
     const g = await gh(`/gists/${sync.gistId}`);
@@ -952,6 +1095,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     sync.running = true; sync.again = false; setSync("syncing");
     try {
       if (!sync.gistId) { sync.gistId = await findOrCreateGist(); saveSyncCfg(); }
+      await uploadPendingPhotos();
       let remote;
       try { remote = await readRemote(); }
       catch (e) { if (e.status === 404) { sync.gistId = await findOrCreateGist(); saveSyncCfg(); remote = await readRemote(); } else throw e; }
