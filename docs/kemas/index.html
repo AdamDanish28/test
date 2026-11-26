@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KEMAS APPAREL</title>
+<meta name="description" content="Job board for KEMAS APPAREL shirt projects: stages, quantities, sales and profit.">
+<meta name="theme-color" content="#1d3fd0">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KEMAS">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: a print-shop job board. Sticky header, money strip, then Board / Jobs / Money views. Job cards read like order tickets. */
+:root {
+  --paper: #f3f4f7;
+  --surface: #ffffff;
+  --sunk: #eceef3;
+  --ink: #15171d;
+  --muted: #5c6371;
+  --line: #dcdfe6;
+  --accent: #1d3fd0;
+  --accent-ink: #ffffff;
+  --ok: #18804a;
+  --warn: #a96200;
+  --bad: #c0302a;
+  --s-design: #6a49e0;
+  --s-client: #c47f00;
+  --s-print: #0a87a0;
+  --s-ready: #23924f;
+  --s-done: #6b7280;
+  --s-hold: #b13d2e;
+  --shadow: 0 1px 2px rgba(20,24,40,.06), 0 4px 14px rgba(20,24,40,.06);
+  --f-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0f1115; --surface: #171a21; --sunk: #1e222b; --ink: #eceef3; --muted: #9ba2b0; --line: #2a2f3a;
+  --accent: #7590ff; --accent-ink: #0b0e16; --ok: #4cc683; --warn: #f0a83a; --bad: #ff6b5f;
+  --s-design: #9b83ff; --s-client: #f0b23e; --s-print: #3cc4dd; --s-ready: #52cf85; --s-done: #9aa1ad; --s-hold: #ff7a66;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.35);
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --paper: #0f1115; --surface: #171a21; --sunk: #1e222b; --ink: #eceef3; --muted: #9ba2b0; --line: #2a2f3a;
+  --accent: #7590ff; --accent-ink: #0b0e16; --ok: #4cc683; --warn: #f0a83a; --bad: #ff6b5f;
+  --s-design: #9b83ff; --s-client: #f0b23e; --s-print: #3cc4dd; --s-ready: #52cf85; --s-done: #9aa1ad; --s-hold: #ff7a66;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { color-scheme: light; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1320px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* header */
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; align-items: center; gap: 16px; padding-block: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
+.brand b { font-family: var(--f-display); font-stretch: 125%; font-weight: 900; font-size: 22px; letter-spacing: .02em; line-height: 1; }
+.brand span { font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+.tabs { display: flex; gap: 2px; background: var(--sunk); padding: 3px; border-radius: 9px; }
+.tabs button { border: 0; background: transparent; padding: 7px 14px; border-radius: 7px; font-weight: 600; font-size: 14px; color: var(--muted); }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.danger { color: var(--bad); }
+.btn.danger.armed { background: var(--bad); border-color: var(--bad); color: #fff; }
+.btn.small { padding: 5px 10px; font-size: 13px; }
+
+.banner { margin-top: 14px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--sunk); font-size: 14px; color: var(--muted); }
+.banner[data-tone="warn"] { border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); color: var(--ink); }
+
+/* strip */
+.strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-top: 18px; }
+.stat { background: var(--surface); padding: 14px 16px; min-width: 0; }
+.stat .k { font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.stat .v { font-family: var(--f-display); font-stretch: 112%; font-weight: 800; font-size: 26px; line-height: 1.15; margin-top: 4px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat .sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.stat .v.pos { color: var(--ok); } .stat .v.neg { color: var(--bad); }
+@media (max-width: 900px) { .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } .strip .stat:first-child { grid-column: 1 / -1; } }
+
+main { padding-block: 0 64px; }
+.viewhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 26px 0 12px; }
+.viewhead h2 { margin: 0; font-family: var(--f-display); font-stretch: 110%; font-weight: 800; font-size: 20px; text-wrap: balance; }
+.viewhead p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+
+/* board */
+.board-scroll { overflow-x: auto; padding-bottom: 6px; }
+.board { display: grid; grid-template-columns: repeat(var(--cols, 5), minmax(240px, 1fr)); gap: 12px; align-items: start; }
+@media (max-width: 720px) { .board-scroll { overflow: visible; } .board { grid-template-columns: 1fr; } }
+.col { background: var(--sunk); border-radius: 10px; padding: 10px; min-width: 0; }
+.colhead { display: flex; align-items: center; gap: 8px; padding: 4px 4px 10px; }
+.swatch { width: 10px; height: 10px; border-radius: 3px; background: var(--c); flex: none; }
+.colhead h3 { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.colhead .n { margin-left: auto; font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.colhead .hint { display: block; font-size: 12px; color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; }
+.cards { display: flex; flex-direction: column; gap: 8px; }
+.empty-col { font-size: 13px; color: var(--muted); padding: 14px 8px; text-align: center; border: 1px dashed var(--line); border-radius: 8px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--c); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; text-align: left; box-shadow: var(--shadow); cursor: pointer; }
+.card:hover { border-color: var(--muted); border-left-color: var(--c); }
+.card .row1 { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.card .code { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); letter-spacing: .04em; }
+.card .name { font-weight: 700; font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; }
+.card .client { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { font-family: var(--f-mono); font-size: 11.5px; padding: 2px 7px; border-radius: 5px; background: var(--sunk); color: var(--muted); white-space: nowrap; }
+.chip.bad { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); font-weight: 600; }
+.chip.warn { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); font-weight: 600; }
+.chip.ok { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
+.card .next { align-self: flex-start; margin-top: 2px; border: 0; background: transparent; padding: 2px 0; font-size: 12.5px; font-weight: 600; color: var(--accent); }
+.card .next:hover { text-decoration: underline; }
+
+/* pill */
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; padding: 3px 9px 3px 7px; border-radius: 99px; background: color-mix(in srgb, var(--c) 14%, transparent); color: var(--c); white-space: nowrap; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 2px; background: var(--c); }
+
+/* tables */
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.search { flex: 1 1 220px; min-width: 0; padding: 8px 12px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; }
+.filter { border: 1px solid var(--line); background: var(--surface); padding: 6px 11px; border-radius: 99px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.filter[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.tablebox { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-family: var(--f-mono); font-size: 11px; font-weight: 500; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+tbody tr.click { cursor: pointer; }
+tbody tr.click:hover td { background: var(--sunk); }
+td.num, th.num { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td .t1 { font-weight: 600; } td .t2 { font-size: 12.5px; color: var(--muted); }
+.pos { color: var(--ok); } .neg { color: var(--bad); }
+tfoot td { font-weight: 700; border-top: 2px solid var(--line); border-bottom: 0; }
+
+/* money */
+.money-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 14px; }
+@media (max-width: 900px) { .money-grid { grid-template-columns: 1fr; } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.panel h3 { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
+.panel .lede { margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+.legend { display: flex; gap: 14px; font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.chart svg { width: 100%; height: auto; display: block; }
+.owe { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+.owe li { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.owe li:last-child { border-bottom: 0; }
+.owe .amt { font-family: var(--f-mono); font-weight: 600; color: var(--warn); white-space: nowrap; }
+.settings-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 18px; font-size: 14px; color: var(--muted); }
+.settings-row input { width: 90px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); }
+
+/* modal */
+.scrim { position: fixed; inset: 0; background: rgba(10,12,20,.45); z-index: 50; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: calc(env(safe-area-inset-top, 0px) + 32px) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 32px) max(16px, env(safe-area-inset-left, 0px)); }
+.sheet { background: var(--surface); width: 100%; max-width: 760px; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.3); overflow: hidden; }
+.sheet-head { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.sheet-head h2 { margin: 0; font-family: var(--f-display); font-stretch: 110%; font-weight: 800; font-size: 19px; }
+.sheet-head .code { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.sheet-head .x { margin-left: auto; border: 0; background: transparent; font-size: 22px; line-height: 1; padding: 4px 8px; color: var(--muted); border-radius: 6px; }
+.sheet-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 20px; }
+.sheet-foot { display: flex; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--line); background: var(--sunk); flex-wrap: wrap; }
+.sheet-foot .spacer { flex: 1; }
+@media (max-width: 560px) { .scrim { padding: env(safe-area-inset-top, 0px) 0 0; } .sheet { border-radius: 0; min-height: 100%; } }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+legend { font-family: var(--f-mono); font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding: 0; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 560px) { .grid2, .grid4 { grid-template-columns: 1fr 1fr; } .grid2 .full-sm { grid-column: 1 / -1; } }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field.full { grid-column: 1 / -1; }
+.field label { font-size: 13px; font-weight: 600; }
+.field .help { font-size: 12px; color: var(--muted); }
+.field input, .field select, .field textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); }
+.field textarea { min-height: 80px; resize: vertical; }
+.stages { display: flex; flex-wrap: wrap; gap: 6px; }
+.stages button { border: 1px solid var(--line); background: var(--paper); padding: 6px 11px; border-radius: 99px; font-size: 13px; font-weight: 600; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+.stages button::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--c); }
+.stages button[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); color: var(--ink); }
+.sizes { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 560px) { .sizes { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.size { display: flex; flex-direction: column; align-items: stretch; gap: 3px; }
+.size label { font-family: var(--f-mono); font-size: 12px; font-weight: 600; text-align: center; color: var(--muted); }
+.size input { text-align: center; padding: 7px 4px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); font-family: var(--f-mono); width: 100%; }
+.calc { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+@media (max-width: 560px) { .calc { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.calc div { background: var(--sunk); padding: 9px 11px; min-width: 0; }
+.calc .k { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.calc .v { font-family: var(--f-mono); font-weight: 600; font-size: 15px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.history li { display: flex; gap: 10px; align-items: center; }
+.history time { font-family: var(--f-mono); color: var(--muted); font-size: 12px; min-width: 96px; }
+.err { color: var(--bad); font-size: 13px; }
+
+.toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 9px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; z-index: 80; box-shadow: var(--shadow); }
+.loading { padding: 40px 0; text-align: center; color: var(--muted); }
+.empty-state { text-align: center; padding: 48px 16px; background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; }
+.empty-state h3 { margin: 0 0 6px; font-family: var(--f-display); font-stretch: 110%; font-size: 20px; }
+.empty-state p { margin: 0 auto 16px; color: var(--muted); max-width: 46ch; }
+@media (prefers-reduced-motion: no-preference) { .card, .btn, .filter { transition: border-color .15s, background .15s, filter .15s; } }
+html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transparent; }
+@media (max-width: 720px), (pointer: coarse) { input, select, textarea { font-size: 16px !important; } .card .next { padding: 8px 0; } .btn { min-height: 40px; } }
+@media (max-width: 560px) { .brand span { display: none; } .brand b { font-size: 18px; } #new-btn { padding: 7px 11px; } header.top .wrap { gap: 10px; padding-block: 10px; } .tabs { order: 3; width: 100%; } .tabs button { flex: 1; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><b>KEMAS APPAREL</b><span>Job board</span></div>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button id="tab-board" role="tab" data-tab="board" aria-selected="true">Board</button>
+      <button id="tab-jobs" role="tab" data-tab="jobs" aria-selected="false">All jobs</button>
+      <button id="tab-money" role="tab" data-tab="money" aria-selected="false">Money</button>
+    </nav>
+    <button class="btn primary" id="new-btn" type="button">+ New project</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="banner" hidden></div>
+  <section class="strip" id="strip" aria-label="Summary"></section>
+  <main id="view"><div class="loading">Loading your projects…</div></main>
+</div>
+<div id="modal-root"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(() => {
+  const STAGES = [
+    { id: "design", label: "Designing", hint: "Working on the artwork", c: "--s-design", next: "Waiting on client" },
+    { id: "client", label: "Waiting on client", hint: "Approval or final quantity", c: "--s-client", next: "Sent to printer" },
+    { id: "print", label: "At the printer", hint: "Design sent, being printed", c: "--s-print", next: "Ready to deliver" },
+    { id: "ready", label: "Ready to deliver", hint: "Printed, waiting for pickup", c: "--s-ready", next: "Delivered" },
+    { id: "done", label: "Delivered", hint: "Handed over", c: "--s-done", next: null },
+  ];
+  const HOLD = { id: "hold", label: "On hold", hint: "Paused", c: "--s-hold", next: null };
+  const ALL = [...STAGES, HOLD];
+  const stageOf = id => ALL.find(s => s.id === id) || STAGES[0];
+  const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
+
+  const state = { projects: [], currency: "RM", tab: "board", q: "", stageFilter: "active", mode: "loading", loaded: false };
+
+  const $ = s => document.querySelector(s);
+  const esc = v => String(v ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+  const money = n => { const neg = n < 0; n = Math.abs(n); const s = n.toLocaleString(undefined, { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }); return (neg ? "−" : "") + state.currency + " " + s; };
+  const qtyOf = p => { const s = SIZES.reduce((a, k) => a + num(p.sizes && p.sizes[k]), 0); return s > 0 ? s : num(p.qty); };
+  const calc = p => { const q = qtyOf(p); const sale = q * num(p.price); const cost = q * num(p.cost) + num(p.extra); return { q, sale, cost, profit: sale - cost, paid: num(p.paid), balance: sale - num(p.paid) }; };
+  const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+  const parseDay = s => { if (!s) return null; const [y, m, d] = s.split("-").map(Number); return y ? new Date(y, m - 1, d) : null; };
+  const fmtDay = s => { const d = parseDay(s); return d ? d.toLocaleDateString(undefined, { day: "numeric", month: "short" }) : ""; };
+  const fmtStamp = iso => { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }); };
+  const dueInfo = p => {
+    if (!p.due || p.stage === "done") return null;
+    const diff = Math.round((parseDay(p.due) - today()) / 86400000);
+    if (diff < 0) return { cls: "bad", text: `Overdue ${-diff}d` };
+    if (diff === 0) return { cls: "bad", text: "Due today" };
+    if (diff <= 3) return { cls: "warn", text: `Due in ${diff}d` };
+    return { cls: "", text: `Due ${fmtDay(p.due)}` };
+  };
+  const nextCode = () => { const max = state.projects.reduce((m, p) => Math.max(m, parseInt(String(p.code || "").replace(/\D/g, ""), 10) || 0), 0); return "KA-" + String(max + 1).padStart(4, "0"); };
+
+  function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), 2200); }
+  function banner(text, tone) { const b = $("#banner"); if (!text) { b.hidden = true; return; } b.className = "banner"; b.dataset.tone = tone || ""; b.textContent = text; b.hidden = false; }
+
+  /* ---------- data ---------- */
+  const KEY = "kemas-apparel-v1";
+  function persist() {
+    try { localStorage.setItem(KEY, JSON.stringify({ projects: state.projects, currency: state.currency, savedAt: new Date().toISOString() })); }
+    catch (e) { const err = new Error("save failed"); err.code = "quota_exceeded"; throw err; }
+  }
+  async function saveProject(id, data) {
+    data.updatedAt = new Date().toISOString();
+    const before = state.projects.slice();
+    const i = state.projects.findIndex(p => p.id === id);
+    if (i >= 0) state.projects[i] = { ...data, id }; else state.projects.push({ ...data, id: id || "p-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7) });
+    try { persist(); } catch (e) { state.projects = before; throw e; }
+    render();
+  }
+  async function deleteProject(id) {
+    state.projects = state.projects.filter(p => p.id !== id); persist(); render();
+  }
+  function exportBackup() {
+    const blob = new Blob([JSON.stringify({ app: "kemas-apparel", version: 1, exportedAt: new Date().toISOString(), currency: state.currency, projects: state.projects }, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `kemas-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast("Backup saved");
+  }
+  async function importBackup(file) {
+    try {
+      const d = JSON.parse(await file.text());
+      if (!d || !Array.isArray(d.projects)) throw new Error("bad");
+      const byId = new Map(state.projects.map(p => [p.id, p]));
+      d.projects.forEach(p => { if (p && typeof p === "object") { const id = String(p.id || "p-" + Math.random().toString(36).slice(2)); const old = byId.get(id); if (!old || String(p.updatedAt) >= String(old.updatedAt)) byId.set(id, { ...p, id }); } });
+      state.projects = [...byId.values()];
+      if (d.currency) state.currency = String(d.currency).slice(0, 5);
+      persist(); render(); toast(`Imported ${d.projects.length} project${d.projects.length === 1 ? "" : "s"}`);
+    } catch (_) { toast("That file isn't a KEMAS backup."); }
+  }
+  async function moveStage(p, stageId) {
+    const { id, ...rest } = p;
+    const history = [...(p.history || []), { stage: stageId, at: new Date().toISOString() }];
+    await saveProject(id, { ...rest, stage: stageId, history });
+    toast(`${p.code || "Project"} moved to ${stageOf(stageId).label}`);
+  }
+
+  /* ---------- summary strip ---------- */
+  function renderStrip() {
+    const ps = state.projects;
+    const active = ps.filter(p => p.stage !== "done" && p.stage !== "hold");
+    const pcsInWork = active.reduce((a, p) => a + qtyOf(p), 0);
+    const late = active.filter(p => { const d = dueInfo(p); return d && d.cls === "bad"; }).length;
+    const t = ps.reduce((a, p) => { const c = calc(p); a.sale += c.sale; a.profit += c.profit; a.bal += Math.max(0, c.balance); return a; }, { sale: 0, profit: 0, bal: 0 });
+    const owing = ps.filter(p => calc(p).balance > 0).length;
+    $("#strip").innerHTML = `
+      <div class="stat"><div class="k">Active projects</div><div class="v">${active.length}</div><div class="sub">${late ? `<span class="neg">${late} overdue</span>` : "None overdue"} · ${ps.filter(p => p.stage === "done").length} delivered</div></div>
+      <div class="stat"><div class="k">Shirts in progress</div><div class="v">${pcsInWork.toLocaleString()} <span style="font-size:15px;font-weight:600">pcs</span></div><div class="sub">${ps.filter(p => p.stage === "print").length} jobs at the printer</div></div>
+      <div class="stat"><div class="k">Total sales</div><div class="v">${esc(money(t.sale))}</div><div class="sub">All projects booked</div></div>
+      <div class="stat"><div class="k">Profit</div><div class="v ${t.profit >= 0 ? "pos" : "neg"}">${esc(money(t.profit))}</div><div class="sub">${t.sale ? Math.round(t.profit / t.sale * 100) + "% margin" : "No sales yet"}</div></div>
+      <div class="stat"><div class="k">Still owed to you</div><div class="v">${esc(money(t.bal))}</div><div class="sub">${owing} client${owing === 1 ? "" : "s"} with balance</div></div>`;
+  }
+
+  /* ---------- board ---------- */
+  function cardHTML(p) {
+    const s = stageOf(p.stage), c = calc(p), d = dueInfo(p);
+    const chips = [`<span class="chip">${c.q.toLocaleString()} pcs</span>`];
+    if (d) chips.push(`<span class="chip ${d.cls}">${esc(d.text)}</span>`);
+    if (c.sale > 0 && c.balance > 0) chips.push(`<span class="chip warn">Owes ${esc(money(c.balance))}</span>`);
+    else if (c.sale > 0 && c.balance <= 0) chips.push(`<span class="chip ok">Paid</span>`);
+    return `<article class="card" style="--c:var(${s.c})" data-open="${esc(p.id)}" tabindex="0" aria-label="${esc(p.name)}">
+      <div class="row1"><span class="code">${esc(p.code)}</span>${p.printer && p.stage === "print" ? `<span class="code">@ ${esc(p.printer)}</span>` : ""}</div>
+      <div class="name">${esc(p.name || "Untitled")}</div>
+      ${p.client ? `<div class="client">${esc(p.client)}</div>` : ""}
+      <div class="chips">${chips.join("")}</div>
+      ${s.next ? `<button class="next" type="button" data-advance="${esc(p.id)}">Move to ${esc(s.next)} →</button>` : ""}
+    </article>`;
+  }
+  function sortForBoard(a, b) {
+    const da = a.due ? parseDay(a.due).getTime() : Infinity, dbb = b.due ? parseDay(b.due).getTime() : Infinity;
+    return da - dbb || String(a.code).localeCompare(String(b.code));
+  }
+  function renderBoard() {
+    const ps = state.projects;
+    const cols = [...STAGES];
+    if (ps.some(p => p.stage === "hold")) cols.push(HOLD);
+    const html = cols.map(s => {
+      let items = ps.filter(p => (p.stage || "design") === s.id).sort(sortForBoard);
+      let more = "";
+      if (s.id === "done") { items = items.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))); if (items.length > 6) { more = `<div class="empty-col">+ ${items.length - 6} more in All jobs</div>`; items = items.slice(0, 6); } }
+      const count = ps.filter(p => (p.stage || "design") === s.id).length;
+      return `<section class="col" style="--c:var(${s.c})" aria-label="${esc(s.label)}">
+        <div class="colhead"><span class="swatch"></span><h3>${esc(s.label)}<span class="hint">${esc(s.hint)}</span></h3><span class="n">${count}</span></div>
+        <div class="cards">${items.map(cardHTML).join("") || `<div class="empty-col">Nothing here</div>`}${more}</div>
+      </section>`;
+    }).join("");
+    return `<div class="viewhead"><div><h2>Where every job is</h2><p>Tap a card to edit it. Use “Move to …” when a job moves forward.</p></div></div>
+      <div class="board-scroll"><div class="board" style="--cols:${cols.length}">${html}</div></div>`;
+  }
+
+  /* ---------- all jobs ---------- */
+  function renderJobs() {
+    const q = state.q.trim().toLowerCase();
+    const filters = [["active", "Active"], ["all", "All"], ...ALL.map(s => [s.id, s.label])];
+    let rows = state.projects.filter(p => {
+      if (state.stageFilter === "active" && (p.stage === "done" || p.stage === "hold")) return false;
+      if (!["active", "all"].includes(state.stageFilter) && p.stage !== state.stageFilter) return false;
+      if (q && ![p.code, p.name, p.client, p.contact, p.printer, p.shirt, p.notes].some(v => String(v || "").toLowerCase().includes(q))) return false;
+      return true;
+    }).sort((a, b) => String(b.code).localeCompare(String(a.code)));
+    const tot = rows.reduce((a, p) => { const c = calc(p); a.q += c.q; a.sale += c.sale; a.bal += Math.max(0, c.balance); return a; }, { q: 0, sale: 0, bal: 0 });
+    const body = rows.map(p => {
+      const s = stageOf(p.stage), c = calc(p), d = dueInfo(p);
+      return `<tr class="click" data-open="${esc(p.id)}" tabindex="0">
+        <td class="mono" style="color:var(--muted);font-size:12.5px">${esc(p.code)}</td>
+        <td><div class="t1">${esc(p.name || "Untitled")}</div><div class="t2">${esc(p.client || "—")}</div></td>
+        <td><span class="pill" style="--c:var(${s.c})">${esc(s.label)}</span></td>
+        <td class="num">${c.q.toLocaleString()}</td>
+        <td>${d ? `<span class="chip ${d.cls}">${esc(d.text)}</span>` : `<span class="t2">${esc(fmtDay(p.due) || "—")}</span>`}</td>
+        <td class="num">${esc(money(c.sale))}</td>
+        <td class="num ${c.balance > 0 ? "neg" : ""}">${c.balance > 0 ? esc(money(c.balance)) : "Paid"}</td>
+      </tr>`;
+    }).join("");
+    return `<div class="viewhead"><div><h2>All jobs</h2><p>${rows.length} shown. Search by project, client, printer or notes.</p></div></div>
+      <div class="toolbar">
+        <input class="search" id="search" type="search" placeholder="Search jobs…" value="${esc(state.q)}" aria-label="Search jobs">
+        ${filters.map(([id, l]) => `<button class="filter" type="button" data-filter="${id}" aria-pressed="${state.stageFilter === id}">${esc(l)}</button>`).join("")}
+      </div>
+      ${rows.length ? `<div class="tablebox"><table>
+        <thead><tr><th>Job</th><th>Project</th><th>Stage</th><th class="num">Pcs</th><th>Due</th><th class="num">Sale</th><th class="num">Balance</th></tr></thead>
+        <tbody>${body}</tbody>
+        <tfoot><tr><td></td><td>Total</td><td></td><td class="num">${tot.q.toLocaleString()}</td><td></td><td class="num">${esc(money(tot.sale))}</td><td class="num">${esc(money(tot.bal))}</td></tr></tfoot>
+      </table></div>` : `<div class="empty-state"><h3>No jobs match</h3><p>Try another search or pick a different stage.</p></div>`}`;
+  }
+
+  /* ---------- money ---------- */
+  function monthKey(p) { const s = p.createdAt || p.updatedAt; return s ? s.slice(0, 7) : null; }
+  function chartSVG(months) {
+    const W = 640, H = 230, L = 64, R = 12, T = 14, B = 34;
+    const max = Math.max(1, ...months.map(m => Math.max(m.sale, m.profit)));
+    const step = Math.pow(10, Math.floor(Math.log10(max))); let top = Math.ceil(max / step) * step; if (top / step < 3) top = Math.ceil(max / (step / 2)) * (step / 2);
+    const minP = Math.min(0, ...months.map(m => m.profit)); const bottom = minP < 0 ? -Math.ceil(-minP / (top / 4)) * (top / 4) : 0;
+    const y = v => T + (top - v) / (top - bottom) * (H - T - B);
+    const ticks = []; for (let v = bottom; v <= top + 1e-9; v += top / 4) ticks.push(v);
+    const gw = (W - L - R) / months.length, bw = Math.min(26, gw * 0.3);
+    const short = v => { const a = Math.abs(v); return (v < 0 ? "−" : "") + (a >= 1000 ? (a / 1000).toFixed(a % 1000 ? 1 : 0) + "k" : Math.round(a)); };
+    let g = ticks.map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono, monospace">${short(v)}</text>`).join("");
+    months.forEach((m, i) => {
+      const cx = L + gw * i + gw / 2;
+      const ys = y(m.sale), yp = y(Math.max(0, m.profit)), y0 = y(0);
+      g += `<rect x="${cx - bw - 2}" y="${ys}" width="${bw}" height="${Math.max(0, y0 - ys)}" rx="3" fill="var(--accent)"><title>Sales ${esc(money(m.sale))}</title></rect>`;
+      const ph = m.profit >= 0 ? y0 - yp : y(m.profit) - y0;
+      g += `<rect x="${cx + 2}" y="${m.profit >= 0 ? yp : y0}" width="${bw}" height="${Math.max(0, ph)}" rx="3" fill="${m.profit >= 0 ? "var(--ok)" : "var(--bad)"}"><title>Profit ${esc(money(m.profit))}</title></rect>`;
+      g += `<text x="${cx}" y="${H - 12}" text-anchor="middle" font-size="11.5" fill="var(--muted)" font-family="IBM Plex Mono, monospace">${esc(m.label)}</text>`;
+    });
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Sales and profit by month">${g}</svg>`;
+  }
+  function renderMoney() {
+    const ps = state.projects;
+    const t = ps.reduce((a, p) => { const c = calc(p); a.sale += c.sale; a.cost += c.cost; a.profit += c.profit; a.paid += Math.min(c.paid, c.sale || c.paid); a.bal += Math.max(0, c.balance); a.q += c.q; return a; }, { sale: 0, cost: 0, profit: 0, paid: 0, bal: 0, q: 0 });
+    const now = new Date(); const months = [];
+    for (let i = 5; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1); months.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, label: d.toLocaleDateString(undefined, { month: "short" }), sale: 0, profit: 0 }); }
+    ps.forEach(p => { const m = months.find(x => x.key === monthKey(p)); if (m) { const c = calc(p); m.sale += c.sale; m.profit += c.profit; } });
+    const owing = ps.filter(p => calc(p).balance > 0).sort((a, b) => calc(b).balance - calc(a).balance);
+    const rows = [...ps].sort((a, b) => calc(b).profit - calc(a).profit);
+    return `<div class="viewhead"><div><h2>Sales &amp; profit</h2><p>${t.q.toLocaleString()} shirts sold in total. Profit is sale price minus shirt cost and other costs.</p></div></div>
+      <section class="strip" style="margin-top:0;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+        <div class="stat"><div class="k">Sales</div><div class="v">${esc(money(t.sale))}</div></div>
+        <div class="stat"><div class="k">Costs</div><div class="v">${esc(money(t.cost))}</div></div>
+        <div class="stat"><div class="k">Profit</div><div class="v ${t.profit >= 0 ? "pos" : "neg"}">${esc(money(t.profit))}</div></div>
+        <div class="stat"><div class="k">Collected</div><div class="v">${esc(money(t.paid))}</div></div>
+        <div class="stat"><div class="k">Owed</div><div class="v">${esc(money(t.bal))}</div></div>
+      </section>
+      <div class="money-grid" style="margin-top:14px">
+        <div class="panel chart"><h3>Last 6 months</h3><p class="lede">By the month each project was added.</p>
+          <div class="legend"><span><i style="background:var(--accent)"></i>Sales</span><span><i style="background:var(--ok)"></i>Profit</span></div>
+          ${chartSVG(months)}</div>
+        <div class="panel"><h3>Who still owes you</h3><p class="lede">Balance after deposits and payments.</p>
+          ${owing.length ? `<ul class="owe">${owing.map(p => `<li data-open="${esc(p.id)}" tabindex="0"><span><b>${esc(p.client || p.name)}</b><br><span style="font-size:12.5px;color:var(--muted)">${esc(p.code)} · ${esc(p.name)}</span></span><span class="amt">${esc(money(calc(p).balance))}</span></li>`).join("")}</ul>` : `<p class="lede">Everyone has paid in full.</p>`}
+        </div>
+      </div>
+      <div class="viewhead"><div><h2>Profit per project</h2></div></div>
+      ${rows.length ? `<div class="tablebox"><table>
+        <thead><tr><th>Job</th><th>Project</th><th class="num">Pcs</th><th class="num">Price/pc</th><th class="num">Sale</th><th class="num">Cost</th><th class="num">Profit</th><th class="num">Margin</th></tr></thead>
+        <tbody>${rows.map(p => { const c = calc(p); return `<tr class="click" data-open="${esc(p.id)}" tabindex="0"><td class="mono" style="color:var(--muted);font-size:12.5px">${esc(p.code)}</td><td><div class="t1">${esc(p.name)}</div><div class="t2">${esc(p.client || "—")}</div></td><td class="num">${c.q}</td><td class="num">${esc(money(num(p.price)))}</td><td class="num">${esc(money(c.sale))}</td><td class="num">${esc(money(c.cost))}</td><td class="num ${c.profit >= 0 ? "pos" : "neg"}">${esc(money(c.profit))}</td><td class="num">${c.sale ? Math.round(c.profit / c.sale * 100) + "%" : "—"}</td></tr>`; }).join("")}</tbody>
+        <tfoot><tr><td></td><td>Total</td><td class="num">${t.q}</td><td></td><td class="num">${esc(money(t.sale))}</td><td class="num">${esc(money(t.cost))}</td><td class="num ${t.profit >= 0 ? "pos" : "neg"}">${esc(money(t.profit))}</td><td class="num">${t.sale ? Math.round(t.profit / t.sale * 100) + "%" : "—"}</td></tr></tfoot>
+      </table></div>` : ""}
+      <div class="settings-row"><label for="currency">Currency shown as</label><input id="currency" value="${esc(state.currency)}" maxlength="5"><span>e.g. RM, $, SGD</span></div>
+      <div class="settings-row"><span>Your data is saved on this device.</span><button class="btn small" type="button" id="export-btn">Export backup</button><label class="btn small" for="import-file">Import backup</label><input id="import-file" type="file" accept="application/json,.json" hidden></div>`;
+  }
+
+  /* ---------- render ---------- */
+  function render() {
+    renderStrip();
+    document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === state.tab)));
+    const v = $("#view");
+    if (!state.loaded) { v.innerHTML = `<div class="loading">Loading your projects…</div>`; return; }
+    if (!state.projects.length) {
+      v.innerHTML = `<div class="viewhead"></div><div class="empty-state"><h3>No projects yet</h3><p>Add your first shirt project: the client, how many pieces, what you charge and what it costs you. It will show up on the board by stage.</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn primary" type="button" data-new>+ New project</button><label class="btn" for="import-file">Import backup</label></div><input id="import-file" type="file" accept="application/json,.json" hidden></div>`;
+      return;
+    }
+    const hadFocus = document.activeElement && document.activeElement.id === "search";
+    v.innerHTML = state.tab === "board" ? renderBoard() : state.tab === "jobs" ? renderJobs() : renderMoney();
+    if (hadFocus) { const s = $("#search"); s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
+  }
+
+  /* ---------- modal ---------- */
+  function openModal(p) {
+    const isNew = !p;
+    const draft = p ? JSON.parse(JSON.stringify(p)) : { code: nextCode(), name: "", client: "", contact: "", stage: "design", due: "", printer: "", shirt: "", sizes: {}, qty: "", price: "", cost: "", extra: "", paid: "", notes: "", history: [] };
+    draft.sizes = draft.sizes || {};
+    const root = $("#modal-root");
+    const lastFocus = document.activeElement;
+    root.innerHTML = `<div class="scrim" id="scrim"><form class="sheet" id="pform" role="dialog" aria-modal="true" aria-labelledby="m-title" novalidate>
+      <div class="sheet-head"><div><div class="code">${esc(draft.code)}</div><h2 id="m-title">${isNew ? "New project" : esc(draft.name || "Project")}</h2></div><button type="button" class="x" id="m-close" aria-label="Close">×</button></div>
+      <div class="sheet-body">
+        <fieldset><legend>Stage</legend><div class="stages" id="m-stages">${ALL.map(s => `<button type="button" style="--c:var(${s.c})" data-stage="${s.id}" aria-pressed="${draft.stage === s.id}">${esc(s.label)}</button>`).join("")}</div></fieldset>
+        <fieldset><legend>Project</legend><div class="grid2">
+          <div class="field full"><label for="f-name">Project name</label><input id="f-name" name="name" required value="${esc(draft.name)}" placeholder="e.g. Class of 2026 reunion tee"><span class="err" id="name-err" hidden>Give the project a name so you can find it later.</span></div>
+          <div class="field"><label for="f-client">Client</label><input id="f-client" name="client" value="${esc(draft.client)}" placeholder="Person or group"></div>
+          <div class="field"><label for="f-contact">Contact</label><input id="f-contact" name="contact" value="${esc(draft.contact)}" placeholder="Phone, WhatsApp or IG"></div>
+          <div class="field"><label for="f-due">Due date</label><input id="f-due" name="due" type="date" value="${esc(draft.due)}"></div>
+          <div class="field"><label for="f-printer">Printer / supplier</label><input id="f-printer" name="printer" value="${esc(draft.printer)}" placeholder="Who is printing it"></div>
+          <div class="field full"><label for="f-shirt">Shirt details</label><input id="f-shirt" name="shirt" value="${esc(draft.shirt)}" placeholder="e.g. Black cotton 180gsm, DTF front + back"></div>
+        </div></fieldset>
+        <fieldset><legend>Quantity by size</legend>
+          <div class="sizes">${SIZES.map(k => `<div class="size"><label for="sz-${k}">${k}</label><input id="sz-${k}" data-size="${k}" type="number" min="0" inputmode="numeric" value="${esc(draft.sizes[k] || "")}"></div>`).join("")}</div>
+          <div class="grid2" style="margin-top:10px"><div class="field"><label for="f-qty">Or total pieces</label><input id="f-qty" name="qty" type="number" min="0" inputmode="numeric" value="${esc(draft.qty)}"><span class="help">Used when no sizes are filled in yet.</span></div></div>
+        </fieldset>
+        <fieldset><legend>Money (${esc(state.currency)})</legend><div class="grid4">
+          <div class="field"><label for="f-price">Price per shirt</label><input id="f-price" name="price" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.price)}"><span class="help">What the client pays</span></div>
+          <div class="field"><label for="f-cost">Cost per shirt</label><input id="f-cost" name="cost" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.cost)}"><span class="help">Blank + printing</span></div>
+          <div class="field"><label for="f-extra">Other costs</label><input id="f-extra" name="extra" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.extra)}"><span class="help">Delivery, setup, packaging</span></div>
+          <div class="field"><label for="f-paid">Paid so far</label><input id="f-paid" name="paid" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.paid)}"><span class="help">Deposits + payments</span></div>
+        </div>
+        <div class="calc" id="m-calc" style="margin-top:12px"></div></fieldset>
+        <fieldset><legend>Notes</legend><div class="field"><label for="f-notes" style="position:absolute;left:-9999px">Notes</label><textarea id="f-notes" name="notes" placeholder="Design changes, colours, what the client asked for…">${esc(draft.notes)}</textarea></div></fieldset>
+        ${(draft.history || []).length ? `<fieldset><legend>Stage history</legend><ul class="history">${[...draft.history].reverse().map(h => `<li><time>${esc(fmtStamp(h.at))}</time><span class="pill" style="--c:var(${stageOf(h.stage).c})">${esc(stageOf(h.stage).label)}</span></li>`).join("")}</ul></fieldset>` : ""}
+      </div>
+      <div class="sheet-foot">
+        ${isNew ? "" : `<button type="button" class="btn danger" id="m-del">Delete</button>`}
+        <span class="spacer"></span>
+        <span class="err" id="save-err" hidden></span>
+        <button type="button" class="btn" id="m-cancel">Cancel</button>
+        <button type="submit" class="btn primary" id="m-save">${isNew ? "Add project" : "Save changes"}</button>
+      </div>
+    </form></div>`;
+    const form = $("#pform");
+    const read = () => {
+      const f = form.elements;
+      ["name", "client", "contact", "due", "printer", "shirt", "qty", "price", "cost", "extra", "paid", "notes"].forEach(k => (draft[k] = f[k].value));
+      draft.name = draft.name.trim();
+      SIZES.forEach(k => { const v = form.querySelector(`[data-size="${k}"]`).value; if (v === "" || num(v) === 0) delete draft.sizes[k]; else draft.sizes[k] = num(v); });
+    };
+    const updCalc = () => {
+      read(); const c = calc(draft);
+      $("#m-calc").innerHTML = [["Pieces", c.q.toLocaleString()], ["Sale", money(c.sale)], ["Cost", money(c.cost)], ["Profit", money(c.profit)], ["Balance", c.sale ? (c.balance > 0 ? money(c.balance) : "Paid") : "—"]]
+        .map(([k, v]) => `<div><div class="k">${k}</div><div class="v ${k === "Profit" ? (c.profit >= 0 ? "pos" : "neg") : ""}">${esc(v)}</div></div>`).join("");
+    };
+    updCalc();
+    form.addEventListener("input", updCalc);
+    $("#m-stages").addEventListener("click", e => { const b = e.target.closest("[data-stage]"); if (!b) return; draft.stage = b.dataset.stage; $("#m-stages").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); });
+    const close = () => { root.innerHTML = ""; document.removeEventListener("keydown", onKey); if (lastFocus && lastFocus.focus) lastFocus.focus(); };
+    const onKey = e => { if (e.key === "Escape") close(); };
+    document.addEventListener("keydown", onKey);
+    $("#m-close").onclick = close; $("#m-cancel").onclick = close;
+    $("#scrim").addEventListener("mousedown", e => { if (e.target.id === "scrim") close(); });
+    const del = $("#m-del");
+    if (del) del.onclick = async () => {
+      if (!del.classList.contains("armed")) { del.classList.add("armed"); del.textContent = "Tap again to delete"; setTimeout(() => { if (del.isConnected) { del.classList.remove("armed"); del.textContent = "Delete"; } }, 4000); return; }
+      try { await deleteProject(p.id); close(); toast("Project deleted"); } catch (err) { showErr(err); }
+    };
+    const showErr = err => { const el = $("#save-err"); el.textContent = err && err.code === "quota_exceeded" ? "Storage is full. Delete old projects and try again." : "Couldn't save. Check your connection and try again."; el.hidden = false; };
+    form.addEventListener("submit", async e => {
+      e.preventDefault(); read();
+      if (!draft.name) { $("#name-err").hidden = false; $("#f-name").focus(); return; }
+      const { id, ...data } = draft;
+      if (isNew) { data.createdAt = new Date().toISOString(); data.history = [{ stage: data.stage, at: data.createdAt }]; }
+      else if (p.stage !== data.stage) data.history = [...(data.history || []), { stage: data.stage, at: new Date().toISOString() }];
+      const btn = $("#m-save"); btn.disabled = true; btn.textContent = "Saving…";
+      try { await saveProject(isNew ? null : p.id, data); close(); toast(isNew ? "Project added" : "Saved"); }
+      catch (err) { btn.disabled = false; btn.textContent = isNew ? "Add project" : "Save changes"; showErr(err); }
+    });
+    setTimeout(() => (isNew ? $("#f-name") : $("#m-close")).focus(), 0);
+  }
+
+  /* ---------- events ---------- */
+  document.addEventListener("click", async e => {
+    const tab = e.target.closest("[data-tab]"); if (tab) { state.tab = tab.dataset.tab; try { localStorage.setItem("kemas-tab", state.tab); } catch (_) {} render(); return; }
+    if (e.target.closest("#new-btn, [data-new]")) { openModal(null); return; }
+    if (e.target.closest("#export-btn")) { exportBackup(); return; }
+    const adv = e.target.closest("[data-advance]");
+    if (adv) { e.stopPropagation(); const p = state.projects.find(x => x.id === adv.dataset.advance); const i = STAGES.findIndex(s => s.id === p.stage); if (p && i >= 0 && STAGES[i + 1]) { adv.disabled = true; try { await moveStage(p, STAGES[i + 1].id); } catch (_) { adv.disabled = false; toast("Couldn't move it. Try again."); } } return; }
+    const f = e.target.closest("[data-filter]"); if (f) { state.stageFilter = f.dataset.filter; render(); return; }
+    const o = e.target.closest("[data-open]"); if (o && !e.target.closest("#modal-root")) { const p = state.projects.find(x => x.id === o.dataset.open); if (p) openModal(p); }
+  });
+  document.addEventListener("keydown", e => {
+    if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-open]")) { e.preventDefault(); const p = state.projects.find(x => x.id === e.target.dataset.open); if (p) openModal(p); }
+  });
+  document.addEventListener("input", e => { if (e.target.id === "search") { state.q = e.target.value; render(); } });
+  document.addEventListener("change", async e => {
+    if (e.target.id === "import-file") { const f = e.target.files && e.target.files[0]; if (f) await importBackup(f); e.target.value = ""; return; }
+    if (e.target.id !== "currency") return;
+    const v = e.target.value.trim().slice(0, 5) || "RM";
+    state.currency = v; render();
+    try { persist(); toast("Currency updated"); } catch (_) { toast("Couldn't save the currency."); }
+  });
+
+  /* ---------- boot ---------- */
+  try { const t = localStorage.getItem("kemas-tab"); if (["board", "jobs", "money"].includes(t)) state.tab = t; } catch (_) {}
+  render();
+
+  function boot() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) { const d = JSON.parse(raw); state.projects = Array.isArray(d.projects) ? d.projects : []; if (d.currency) state.currency = String(d.currency); }
+    } catch (_) { banner("This browser is blocking storage, so projects can't be saved. Turn off Private Browsing and reopen the app.", "warn"); }
+    state.loaded = true; state.mode = "local";
+    render();
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
