@@ -266,7 +266,7 @@ legend { font-family: var(--f-mono); font-size: 11px; letter-spacing: .09em; tex
 .brow .bc { display: flex; gap: 4px; justify-content: flex-end; flex-wrap: wrap; }
 .bedit { padding: 12px; display: flex; flex-direction: column; gap: 12px; background: var(--paper); border-top: 1px dashed var(--line); }
 .bedit .field input, .bedit .field select, .bedit .field textarea { background: var(--surface); }
-.it { display: grid; grid-template-columns: minmax(0, 1fr) 84px 60px 34px; gap: 6px; align-items: center; }
+.it { display: grid; grid-template-columns: minmax(0, 1fr) 78px 74px 54px 30px; gap: 6px; align-items: center; }
 .it + .it { margin-top: 6px; }
 .links { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
 .links a { color: var(--accent); font-weight: 600; }
@@ -276,15 +276,19 @@ legend { font-family: var(--f-mono); font-size: 11px; letter-spacing: .09em; tex
 .imp-row + .imp-row { border-top: 1px solid var(--line); }
 .imp-row .why { grid-column: 1 / -1; font-size: 12px; color: var(--warn); }
 .imp-row.dupe { opacity: .55; }
+.code-out { background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-family: var(--f-mono); font-size: 12px; line-height: 1.5; max-height: 260px; overflow: auto; white-space: pre; margin: 0; }
+.var-row { display: grid; grid-template-columns: minmax(0, 1fr) 100px 34px; gap: 6px; align-items: center; }
+.var-row + .var-row { margin-top: 6px; }
+.check-row { display: flex; gap: 8px; align-items: center; font-size: 14px; }
 @media (max-width: 560px) { .line-box .grid2 { grid-template-columns: 1fr; } .line-box { padding: 10px; } }
 .size { display: flex; flex-direction: column; align-items: stretch; gap: 3px; }
 .size label { font-family: var(--f-mono); font-size: 12px; font-weight: 600; text-align: center; color: var(--muted); }
 .size input { text-align: center; padding: 7px 4px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); font-family: var(--f-mono); width: 100%; }
-.calc { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
 @media (max-width: 560px) { .calc { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .calc div { background: var(--sunk); padding: 9px 11px; min-width: 0; }
 .calc .k { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
-.calc .v { font-family: var(--f-mono); font-weight: 600; font-size: 15px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.calc .v { font-family: var(--f-mono); font-weight: 600; font-size: 15px; margin-top: 2px; overflow-wrap: anywhere; }
 .history { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
 .history li { display: flex; gap: 10px; align-items: center; }
 .history time { font-family: var(--f-mono); color: var(--muted); font-size: 12px; min-width: 96px; }
@@ -370,6 +374,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       { id: "numbering", name: "Numbering or naming", price: 3 },
       { id: "dtf-label", name: "DTF label tag", price: 1 },
       { id: "pen-pocket", name: "Pen pocket", price: 2 },
+      { id: "long-sleeve", name: "Long sleeve", price: 2 },
     ],
     bigFrom: "3XL", big: 4,
   };
@@ -384,12 +389,13 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       delete pl.sleeves;
     }
     ["fabrics", "collars", "addons"].forEach(k => { if (!Array.isArray(pl[k]) || !pl[k].length) pl[k] = clone(DEFAULT_PL[k]); });
+    if (!pl.lsAdded) { if (!pl.addons.some(a => /long/i.test(a.name))) pl.addons.push({ id: "long-sleeve", name: "Long sleeve", price: 2 }); pl.lsAdded = true; }
     return pl;
   }
   const pick = (list, id) => (list || []).find(x => x.id === id) || (list || [])[0] || { id: "", name: "", price: 0 };
   const plus = n => (num(n) ? "+" + money(num(n)).replace(state.currency + " ", state.currency) : "free");
   const fabricLabel = f => f.name + (f.note ? ` · ${f.note}` : "");
-  const newLine = pl => ({ id: "l" + Math.random().toString(36).slice(2, 8), label: "", collar: pl.collars[0] ? pl.collars[0].id : "", addons: [], sizes: {}, pieces: "" });
+  const newLine = pl => ({ id: "l" + Math.random().toString(36).slice(2, 8), label: "", collar: pl.collars[0] ? pl.collars[0].id : "", addons: [], sizes: {}, pieces: "", sell: "" });
   const bigIdx = pl => { const i = SIZES.indexOf(pl.bigFrom || "3XL"); return i < 0 ? SIZES.length : i; };
   function unitOf(p, line) {
     const pl = p.pl || state.priceList;
@@ -403,7 +409,17 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     SIZES.forEach((k, i) => { const n = num(sizes[k]); pcs += n; if (i >= bi) bigPcs += n; });
     const bySize = pcs > 0;
     if (!bySize) pcs = num(line.pieces);
-    return { unit, bigUnit: unit + num(pl.big), pcs, bigPcs, bySize, sale: pcs * unit + bigPcs * num(pl.big) };
+    const sell = num(line.sell);
+    return { unit, bigUnit: unit + num(pl.big), pcs, bigPcs, bySize, cost: pcs * unit + bigPcs * num(pl.big), sell, sale: pcs * sell };
+  }
+  // v2: "base" and the cost list are what a shirt costs Kemas; each shirt type has its own selling price
+  function migrateProject(p) {
+    if (!p || p.v === 2 || !Array.isArray(p.lines) || !p.lines.length) return p;
+    const q = JSON.parse(JSON.stringify(p));
+    q.lines.forEach(l => { if (l.sell == null || l.sell === "") { const u = unitOf(q, l); l.sell = u ? String(u) : ""; } });
+    q.base = num(q.cost) || num((q.pl || state.priceList || {}).base) || 14;
+    delete q.cost; q.v = 2;
+    return q;
   }
   const hasLines = p => Array.isArray(p.lines) && p.lines.length > 0;
   const buyersOf = p => (Array.isArray(p.buyers) ? p.buyers : []);
@@ -422,11 +438,19 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   const qtyOf = p => { if (buyersOf(p).length) return buyerCalc(p).pcs; if (hasLines(p)) return p.lines.reduce((a, l) => a + lineCalc(p, l).pcs, 0); const s = SIZES.reduce((a, k) => a + num(p.sizes && p.sizes[k]), 0); return s > 0 ? s : num(p.qty); };
   const calc = p => {
     if (buyersOf(p).length) {
-      const bc = buyerCalc(p), sale = bc.amount + num(p.adjust), cost = bc.pcs * num(p.cost) + num(p.extra);
+      const bc = buyerCalc(p), sale = bc.amount + num(p.adjust);
+      const lineCost = hasLines(p) && p.v === 2 ? p.lines.filter(l => l.auto).reduce((a, l) => a + lineCalc(p, l).cost, 0) : bc.pcs * num(p.cost);
+      const cost = lineCost + num(p.extra);
       return { q: bc.pcs, sale, cost, profit: sale - cost, paid: bc.paid, balance: sale - bc.paid };
     }
+    if (hasLines(p) && p.v === 2) {
+      const ls = p.lines.map(l => lineCalc(p, l));
+      const q = ls.reduce((a, x) => a + x.pcs, 0), sale = ls.reduce((a, x) => a + x.sale, 0) + num(p.adjust), cost = ls.reduce((a, x) => a + x.cost, 0) + num(p.extra);
+      return { q, sale, cost, profit: sale - cost, paid: num(p.paid), balance: sale - num(p.paid) };
+    }
     const q = qtyOf(p);
-    const sale = hasLines(p) ? p.lines.reduce((a, l) => a + lineCalc(p, l).sale, 0) + num(p.adjust) : q * num(p.price);
+    // projects saved before v2 that haven't been migrated yet: old base was the selling price
+    const sale = hasLines(p) ? p.lines.reduce((a, l) => a + lineCalc(p, l).cost, 0) + num(p.adjust) : q * num(p.price);
     const cost = q * num(p.cost) + num(p.extra);
     return { q, sale, cost, profit: sale - cost, paid: num(p.paid), balance: sale - num(p.paid) };
   };
@@ -487,7 +511,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       if (!d || !Array.isArray(d.projects)) throw new Error("bad");
       const byId = new Map(state.projects.map(p => [p.id, p]));
       d.projects.forEach(p => { if (p && typeof p === "object") { const id = String(p.id || "p-" + Math.random().toString(36).slice(2)); const old = byId.get(id); if (!old || String(p.updatedAt) >= String(old.updatedAt)) byId.set(id, { ...p, id }); } });
-      state.projects = [...byId.values()];
+      state.projects = [...byId.values()].map(migrateProject);
       if (d.priceList && String(d.priceListAt || "") > String(state.priceListAt || "")) { state.priceList = normalizePL(d.priceList); state.priceListAt = d.priceListAt; }
       if (d.currency) { state.currency = String(d.currency).slice(0, 5); state.currencyAt = new Date().toISOString(); }
       persist(); render(); toast(`Imported ${d.projects.length} project${d.projects.length === 1 ? "" : "s"}`);
@@ -555,7 +579,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         <div class="cards">${items.map(cardHTML).join("") || `<div class="empty-col">Nothing here</div>`}${more}</div>
       </section>`;
     }).join("");
-    return `<div class="viewhead"><div><h2>Where every job is</h2><p>Tap a card to edit it. Tap “Next” when a job moves forward.</p></div><button class="btn small" type="button" data-pricelist>Price list</button></div>
+    return `<div class="viewhead"><div><h2>Where every job is</h2><p>Tap a card to edit it. Tap “Next” when a job moves forward.</p></div><button class="btn small" type="button" data-pricelist>Cost list</button></div>
       <div class="board-scroll"><div class="board" style="--cols:${cols.length}">${html}</div></div>`;
   }
 
@@ -646,7 +670,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         <tbody>${rows.map(p => { const c = calc(p); return `<tr class="click" data-open="${esc(p.id)}" tabindex="0"><td class="mono" style="color:var(--muted);font-size:12.5px">${esc(p.code)}</td><td><div class="t1">${esc(p.name)}</div><div class="t2">${esc(p.client || "—")}</div></td><td class="num">${c.q}</td><td class="num">${esc(money(Math.round(avgPrice(p) * 100) / 100))}</td><td class="num">${esc(money(c.sale))}</td><td class="num">${esc(money(c.cost))}</td><td class="num ${c.profit >= 0 ? "pos" : "neg"}">${esc(money(c.profit))}</td><td class="num">${c.sale ? Math.round(c.profit / c.sale * 100) + "%" : "—"}</td></tr>`; }).join("")}</tbody>
         <tfoot><tr><td></td><td>Total</td><td class="num">${t.q}</td><td></td><td class="num">${esc(money(t.sale))}</td><td class="num">${esc(money(t.cost))}</td><td class="num ${t.profit >= 0 ? "pos" : "neg"}">${esc(money(t.profit))}</td><td class="num">${t.sale ? Math.round(t.profit / t.sale * 100) + "%" : "—"}</td></tr></tfoot>
       </table></div>` : ""}
-      <div class="settings-row"><button class="btn small" type="button" data-pricelist>Edit price list</button><span>Base price, fabrics, collars and add-ons from your sales kit.</span></div>
+      <div class="settings-row"><button class="btn small" type="button" data-pricelist>Edit cost list</button><span>What each shirt costs you: base cost, fabrics, collars and add-ons.</span></div>
       <div class="settings-row"><label for="currency">Currency shown as</label><input id="currency" value="${esc(state.currency)}" maxlength="5"><span>e.g. RM, $, SGD</span></div>
       <div class="settings-row"><span>Projects sync through your GitHub when sync is on. A backup file is a spare copy.</span><button class="btn small" type="button" id="export-btn">Export backup</button><label class="btn small" for="import-file">Import backup</label><input id="import-file" type="file" accept="application/json,.json" hidden></div>`;
   }
@@ -806,37 +830,88 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
     return rows.map(r => r.map(c => c.trim())).filter(r => r.some(Boolean));
   }
+  const sleeveOf = t => (/long|panjang/i.test(t || "") ? "Long" : /short|pendek/i.test(t || "") ? "Short" : "");
+  function colorOf(t) { const m = String(t || "").match(colorRe()); return m ? COLOR_MAP[m[0].toLowerCase()] : ""; }
   function mapHeader(cells) {
     const idx = {};
     cells.forEach((h, i) => {
       const x = h.toLowerCase();
+      const gm = h.match(/\[([^\]]+)\]\s*$/);
+      if (gm && SIZES.includes(normSize(gm[1].trim()))) { (idx.grid = idx.grid || []).push({ i, size: normSize(gm[1].trim()), variant: h.replace(/\[[^\]]*\]\s*$/, "").replace(/\s*[—–-]\s*how many.*$/i, "").trim() }); return; }
       if (/timestamp|cap masa/.test(x)) idx.ts ??= i;
+      else if (/unit cost|line cost|\bcost\b|\bkos\b/.test(x)) return;
+      else if (/\bqty\b|quantity|kuantiti/.test(x)) idx.qty ??= i;
+      else if (/unit price|harga/.test(x)) idx.unitPrice ??= i;
+      else if (/line sales|total sales|jumlah/.test(x)) idx.lineSales ??= i;
+      else if (/sleeve|lengan/.test(x)) idx.sleeve ??= i;
+      else if (/colou?r|warna/.test(x)) idx.color ??= i;
+      else if (/pick ?-?up|ambil/.test(x)) idx.pickup ??= i;
+      else if (/category|kategori/.test(x)) idx.category ??= i;
       else if (/receipt|resit|bukti|proof|payment|bayaran/.test(x)) idx.receipt ??= i;
       else if (/additional|detail|reconfirm|butiran/.test(x)) idx.details ??= i;
       else if (/order type|jenis|package|pakej|order/.test(x)) { if (idx.type == null) idx.type = i; else idx.type2 ??= i; }
       else if (/phone|tel|whatsapp|\bhp\b/.test(x)) idx.phone ??= i;
       else if (/size|saiz|ukuran/.test(x)) idx.size ??= i;
-      else if (/college|kolej|residen|address|alamat|blok|block|campus/.test(x)) idx.place ??= i;
+      else if (/college|kolej|residen|address|alamat|blok|block|campus|location|lokasi/.test(x)) idx.place ??= i;
       else if (/nama|name/.test(x)) idx.name ??= i;
       else if (/column|note|remark|catatan|nota/.test(x)) idx.note ??= i;
     });
     return idx;
   }
   const FORM_DEFAULT = { ts: 0, name: 1, phone: 2, place: 3, type: 4, size: 5, details: 6, type2: 7, receipt: 8, note: 9 };
-  function parseOrders(text) {
+  // Reads three layouts: the KEMAS order form (a size grid per shirt type), a one-row-per-shirt order record,
+  // and free-text forms like "Combo - 1pc Navy(M), Maroon(L)".
+  function parseOrders(text, setup) {
     const rows = parseDelimited(text);
-    if (!rows.length) return [];
-    const h = mapHeader(rows[0]);
-    const hasHeader = h.name != null && (h.size != null || h.details != null || h.type != null);
-    const map = hasHeader ? h : FORM_DEFAULT;
-    return rows.slice(hasHeader ? 1 : 0).map(r => { const o = {}; Object.entries(map).forEach(([k, i]) => (o[k] = r[i] || "")); return o; })
-      .filter(o => o.name || o.details || o.type).map(rowToBuyer);
+    if (!rows.length) return { buyers: [], mode: "", hasReceipt: false };
+    let hi = -1, h = {};
+    for (let i = 0; i < Math.min(rows.length, 6); i++) { const m = mapHeader(rows[i]); if (m.name != null && (m.size != null || m.details != null || m.type != null || m.grid || m.qty != null)) { hi = i; h = m; break; } }
+    const map = hi >= 0 ? h : FORM_DEFAULT, body = rows.slice(hi >= 0 ? hi + 1 : 0);
+    const cell = (r, k) => (map[k] != null ? String(r[map[k]] || "").trim() : "");
+    const hasReceipt = map.receipt != null;
+    const priceOf = variant => { const v = ((setup && setup.variants) || []).find(x => x.name.trim().toLowerCase() === variant.trim().toLowerCase()); return v ? num(v.price) : 0; };
+    if (map.grid) {
+      const buyers = body.filter(r => cell(r, "name")).map(r => {
+        const items = [];
+        map.grid.forEach(g => { const n = num(r[g.i]); if (n > 0) items.push({ color: colorOf(g.variant) || (sleeveOf(g.variant) ? "" : g.variant), sleeve: sleeveOf(g.variant), size: g.size, qty: n, _v: g.variant }); });
+        const amount = items.reduce((a, it) => a + it.qty * priceOf(it._v), 0);
+        items.forEach(it => delete it._v);
+        const receipt = cell(r, "receipt"), flags = [];
+        if (!items.length) flags.push("Nothing ordered");
+        if (hasReceipt && !receipt) flags.push("No receipt");
+        return { id: "b" + Math.random().toString(36).slice(2, 10), ts: cell(r, "ts"), name: cleanText(cell(r, "name")), phone: fixPhone(cell(r, "phone")), place: cleanText(cell(r, "place")), pickup: cleanText(cell(r, "pickup")), items, amount, paid: hasReceipt ? !!receipt : false, receipt: /^https:\/\//.test(receipt) ? receipt : "", note: cleanText(cell(r, "note")), flags, collected: false, src: "" };
+      });
+      return { buyers, mode: "grid", hasReceipt };
+    }
+    if (map.qty != null && map.size != null) {
+      const by = new Map();
+      body.forEach(r => {
+        const name = cleanText(cell(r, "name")); if (!name || /^total$/i.test(name)) return;
+        if (!cell(r, "size") && !cell(r, "qty")) return; // notes and colour legends under the table
+        const phone = fixPhone(cell(r, "phone")), key = name.toLowerCase() + "|" + phone.replace(/\D/g, "");
+        const sz = sizesIn(cell(r, "size"))[0] || normSize(cell(r, "size")), qty = num(cell(r, "qty")) || 1;
+        const amount = cell(r, "lineSales") !== "" ? num(cell(r, "lineSales")) : num(cell(r, "unitPrice")) * qty;
+        let b = by.get(key);
+        if (!b) { b = { id: "b" + Math.random().toString(36).slice(2, 10), ts: "", name, phone, place: cleanText(cell(r, "place")), pickup: cleanText(cell(r, "pickup")), items: [], amount: 0, paid: false, receipt: "", note: "", flags: [], collected: false, src: "" }; by.set(key, b); }
+        b.items.push({ color: colorOf(cell(r, "color")) || cleanText(cell(r, "color")), sleeve: sleeveOf(cell(r, "sleeve")), size: sz, qty });
+        b.amount += amount;
+        const cat = cleanText(cell(r, "category"));
+        if (cat && !/^normal$/i.test(cat) && !b.note.includes(cat)) b.note = [b.note, cat + " price"].filter(Boolean).join(", ");
+        const rc = cell(r, "receipt"); if (rc) { b.receipt = /^https:\/\//.test(rc) ? rc : b.receipt; b.paid = true; }
+        if (!sz) b.flags.push("Missing size");
+      });
+      return { buyers: [...by.values()], mode: "rows", hasReceipt };
+    }
+    const buyers = body.map(r => { const o = {}; Object.entries(map).forEach(([k, i]) => { if (typeof i === "number") o[k] = r[i] || ""; }); return o; })
+      .filter(o => o.name || o.details || o.type).map(o => { const b = rowToBuyer(o); b.pickup = ""; return b; });
+    return { buyers, mode: "text", hasReceipt: true };
   }
-  const buyerKey = b => `${String(b.ts || "").trim()}|${String(b.name || "").trim().toLowerCase()}`;
-  const itemsText = b => (b.items || []).map(it => `${it.color} ${it.size}${num(it.qty) > 1 ? " ×" + num(it.qty) : ""}`).join(", ");
+  const buyerKey = b => String(b.ts || "").trim() ? `${String(b.ts).trim()}|${String(b.name || "").trim().toLowerCase()}` : `${String(b.name || "").trim().toLowerCase()}|${String(b.phone || "").replace(/\D/g, "")}`;
+  const variantName = it => [it.color, it.sleeve ? it.sleeve + " sleeve" : ""].filter(Boolean).join(" ") || "Shirt";
+  const itemsText = b => (b.items || []).map(it => `${variantName(it)} ${it.size}${num(it.qty) > 1 ? " ×" + num(it.qty) : ""}`).join(", ");
   function sizeTotals(buyers) {
     const t = {}, sizes = new Set();
-    buyers.forEach(b => (b.items || []).forEach(it => { const c = it.color || "Other"; t[c] = t[c] || {}; t[c][it.size] = (t[c][it.size] || 0) + num(it.qty || 1); sizes.add(it.size); }));
+    buyers.forEach(b => (b.items || []).forEach(it => { const c = variantName(it); t[c] = t[c] || {}; t[c][it.size] = (t[c][it.size] || 0) + num(it.qty || 1); sizes.add(it.size); }));
     const order = [...SIZES.filter(x => sizes.has(x)), ...[...sizes].filter(x => !SIZES.includes(x))];
     return { t, order, colors: Object.keys(t) };
   }
@@ -844,7 +919,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     const { t, order, colors } = sizeTotals(buyers);
     if (!colors.length) return "";
     const tot = k => colors.reduce((a, c) => a + (t[c][k] || 0), 0), rowSum = c => order.reduce((a, k) => a + (t[c][k] || 0), 0);
-    return `<div class="tablebox mini"><table><thead><tr><th>Colour</th>${order.map(k => `<th class="num">${esc(k)}</th>`).join("")}<th class="num">Total</th></tr></thead>
+    return `<div class="tablebox mini"><table><thead><tr><th>Type</th>${order.map(k => `<th class="num">${esc(k)}</th>`).join("")}<th class="num">Total</th></tr></thead>
       <tbody>${colors.map(c => `<tr><td>${esc(c)}</td>${order.map(k => `<td class="num">${t[c][k] || ""}</td>`).join("")}<td class="num"><b>${rowSum(c)}</b></td></tr>`).join("")}</tbody>
       <tfoot><tr><td>Total</td>${order.map(k => `<td class="num">${tot(k)}</td>`).join("")}<td class="num">${colors.reduce((a, c) => a + rowSum(c), 0)}</td></tr></tfoot></table></div>`;
   }
@@ -855,24 +930,30 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     const tmpl = d.lines.find(l => !l.auto) || d.lines[0] || newLine(d.pl);
     const out = colors.map(c => {
       const ex = d.lines.find(l => (l.label || "").toLowerCase() === c.toLowerCase());
-      const l = ex || { ...clone(tmpl), id: newLine(d.pl).id, label: c };
+      let l = ex;
+      if (!l) {
+        l = { ...clone(tmpl), id: newLine(d.pl).id, label: c };
+        const ls = (d.pl.addons || []).find(a => /long/i.test(a.name));
+        if (ls) { l.addons = (l.addons || []).filter(x => x !== ls.id); if (/long sleeve/i.test(c)) l.addons.push(ls.id); }
+      }
       l.sizes = { ...t[c] }; l.pieces = ""; l.auto = true; return l;
     });
     const keep = d.lines.filter(l => !out.includes(l) && !l.auto && (l.label || Object.keys(l.sizes || {}).length || num(l.pieces)));
     d.lines = [...out, ...keep];
   }
-  function openImport(existing, onAdd) {
+  function openImport(existing, onAdd, setup) {
     const wrap = document.createElement("div"); wrap.className = "scrim"; wrap.style.zIndex = "60";
     wrap.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="imp-title">
-      <div class="sheet-head"><div><div class="code">GOOGLE FORM</div><h2 id="imp-title">Import buyer orders</h2></div><button type="button" class="x" data-imp="close" aria-label="Close">×</button></div>
+      <div class="sheet-head"><div><div class="code">GOOGLE FORM · SHEET</div><h2 id="imp-title">Import buyer orders</h2></div><button type="button" class="x" data-imp="close" aria-label="Close">×</button></div>
       <div class="sheet-body">
         <ol class="steps">
-          <li>Open the form's responses in Google Sheets.</li>
+          <li>Open the form's responses (or your order record) in Google Sheets.</li>
           <li>Select all the cells, header row included, and copy (<b>⌘A</b> then <b>⌘C</b> on a laptop; on a phone, tap the corner box and choose Copy).</li>
           <li>Paste below. Orders you already imported are skipped, so you can paste the whole sheet again later to add new ones.</li>
         </ol>
         <div class="field"><label for="imp-text">Paste rows here</label><textarea id="imp-text" style="min-height:140px;font-family:var(--f-mono);font-size:12.5px" placeholder="Timestamp	NAMA	PHONE NUMBER	…"></textarea></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><label class="btn small" for="imp-file">Or choose a CSV file</label><input id="imp-file" type="file" accept=".csv,.tsv,text/csv,text/plain" hidden><span class="note">In Google Sheets: File → Download → CSV.</span></div>
+        <label class="check-row" id="imp-paid-row" hidden><input type="checkbox" id="imp-paid"> These orders are already paid</label>
         <div id="imp-out"></div>
       </div>
       <div class="sheet-foot"><span class="spacer"></span><button type="button" class="btn" data-imp="close">Cancel</button><button type="button" class="btn primary" data-imp="add" disabled>Add orders</button></div>
@@ -881,8 +962,14 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     const keys = new Set(existing.map(buyerKey));
     let parsed = [];
     const out = wrap.querySelector("#imp-out"), addBtn = wrap.querySelector('[data-imp="add"]');
+    let lastText = "";
     function preview(text) {
-      parsed = text.trim() ? parseOrders(text) : [];
+      lastText = text;
+      const res = text.trim() ? parseOrders(text, setup) : { buyers: [], mode: "", hasReceipt: true };
+      parsed = res.buyers;
+      const pr = wrap.querySelector("#imp-paid-row"), pc = wrap.querySelector("#imp-paid");
+      pr.hidden = res.hasReceipt || !parsed.length;
+      if (!pr.hidden) { if (pc.dataset.touched !== "1") pc.checked = res.mode === "rows"; parsed.forEach(b => { b.paid = pc.checked; }); }
       // "biru" / "blue" means the navy shirt when the order has navy
       if ([...existing, ...parsed].some(b => (b.items || []).some(it => it.color === "Navy"))) parsed.forEach(b => b.items.forEach(it => { if (it.color === "Blue") it.color = "Navy"; }));
       const fresh = parsed.filter(b => !keys.has(buyerKey(b)));
@@ -895,6 +982,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       addBtn.disabled = !fresh.length; addBtn.textContent = fresh.length ? `Add ${fresh.length} order${fresh.length === 1 ? "" : "s"}` : "Nothing new to add";
     }
     let tmr = 0;
+    wrap.querySelector("#imp-paid").addEventListener("change", e => { e.target.dataset.touched = "1"; preview(lastText); });
     wrap.querySelector("#imp-text").addEventListener("input", e => { clearTimeout(tmr); const v = e.target.value; tmr = setTimeout(() => preview(v), 200); });
     wrap.querySelector("#imp-file").addEventListener("change", async e => { const f = e.target.files && e.target.files[0]; if (!f) return; const t = await f.text(); wrap.querySelector("#imp-text").value = t; preview(t); });
     const close = () => { wrap.remove(); document.removeEventListener("keydown", onKey, true); };
@@ -906,6 +994,103 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       if (b.dataset.imp === "add") { const fresh = parsed.filter(x => !keys.has(buyerKey(x))); onAdd(fresh); close(); }
     });
     setTimeout(() => wrap.querySelector("#imp-text").focus(), 0);
+  }
+
+  function formScript(setup) {
+    const sizes = setup.sizes.length ? setup.sizes : SIZES.slice(0, 7);
+    const lines = setup.variants.map(v => `- ${v.name}: ${money(num(v.price))}`);
+    const desc = [setup.info.trim(), lines.length ? "Price per shirt:\n" + lines.join("\n") : "", "Tick how many shirts you want in each size. Leave the other sizes empty."].filter(Boolean).join("\n\n");
+    const J = v => JSON.stringify(v);
+    return `// KEMAS APPAREL order form. Paste this at script.google.com and press Run.
+function createKemasOrderForm() {
+  var title = ${J(setup.title)};
+  var form = FormApp.create(title);
+  form.setDescription(${J(desc)});
+  form.addTextItem().setTitle("Name").setRequired(true);
+  form.addTextItem().setTitle("Phone number (WhatsApp)").setRequired(true);
+  ${setup.pickups.length ? `form.addListItem().setTitle("Pickup point").setChoiceValues(${J(setup.pickups)}).setRequired(true);` : `form.addTextItem().setTitle("College / address").setRequired(true);`}
+  var sizes = ${J(sizes)};
+  var types = ${J(setup.variants.map(v => ({ name: v.name, help: `${money(num(v.price))} each` })))};
+  types.forEach(function (t) {
+    form.addGridItem().setTitle(t.name + " — how many per size?").setHelpText(t.help).setRows(sizes).setColumns(["1", "2", "3", "4", "5"]);
+  });
+  form.addParagraphTextItem().setTitle("Notes (optional)");
+  var sheet = SpreadsheetApp.create(title + " (responses)");
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, sheet.getId());
+  Logger.log("Share this link with buyers: " + form.getPublishedUrl());
+  Logger.log("Edit the form: " + form.getEditUrl());
+  Logger.log("Responses sheet: " + sheet.getUrl());
+}
+`;
+  }
+  function openFormMaker(d, onSave) {
+    const base = d.form || {};
+    const setup = {
+      title: base.title || `${d.name || "KEMAS"} order form`,
+      variants: clone(base.variants || (d.lines || []).filter(l => l.label).map(l => ({ name: l.label, price: l.sell || "" }))),
+      sizes: base.sizes || SIZES.slice(),
+      pickups: base.pickups || [...new Set(buyersOf(d).map(b => b.pickup).filter(Boolean))],
+      info: base.info || "",
+    };
+    if (!setup.variants.length) setup.variants = [{ name: "Short sleeve", price: "" }, { name: "Long sleeve", price: "" }];
+    const wrap = document.createElement("div"); wrap.className = "scrim"; wrap.style.zIndex = "60";
+    wrap.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="fm-title">
+      <div class="sheet-head"><div><div class="code">ORDER FORM</div><h2 id="fm-title">Make a Google Form</h2></div><button type="button" class="x" data-fm="close" aria-label="Close">×</button></div>
+      <div class="sheet-body" id="fm-body"></div>
+      <div class="sheet-foot"><span class="spacer"></span><button type="button" class="btn" data-fm="close">Close</button><button type="button" class="btn primary" data-fm="make">Make the script</button></div>
+    </div>`;
+    document.body.appendChild(wrap);
+    const body = wrap.querySelector("#fm-body");
+    function draw() {
+      body.innerHTML = `<p class="note" style="font-size:14px">This builds a Google Form that asks each buyer for their name, phone, pickup point and how many shirts per size. The app can read its responses exactly, with no guessing.</p>
+        <div class="field"><label for="fm-t">Form title</label><input id="fm-t" data-s="title" value="${esc(setup.title)}"></div>
+        <fieldset class="pl-sec"><legend>Shirt types and prices</legend>
+          ${setup.variants.map((v, i) => `<div class="var-row" data-v="${i}"><input class="inp" data-vf="name" value="${esc(v.name)}" placeholder="e.g. Maroon, or Long sleeve" aria-label="Shirt type"><input class="inp" data-vf="price" type="number" step="0.01" inputmode="decimal" value="${esc(v.price)}" placeholder="${esc(state.currency)}" aria-label="Price"><button type="button" class="x2" data-fm="rmv" aria-label="Remove" style="border:0;background:transparent;font-size:18px;color:var(--muted)">×</button></div>`).join("")}
+          <div><button type="button" class="linkbtn" data-fm="addv">+ Add shirt type</button></div>
+          <p class="note">Each type gets its own size grid. Use the colour or sleeve in the name (e.g. "Maroon", "Navy long sleeve") so the app can sort them.</p>
+        </fieldset>
+        <fieldset><legend>Sizes on the form</legend><div class="toggles">${SIZES.map(k => `<button type="button" class="toggle" data-size="${k}" aria-pressed="${setup.sizes.includes(k)}">${k}</button>`).join("")}</div></fieldset>
+        <div class="field"><label for="fm-p">Pickup points (one per line)</label><textarea id="fm-p" data-s="pickups" placeholder="KK12&#10;KK7&#10;Kona Mokapot">${esc(setup.pickups.join("\n"))}</textarea><span class="help">Leave empty to ask for their college or address instead.</span></div>
+        <div class="field"><label for="fm-i">Shown at the top of the form</label><textarea id="fm-i" data-s="info" placeholder="Payment: Maybank 1234 5678 (Kemas Apparel). Closes 20 Dec. Pickup from 5 Jan.">${esc(setup.info)}</textarea><span class="help">Payment details, closing date, pickup dates. The prices are added for you.</span></div>
+        <div id="fm-out"></div>`;
+    }
+    draw();
+    body.addEventListener("input", e => {
+      const t = e.target;
+      if (t.dataset.s === "pickups") setup.pickups = t.value.split("\n").map(x => x.trim()).filter(Boolean);
+      else if (t.dataset.s) setup[t.dataset.s] = t.value;
+      const row = t.closest("[data-v]"); if (row && t.dataset.vf) setup.variants[+row.dataset.v][t.dataset.vf] = t.value;
+    });
+    const close = () => { wrap.remove(); document.removeEventListener("keydown", onKey, true); };
+    const onKey = e => { if (e.key === "Escape") { e.stopImmediatePropagation(); close(); } };
+    document.addEventListener("keydown", onKey, true);
+    wrap.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.size) { const k = b.dataset.size; setup.sizes = setup.sizes.includes(k) ? setup.sizes.filter(x => x !== k) : SIZES.filter(x => x === k || setup.sizes.includes(x)); b.setAttribute("aria-pressed", String(setup.sizes.includes(k))); return; }
+      const a = b.dataset.fm; if (!a) return;
+      if (a === "close") close();
+      else if (a === "addv") { setup.variants.push({ name: "", price: "" }); draw(); }
+      else if (a === "rmv") { setup.variants.splice(+b.closest("[data-v]").dataset.v, 1); draw(); }
+      else if (a === "copy") copyText(formScript(setup)).then(() => toast("Script copied"));
+      else if (a === "make") {
+        setup.variants = setup.variants.filter(v => v.name.trim());
+        if (!setup.variants.length) { toast("Add at least one shirt type."); draw(); return; }
+        onSave(clone(setup)); draw();
+        wrap.querySelector("#fm-out").innerHTML = `<fieldset><legend>Your script</legend>
+          <ol class="steps">
+            <li>On a laptop, open <a href="https://script.google.com/home/projects/create" target="_blank" rel="noopener">script.google.com</a> (a new project opens), signed in to the Google account that should own the form.</li>
+            <li>Delete what's in the editor, paste the script, then press <b>Run</b>.</li>
+            <li>Google asks for permission. Choose your account, then <b>Advanced → Go to project (unsafe)</b> → <b>Allow</b>. It says unsafe only because you wrote the script yourself.</li>
+            <li>The <b>Execution log</b> shows 3 links: the form to share with buyers, the form editor, and the responses sheet.</li>
+            <li>Optional: in the form editor, add a <b>File upload</b> question called <b>Payment receipt</b>. Scripts can't add that one for you.</li>
+            <li>When orders come in, open the responses sheet, copy everything and use <b>Import orders</b> here. Prices are worked out from this setup.</li>
+          </ol>
+          <pre class="code-out">${esc(formScript(setup))}</pre>
+          <div class="share-row" style="margin-top:8px"><button type="button" class="btn small primary" data-fm="copy">Copy script</button></div>
+        </fieldset>`;
+        wrap.querySelector("#fm-out").scrollIntoView({ block: "start", behavior: "smooth" });
+      }
+    });
   }
 
   /* ---------- modal ---------- */
@@ -929,7 +1114,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         out.push("");
         out.push(`${i + 1}. ${l.label ? l.label + ": " : ""}${opts.join(", ")}`);
         out.push(`   ${lc.bySize ? sizesText(l) + " = " : ""}${lc.pcs} ${lc.pcs === 1 ? "pc" : "pcs"}`);
-        if (withPrices) out.push(`   ${money(lc.unit)}/pc${lc.bigPcs ? ` · 3XL+ ${money(lc.bigUnit)}/pc` : ""} → ${money(lc.sale)}`);
+        if (withPrices && !buyersOf(p).length && lc.sell) out.push(`   ${money(lc.sell)}/pc → ${money(lc.sale)}`);
       });
       out.push("");
     } else if (p.shirt) out.push(`Shirt: ${p.shirt}`);
@@ -945,14 +1130,15 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
 
   function openModal(p) {
     const isNew = !p;
-    const draft = p ? clone(p) : { code: nextCode(), name: "", client: "", contact: "", stage: "design", due: "", printer: "", shirt: "", cost: "", extra: "", paid: "", adjust: "", notes: "", history: [] };
+    const draft = p ? migrateProject(clone(p)) : { v: 2, code: nextCode(), name: "", client: "", contact: "", stage: "design", due: "", printer: "", shirt: "", extra: "", paid: "", adjust: "", notes: "", history: [] };
     if (!hasLines(draft)) {
       // new project, or an older one saved before shirt types existed
       draft.pl = clone(state.priceList);
       const line = newLine(draft.pl);
-      if (!isNew) { line.sizes = { ...(draft.sizes || {}) }; if (!SIZES.some(k => num(line.sizes[k]))) line.pieces = draft.qty || ""; }
+      if (!isNew) { line.sizes = { ...(draft.sizes || {}) }; if (!SIZES.some(k => num(line.sizes[k]))) line.pieces = draft.qty || ""; line.sell = draft.price || ""; }
       draft.lines = [line];
-      draft.base = isNew ? (draft.pl.base || "") : (draft.price || "");
+      draft.base = isNew ? (draft.pl.base ?? "") : (num(draft.cost) || draft.pl.base || "");
+      draft.v = 2; delete draft.cost;
       draft.fabric = draft.pl.fabrics[0] ? draft.pl.fabrics[0].id : "";
     }
     draft.pl = draft.pl || clone(state.priceList);
@@ -973,8 +1159,9 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
           <div class="field full"><label for="f-shirt">Design notes</label><input id="f-shirt" name="shirt" value="${esc(draft.shirt)}" placeholder="e.g. Black and gold, logo front, sponsor on back"></div>
         </div></fieldset>
         <fieldset><legend>Order</legend>
+          <p class="note" style="margin:0 0 10px">The base cost and the +RM options are <b>your costs</b> from your cost list. Put what the customer pays in each shirt type's selling price.</p>
           <div class="grid2">
-            <div class="field"><label for="f-base">Base price per shirt (${esc(state.currency)})</label><input id="f-base" name="base" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.base)}"><span class="help">Round neck + free fabric. Usually ${esc(money(num(state.priceList.base)))}</span></div>
+            <div class="field"><label for="f-base">Base cost per shirt (${esc(state.currency)})</label><input id="f-base" name="base" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.base)}"><span class="help">What you pay for round neck + free fabric. Usually ${esc(money(num(state.priceList.base)))}</span></div>
             <div class="field"><label for="f-fabric">Fabric</label><select id="f-fabric" name="fabric">${opt(draft.pl.fabrics, draft.fabric, x => `${fabricLabel(x)} (${plus(x.price)})`)}</select><span class="help">Same fabric for the whole order</span></div>
           </div>
           <div class="lines" id="m-lines" style="margin-top:12px"></div>
@@ -984,11 +1171,10 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
           </div>
           <div id="m-plnote" style="margin-top:8px"></div>
         </fieldset>
-        <fieldset><legend>Money (${esc(state.currency)})</legend><div class="grid4">
+        <fieldset><legend>Money (${esc(state.currency)})</legend><div class="grid4" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
           <div class="field"><label for="f-adjust">Discount / extra</label><input id="f-adjust" name="adjust" type="number" step="0.01" inputmode="decimal" value="${esc(draft.adjust)}"><span class="help">For the whole order. Minus for a discount, e.g. -50</span></div>
-          <div class="field"><label for="f-cost">Your cost per shirt</label><input id="f-cost" name="cost" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.cost)}"><span class="help">What the printer charges you</span></div>
           <div class="field"><label for="f-extra">Other costs</label><input id="f-extra" name="extra" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.extra)}"><span class="help">Delivery, setup, packaging</span></div>
-          <div class="field"><label for="f-paid">Paid so far</label><input id="f-paid" name="paid" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.paid)}"><span class="help">Deposits + payments</span></div>
+          <div class="field"><label for="f-paid" id="f-paid-label">Paid so far</label><input id="f-paid" name="paid" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.paid)}"><span class="help">Deposits + payments</span></div>
         </div>
         <div class="calc" id="m-calc" style="margin-top:12px"></div></fieldset>
         <fieldset><legend>Buyers</legend><div id="m-buyers"></div></fieldset>
@@ -1029,33 +1215,38 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         <div><div class="sub-label">Add-ons</div><div class="toggles">${(pl.addons || []).map(a => `<button type="button" class="toggle" data-addon="${esc(a.id)}" aria-pressed="${(l.addons || []).includes(a.id)}">${esc(a.name)}<small>${esc(plus(a.price))}</small></button>`).join("")}</div></div>
         <div><div class="sub-label">Sizes</div>
           <div class="sizes">${SIZES.map((k, si) => `<div class="size"><label for="ln-${l.id}-${k}" class="${si >= bi() && num(pl.big) ? "big" : ""}">${k}</label><input id="ln-${l.id}-${k}" data-size="${k}" type="number" min="0" inputmode="numeric" value="${esc((l.sizes || {})[k] || "")}" ${l.auto ? "disabled" : ""}></div>`).join("")}</div>
-          ${num(pl.big) ? `<div class="help" style="font-size:12px;color:var(--warn);margin-top:4px">${esc(pl.bigFrom)} and above ${esc(plus(pl.big))} per shirt</div>` : ""}
+          ${num(pl.big) ? `<div class="help" style="font-size:12px;color:var(--warn);margin-top:4px">${esc(pl.bigFrom)} and above cost you ${esc(plus(pl.big))} more per shirt</div>` : ""}
         </div>
-        <div class="field" style="max-width:260px" ${l.auto ? "hidden" : ""}><label for="ln-${l.id}-pcs">Or total pieces</label><input id="ln-${l.id}-pcs" data-k="pieces" type="number" min="0" inputmode="numeric" value="${esc(l.pieces)}"><span class="help">When the client hasn't sent sizes yet</span></div>
+        <div class="grid2">
+          <div class="field" ${buyersOf(draft).length ? "hidden" : ""}><label for="ln-${l.id}-sell">Selling price per shirt (${esc(state.currency)})</label><input id="ln-${l.id}-sell" data-k="sell" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(l.sell)}"><span class="help">What the customer pays</span></div>
+          <div class="field" ${l.auto ? "hidden" : ""}><label for="ln-${l.id}-pcs">Or total pieces</label><input id="ln-${l.id}-pcs" data-k="pieces" type="number" min="0" inputmode="numeric" value="${esc(l.pieces)}"><span class="help">When the client hasn't sent sizes yet</span></div>
+        </div>
         <div class="line-sum" data-sum></div>
       </div>`).join("");
     }
     function drawLines() { $("#m-lines").innerHTML = linesHTML(); updCalc(); }
     function readTop() {
       const f = form.elements;
-      ["name", "client", "contact", "due", "printer", "shirt", "base", "fabric", "adjust", "cost", "extra", "paid", "notes"].forEach(k => (draft[k] = f[k].value));
+      ["name", "client", "contact", "due", "printer", "shirt", "base", "fabric", "adjust", "extra", "paid", "notes"].forEach(k => (draft[k] = f[k].value));
       draft.name = draft.name.trim();
     }
     function updCalc() {
       readTop();
       document.querySelectorAll("#m-lines [data-line]").forEach(box => {
         const l = draft.lines[+box.dataset.line], lc = lineCalc(draft, l);
-        if (buyersOf(draft).length) { box.querySelector("[data-sum]").innerHTML = `<span><b>${lc.pcs}</b> ${lc.pcs === 1 ? "pc" : "pcs"}</span><span>${l.auto ? "Sizes add up from the buyer orders" : "Not counted: this project uses buyer orders"}</span>`; return; }
-        box.querySelector("[data-sum]").innerHTML = `<span><b>${esc(money(lc.unit))}</b> / pc</span>${lc.bigPcs ? `<span>${esc(draft.pl.bigFrom)}+ <b>${esc(money(lc.bigUnit))}</b> / pc</span>` : ""}<span><b>${lc.pcs}</b> pcs</span><span>Subtotal <b>${esc(money(lc.sale))}</b></span>`;
+        const pcsTxt = `<span><b>${lc.pcs}</b> ${lc.pcs === 1 ? "pc" : "pcs"}</span>`, costTxt = `<span>Cost <b>${esc(money(lc.unit))}</b>/pc${lc.bigPcs ? ` · ${esc(draft.pl.bigFrom)}+ <b>${esc(money(lc.bigUnit))}</b>` : ""}</span><span>Total cost <b>${esc(money(lc.cost))}</b></span>`;
+        if (buyersOf(draft).length) { box.querySelector("[data-sum]").innerHTML = l.auto ? `${pcsTxt}${costTxt}<span>Sizes add up from the buyer orders</span>` : `${pcsTxt}<span>Not counted: this project uses buyer orders</span>`; return; }
+        box.querySelector("[data-sum]").innerHTML = `${pcsTxt}${costTxt}<span>Sales <b>${esc(money(lc.sale))}</b></span><span>Profit <b class="${lc.sale - lc.cost >= 0 ? "pos" : "neg"}">${esc(money(lc.sale - lc.cost))}</b></span>`;
         const pcsIn = box.querySelector('[data-k="pieces"]'); pcsIn.disabled = lc.bySize; pcsIn.placeholder = lc.bySize ? "Using sizes" : "";
       });
       const c = calc(draft);
       const fp = $("#f-paid"), hasB = buyersOf(draft).length > 0;
       fp.disabled = hasB; if (hasB) fp.value = c.paid; fp.nextElementSibling.textContent = hasB ? "Adds up buyers marked paid" : "Deposits + payments";
-      $("#m-calc").innerHTML = [["Pieces", c.q.toLocaleString()], ["Sale", money(c.sale)], ["Cost", money(c.cost)], ["Profit", money(c.profit)], ["Balance", c.sale ? (c.balance > 0 ? money(c.balance) : "Paid") : "—"]]
+      $("#f-paid-label").textContent = hasB ? "Collected from buyers" : "Paid so far";
+      $("#m-calc").innerHTML = [["Pieces", c.q.toLocaleString()], ["Sales", money(c.sale)], ["Cost", money(c.cost)], ["Profit", money(c.profit)], ["Balance", c.sale ? (c.balance > 0 ? money(c.balance) : "Paid") : "—"]]
         .map(([k, v]) => `<div><div class="k">${k}</div><div class="v ${k === "Profit" ? (c.profit >= 0 ? "pos" : "neg") : ""}">${esc(v)}</div></div>`).join("");
       const stale = stable(draft.pl) !== stable(state.priceList);
-      $("#m-plnote").innerHTML = stale ? `<p class="note">This project uses the prices from when it was created. <button type="button" class="linkbtn" id="m-plupdate">Use current price list</button></p>` : "";
+      $("#m-plnote").innerHTML = stale ? `<p class="note">This project uses the costs from when it was created. <button type="button" class="linkbtn" id="m-plupdate">Use current cost list</button></p>` : "";
     }
     drawLines();
     draft.photos = draft.photos || [];
@@ -1098,12 +1289,13 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         ${fl ? `<div class="banner" data-tone="warn" style="margin:0">${esc(b.flags.join(" · "))} <button type="button" class="linkbtn" data-bact="ok">Mark as checked</button></div>` : ""}
         ${b.src ? `<div><div class="sub-label">What they wrote</div><div class="raw">${esc(b.src)}</div>${b.note ? `<div class="raw" style="margin-top:4px">Note: ${esc(b.note)}</div>` : ""}</div>` : ""}
         <div><div class="sub-label">Shirts</div>
-          ${(b.items || []).map((it, i) => `<div class="it" data-it="${i}"><input class="inp" data-itf="color" list="b-colors" value="${esc(it.color)}" aria-label="Colour"><select class="inp" data-itf="size" aria-label="Size">${SIZES.map(k => `<option ${k === it.size ? "selected" : ""}>${k}</option>`).join("")}</select><input class="inp" data-itf="qty" type="number" min="1" inputmode="numeric" value="${esc(it.qty || 1)}" aria-label="Quantity"><button type="button" class="x2" data-bact="rmit" aria-label="Remove shirt" style="border:0;background:transparent;font-size:18px;color:var(--muted)">×</button></div>`).join("")}
+          ${(b.items || []).map((it, i) => `<div class="it" data-it="${i}"><input class="inp" data-itf="color" list="b-colors" value="${esc(it.color)}" placeholder="Colour" aria-label="Colour"><select class="inp" data-itf="sleeve" aria-label="Sleeve"><option value="" ${!it.sleeve ? "selected" : ""}>Sleeve</option><option ${it.sleeve === "Short" ? "selected" : ""}>Short</option><option ${it.sleeve === "Long" ? "selected" : ""}>Long</option></select><select class="inp" data-itf="size" aria-label="Size">${SIZES.map(k => `<option ${k === it.size ? "selected" : ""}>${k}</option>`).join("")}</select><input class="inp" data-itf="qty" type="number" min="1" inputmode="numeric" value="${esc(it.qty || 1)}" aria-label="Quantity"><button type="button" class="x2" data-bact="rmit" aria-label="Remove shirt" style="border:0;background:transparent;font-size:18px;color:var(--muted)">×</button></div>`).join("")}
           <button type="button" class="linkbtn" data-bact="addit">+ Add shirt</button></div>
         <div class="grid2">
           <div class="field"><label>Name</label><input data-bf="name" value="${esc(b.name)}"></div>
           <div class="field"><label>Phone</label><input data-bf="phone" value="${esc(b.phone)}" inputmode="tel"></div>
           <div class="field"><label>College / address</label><input data-bf="place" value="${esc(b.place)}"></div>
+          <div class="field"><label>Pickup point</label><input data-bf="pickup" value="${esc(b.pickup || "")}"></div>
           <div class="field"><label>Amount (${esc(state.currency)})</label><input data-bf="amount" type="number" step="0.01" inputmode="decimal" value="${esc(b.amount)}"></div>
         </div>
         <div class="toggles"><button type="button" class="toggle" data-btog="paid" aria-pressed="${!!b.paid}">Paid</button><button type="button" class="toggle" data-btog="collected" aria-pressed="${!!b.collected}">Collected</button></div>
@@ -1117,7 +1309,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         if (bFilter === "check" && !(b.flags || []).length) return false;
         if (bFilter === "unpaid" && b.paid) return false;
         if (bFilter === "uncollected" && b.collected) return false;
-        if (q && !`${b.name} ${b.phone} ${b.place} ${itemsText(b)}`.toLowerCase().includes(q)) return false;
+        if (q && !`${b.name} ${b.phone} ${b.place} ${b.pickup || ""} ${itemsText(b)}`.toLowerCase().includes(q)) return false;
         return true;
       });
     }
@@ -1131,7 +1323,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       const box = $("#m-buyers");
       if (!draft.buyers.length) {
         box.innerHTML = `<p class="note" style="margin-bottom:10px">Selling to lots of people through a Google Form? Import their orders and the app adds up the sizes per colour, tracks who paid, and who has collected.</p>
-          <div class="share-row"><button type="button" class="btn small" data-bact="import">Import from Google Form</button><button type="button" class="btn small" data-bact="addb">+ Add buyer</button></div>`;
+          <div class="share-row"><button type="button" class="btn small" data-bact="formmaker">Make a Google Form</button><button type="button" class="btn small" data-bact="import">Import orders</button><button type="button" class="btn small" data-bact="addb">+ Add buyer</button></div>`;
         return;
       }
       const filters = [["all", "All"], ["check", "To check"], ["unpaid", "Unpaid"], ["uncollected", "Not collected"]];
@@ -1139,7 +1331,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         <div class="btools"><input class="search inp" id="b-search" type="search" placeholder="Search buyers…" value="${esc(bQuery)}" aria-label="Search buyers">${filters.map(([k, l]) => `<button type="button" class="filter" data-bfilter="${k}" aria-pressed="${bFilter === k}">${l}</button>`).join("")}</div>
         <div class="blist" id="b-list"></div>
         <datalist id="b-colors">${knownColors().map(c => `<option value="${esc(c)}">`).join("")}</datalist>
-        <div class="share-row" style="margin-top:10px"><button type="button" class="btn small" data-bact="import">Import more</button><button type="button" class="btn small" data-bact="addb">+ Add buyer</button><button type="button" class="btn small" data-bact="pickup">Copy pickup list</button></div>`;
+        <div class="share-row" style="margin-top:10px"><button type="button" class="btn small" data-bact="import">Import more</button><button type="button" class="btn small" data-bact="addb">+ Add buyer</button><button type="button" class="btn small" data-bact="pickup">Copy pickup list</button><button type="button" class="btn small" data-bact="formmaker">Google Form</button></div>`;
       drawBuyerTop(); drawBuyerList();
     }
     function buyersChanged(structural) { syncLinesFromBuyers(draft); drawLines(); if (structural) drawBuyers(); else drawBuyerTop(); }
@@ -1155,7 +1347,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       if (row && t.dataset.itf) { const it = b.items[+row.dataset.it]; it[t.dataset.itf] = t.dataset.itf === "qty" ? Math.max(1, num(t.value) || 1) : t.value.trim(); buyersChanged(false); }
     });
     $("#m-buyers").addEventListener("change", e => {
-      const t = e.target; if (t.dataset.itf !== "size" && t.dataset.itf !== "color") return;
+      const t = e.target; if (!["size", "color", "sleeve"].includes(t.dataset.itf)) return;
       const ed = t.closest("[data-bid]"), row = t.closest("[data-it]"); const b = ed && findB(ed.dataset.bid);
       if (b && row) { b.items[+row.dataset.it][t.dataset.itf] = t.value.trim(); buyersChanged(false); }
     });
@@ -1167,11 +1359,12 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       const ed = t.closest("[data-bid]"), b = ed && findB(ed.dataset.bid);
       if (t.dataset.btog && b) { b[t.dataset.btog] = !b[t.dataset.btog]; t.setAttribute("aria-pressed", String(!!b[t.dataset.btog])); drawBuyerTop(); updCalc(); return; }
       const act = t.dataset.bact; if (!act) return;
-      if (act === "import") { openImport(draft.buyers, fresh => { draft.buyers.push(...fresh); buyersChanged(true); updCalc(); toast(`${fresh.length} order${fresh.length === 1 ? "" : "s"} added. Tap Save to keep them.`); }); return; }
+      if (act === "import") { openImport(draft.buyers, fresh => { draft.buyers.push(...fresh); buyersChanged(true); updCalc(); toast(`${fresh.length} order${fresh.length === 1 ? "" : "s"} added. Tap Save to keep them.`); }, draft.form); return; }
+      if (act === "formmaker") { readTop(); openFormMaker(draft, setup => { draft.form = setup; }); return; }
       if (act === "addb") { const nb = { id: "b" + Math.random().toString(36).slice(2, 10), ts: new Date().toLocaleString(), name: "", phone: "", place: "", items: [{ color: knownColors()[0] || "", size: "M", qty: 1 }], amount: 0, paid: false, receipt: "", note: "", flags: [], collected: false, src: "" }; draft.buyers.unshift(nb); openB = nb.id; bFilter = "all"; buyersChanged(true); updCalc(); const inp = document.querySelector(`[data-bid="${nb.id}"] [data-bf="name"]`); if (inp) inp.focus(); return; }
       if (act === "pickup") {
         const groups = {};
-        [...draft.buyers].sort((a, b2) => a.name.localeCompare(b2.name)).forEach(x => { const g = x.place || "No college given"; (groups[g] = groups[g] || []).push(x); });
+        [...draft.buyers].sort((a, b2) => a.name.localeCompare(b2.name)).forEach(x => { const g = x.pickup || x.place || "No pickup point given"; (groups[g] = groups[g] || []).push(x); });
         const txt = [`${draft.code} ${draft.name} · pickup list`, ""].concat(...Object.keys(groups).sort().map(g => [`${g} (${groups[g].length})`, ...groups[g].map(x => `${x.collected ? "✓" : "☐"} ${x.name} · ${itemsText(x)}${x.paid ? "" : " · UNPAID"}${x.phone ? " · " + x.phone : ""}`), ""])).join("\n");
         copyText(txt).then(() => toast("Pickup list copied")); return;
       }
@@ -1213,7 +1406,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         draft.lines.forEach(l => { if (!has(pl.collars, l.collar)) l.collar = pl.collars[0] ? pl.collars[0].id : ""; if (l.sleeve && /raglan/.test(l.sleeve) && has(pl.collars, l.sleeve)) l.collar = l.sleeve; delete l.sleeve; l.addons = (l.addons || []).filter(id => has(pl.addons, id)); });
         draft.pl = pl;
         $("#f-fabric").innerHTML = opt(pl.fabrics, draft.fabric, x => `${fabricLabel(x)} (${plus(x.price)})`);
-        drawLines(); toast("Updated to current prices"); return;
+        drawLines(); toast("Updated to current costs"); return;
       }
       if (t.id === "m-copy-print" || t.id === "m-copy-quote") { readTop(); copyText(orderText(draft, t.id === "m-copy-quote")).then(() => toast("Copied. Paste it in WhatsApp")); }
     });
@@ -1250,16 +1443,16 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     const draft = clone(state.priceList);
     const root = $("#modal-root"); const lastFocus = document.activeElement;
     root.innerHTML = `<div class="scrim" id="scrim"><form class="sheet" id="plform" role="dialog" aria-modal="true" aria-labelledby="pl-title" novalidate>
-      <div class="sheet-head"><div><div class="code">SALES KIT</div><h2 id="pl-title">Price list</h2></div><button type="button" class="x" id="pl-close" aria-label="Close">×</button></div>
+      <div class="sheet-head"><div><div class="code">YOUR COSTS</div><h2 id="pl-title">Cost list</h2></div><button type="button" class="x" id="pl-close" aria-label="Close">×</button></div>
       <div class="sheet-body" id="pl-body"></div>
-      <div class="sheet-foot"><button type="button" class="btn" id="pl-reset">Reset to sales kit</button><span class="spacer"></span><button type="button" class="btn" id="pl-cancel">Cancel</button><button type="submit" class="btn primary">Save price list</button></div>
+      <div class="sheet-foot"><button type="button" class="btn" id="pl-reset">Reset to defaults</button><span class="spacer"></span><button type="button" class="btn" id="pl-cancel">Cancel</button><button type="submit" class="btn primary">Save cost list</button></div>
     </form></div>`;
     const body = $("#pl-body");
     function draw() {
-      body.innerHTML = `<p class="note" style="font-size:14px">Prices are per shirt, added on top of the base price. New projects use this list. Projects you already made keep their own prices.</p>
+      body.innerHTML = `<p class="note" style="font-size:14px">What each shirt costs you: the base cost plus each option. Shirt types add these up into a cost per shirt, so profit works itself out. New projects use this list. Projects you already made keep their own costs.</p>
         <div class="grid2">
-          <div class="field"><label for="pl-base">Base price (${esc(state.currency)})</label><input id="pl-base" data-top="base" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.base)}"><span class="help">Round neck + free fabric. Filled in for new projects.</span></div>
-          <div class="field"><label for="pl-big">Big size charge (${esc(state.currency)})</label><div style="display:flex;gap:6px"><select id="pl-bigfrom" data-top="bigFrom" class="inp" style="max-width:110px" aria-label="From size">${SIZES.map(k => `<option ${k === draft.bigFrom ? "selected" : ""}>${k}</option>`).join("")}</select><input id="pl-big" data-top="big" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.big)}"></div><span class="help">This size and above, per shirt</span></div>
+          <div class="field"><label for="pl-base">Base cost (${esc(state.currency)})</label><input id="pl-base" data-top="base" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.base)}"><span class="help">Round neck + free fabric. Filled in for new projects.</span></div>
+          <div class="field"><label for="pl-big">Big size extra cost (${esc(state.currency)})</label><div style="display:flex;gap:6px"><select id="pl-bigfrom" data-top="bigFrom" class="inp" style="max-width:110px" aria-label="From size">${SIZES.map(k => `<option ${k === draft.bigFrom ? "selected" : ""}>${k}</option>`).join("")}</select><input id="pl-big" data-top="big" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.big)}"></div><span class="help">This size and above, per shirt</span></div>
         </div>
         ${PL_SECTIONS.map(([key, title, note]) => `<fieldset class="pl-sec"><legend>${title}</legend>
           <div class="pl-row ${note ? "has-note" : ""}"><span class="pl-head">Name</span>${note ? `<span class="pl-head">Detail</span>` : ""}<span class="pl-head">+ ${esc(state.currency)}</span><span></span></div>
@@ -1294,14 +1487,14 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     const reset = $("#pl-reset");
     reset.onclick = () => {
       if (!reset.classList.contains("armed")) { reset.classList.add("armed", "danger"); reset.textContent = "Tap again to reset"; return; }
-      Object.assign(draft, clone(DEFAULT_PL), { base: draft.base }); reset.classList.remove("armed", "danger"); reset.textContent = "Reset to sales kit"; draw();
+      Object.assign(draft, clone(DEFAULT_PL), { base: draft.base }); reset.classList.remove("armed", "danger"); reset.textContent = "Reset to defaults"; draw();
     };
     $("#plform").addEventListener("submit", e => {
       e.preventDefault();
       PL_SECTIONS.forEach(([k]) => { draft[k] = draft[k].filter(it => String(it.name).trim()); if (!draft[k].length) draft[k] = clone(DEFAULT_PL[k]); });
       state.priceList = draft; state.priceListAt = new Date().toISOString();
-      try { persist(); } catch (_) { toast("Couldn't save the price list."); return; }
-      close(); render(); toast("Price list saved");
+      try { persist(); } catch (_) { toast("Couldn't save the cost list."); return; }
+      close(); render(); toast("Cost list saved");
     });
   }
 
@@ -1410,7 +1603,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       const local = snapshot();
       const merged = merge(local, remote);
       if (sig(merged) !== sig(local)) {
-        state.projects = merged.projects; state.deleted = merged.deleted; state.currency = merged.currency; state.currencyAt = merged.currencyAt;
+        state.projects = merged.projects.map(migrateProject); state.deleted = merged.deleted; state.currency = merged.currency; state.currencyAt = merged.currencyAt;
         if (merged.priceListAt && merged.priceList) { state.priceList = normalizePL(merged.priceList); state.priceListAt = merged.priceListAt; }
         persistLocal(); render();
       }
@@ -1516,6 +1709,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       const raw = localStorage.getItem(KEY);
       if (raw) { const d = JSON.parse(raw); state.projects = Array.isArray(d.projects) ? d.projects : []; state.deleted = d.deleted || {}; state.currencyAt = d.currencyAt || ""; if (d.priceList) { state.priceList = normalizePL(d.priceList); state.priceListAt = d.priceListAt || ""; } if (d.currency) state.currency = String(d.currency); }
     } catch (_) { banner("This browser is blocking storage, so projects can't be saved. Turn off Private Browsing and reopen the app.", "warn"); }
+    state.projects = state.projects.map(migrateProject);
     state.loaded = true; state.mode = "local";
     render();
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
