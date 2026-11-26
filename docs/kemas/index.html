@@ -85,6 +85,22 @@ header.top .wrap { display: flex; align-items: center; gap: 16px; padding-block:
 .btn.danger.armed { background: var(--bad); border-color: var(--bad); color: #fff; }
 .btn.small { padding: 5px 10px; font-size: 13px; }
 
+.sync-chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--surface); padding: 7px 11px; border-radius: 99px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.sync-chip:hover { border-color: var(--muted); }
+.sync-chip .dot { width: 8px; height: 8px; border-radius: 99px; background: var(--muted); flex: none; }
+.sync-chip[data-s="ok"] .dot { background: var(--ok); }
+.sync-chip[data-s="syncing"] .dot { background: var(--accent); }
+.sync-chip[data-s="offline"] .dot, .sync-chip[data-s="error"] .dot { background: var(--warn); }
+.sync-chip[data-s="error"] { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); }
+@media (prefers-reduced-motion: no-preference) { .sync-chip[data-s="syncing"] .dot { animation: pulse 1s ease-in-out infinite; } }
+@keyframes pulse { 50% { opacity: .3; } }
+.short { display: none; }
+.steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+.steps li { padding-left: 4px; }
+.steps a { color: var(--accent); font-weight: 600; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 14px; }
+.kv dt { color: var(--muted); } .kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
 .banner { margin-top: 14px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--sunk); font-size: 14px; color: var(--muted); }
 .banner[data-tone="warn"] { border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); color: var(--ink); }
 
@@ -214,7 +230,7 @@ legend { font-family: var(--f-mono); font-size: 11px; letter-spacing: .09em; tex
 @media (prefers-reduced-motion: no-preference) { .card, .btn, .filter { transition: border-color .15s, background .15s, filter .15s; } }
 html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 720px), (pointer: coarse) { input, select, textarea { font-size: 16px !important; } .card .next { padding: 8px 0; } .btn { min-height: 40px; } }
-@media (max-width: 560px) { .brand span { display: none; } .brand b { font-size: 18px; } #new-btn { padding: 7px 11px; } header.top .wrap { gap: 10px; padding-block: 10px; } .tabs { order: 3; width: 100%; } .tabs button { flex: 1; } }
+@media (max-width: 560px) { .long { display: none; } .short { display: inline; } .sync-chip { padding: 6px 9px; } .brand span { display: none; } .brand b { font-size: 17px; font-stretch: 100%; letter-spacing: 0; } .brand { min-width: 0; } #new-btn { padding: 7px 11px; } header.top .wrap { gap: 10px; padding-block: 10px; } .tabs { order: 3; width: 100%; } .tabs button { flex: 1; } }
 </style>
 </head>
 <body>
@@ -227,7 +243,8 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       <button id="tab-jobs" role="tab" data-tab="jobs" aria-selected="false">All jobs</button>
       <button id="tab-money" role="tab" data-tab="money" aria-selected="false">Money</button>
     </nav>
-    <button class="btn primary" id="new-btn" type="button">+ New project</button>
+    <button class="sync-chip" id="sync-btn" type="button" data-s="off" aria-label="Sync between devices"><span class="dot"></span><span id="sync-text">Connect sync</span></button>
+    <button class="btn primary" id="new-btn" type="button">+ <span class="long">New project</span><span class="short">New</span></button>
   </div>
 </header>
 
@@ -243,7 +260,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
 (() => {
   const STAGES = [
     { id: "design", label: "Designing", hint: "Working on the artwork", c: "--s-design", next: "Waiting on client" },
-    { id: "client", label: "Waiting on client", hint: "Approval or final quantity", c: "--s-client", next: "Sent to printer" },
+    { id: "client", label: "Waiting on client", hint: "Approval or final quantity", c: "--s-client", next: "At the printer" },
     { id: "print", label: "At the printer", hint: "Design sent, being printed", c: "--s-print", next: "Ready to deliver" },
     { id: "ready", label: "Ready to deliver", hint: "Printed, waiting for pickup", c: "--s-ready", next: "Delivered" },
     { id: "done", label: "Delivered", hint: "Handed over", c: "--s-done", next: null },
@@ -253,7 +270,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   const stageOf = id => ALL.find(s => s.id === id) || STAGES[0];
   const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
 
-  const state = { projects: [], currency: "RM", tab: "board", q: "", stageFilter: "active", mode: "loading", loaded: false };
+  const state = { projects: [], deleted: {}, currencyAt: "", currency: "RM", tab: "board", q: "", stageFilter: "active", mode: "loading", loaded: false };
 
   const $ = s => document.querySelector(s);
   const esc = v => String(v ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
@@ -280,10 +297,11 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
 
   /* ---------- data ---------- */
   const KEY = "kemas-apparel-v1";
-  function persist() {
-    try { localStorage.setItem(KEY, JSON.stringify({ projects: state.projects, currency: state.currency, savedAt: new Date().toISOString() })); }
+  function persistLocal() {
+    try { localStorage.setItem(KEY, JSON.stringify({ projects: state.projects, deleted: state.deleted, currency: state.currency, currencyAt: state.currencyAt, savedAt: new Date().toISOString() })); }
     catch (e) { const err = new Error("save failed"); err.code = "quota_exceeded"; throw err; }
   }
+  function persist() { persistLocal(); scheduleSync(); }
   async function saveProject(id, data) {
     data.updatedAt = new Date().toISOString();
     const before = state.projects.slice();
@@ -293,7 +311,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     render();
   }
   async function deleteProject(id) {
-    state.projects = state.projects.filter(p => p.id !== id); persist(); render();
+    state.projects = state.projects.filter(p => p.id !== id); state.deleted[id] = new Date().toISOString(); persist(); render();
   }
   function exportBackup() {
     const blob = new Blob([JSON.stringify({ app: "kemas-apparel", version: 1, exportedAt: new Date().toISOString(), currency: state.currency, projects: state.projects }, null, 2)], { type: "application/json" });
@@ -311,7 +329,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       const byId = new Map(state.projects.map(p => [p.id, p]));
       d.projects.forEach(p => { if (p && typeof p === "object") { const id = String(p.id || "p-" + Math.random().toString(36).slice(2)); const old = byId.get(id); if (!old || String(p.updatedAt) >= String(old.updatedAt)) byId.set(id, { ...p, id }); } });
       state.projects = [...byId.values()];
-      if (d.currency) state.currency = String(d.currency).slice(0, 5);
+      if (d.currency) { state.currency = String(d.currency).slice(0, 5); state.currencyAt = new Date().toISOString(); }
       persist(); render(); toast(`Imported ${d.projects.length} project${d.projects.length === 1 ? "" : "s"}`);
     } catch (_) { toast("That file isn't a KEMAS backup."); }
   }
@@ -350,7 +368,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       <div class="name">${esc(p.name || "Untitled")}</div>
       ${p.client ? `<div class="client">${esc(p.client)}</div>` : ""}
       <div class="chips">${chips.join("")}</div>
-      ${s.next ? `<button class="next" type="button" data-advance="${esc(p.id)}">Move to ${esc(s.next)} →</button>` : ""}
+      ${s.next ? `<button class="next" type="button" data-advance="${esc(p.id)}">Next: ${esc(s.next)} →</button>` : ""}
     </article>`;
   }
   function sortForBoard(a, b) {
@@ -371,7 +389,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         <div class="cards">${items.map(cardHTML).join("") || `<div class="empty-col">Nothing here</div>`}${more}</div>
       </section>`;
     }).join("");
-    return `<div class="viewhead"><div><h2>Where every job is</h2><p>Tap a card to edit it. Use “Move to …” when a job moves forward.</p></div></div>
+    return `<div class="viewhead"><div><h2>Where every job is</h2><p>Tap a card to edit it. Tap “Next” when a job moves forward.</p></div></div>
       <div class="board-scroll"><div class="board" style="--cols:${cols.length}">${html}</div></div>`;
   }
 
@@ -463,7 +481,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         <tfoot><tr><td></td><td>Total</td><td class="num">${t.q}</td><td></td><td class="num">${esc(money(t.sale))}</td><td class="num">${esc(money(t.cost))}</td><td class="num ${t.profit >= 0 ? "pos" : "neg"}">${esc(money(t.profit))}</td><td class="num">${t.sale ? Math.round(t.profit / t.sale * 100) + "%" : "—"}</td></tr></tfoot>
       </table></div>` : ""}
       <div class="settings-row"><label for="currency">Currency shown as</label><input id="currency" value="${esc(state.currency)}" maxlength="5"><span>e.g. RM, $, SGD</span></div>
-      <div class="settings-row"><span>Your data is saved on this device.</span><button class="btn small" type="button" id="export-btn">Export backup</button><label class="btn small" for="import-file">Import backup</label><input id="import-file" type="file" accept="application/json,.json" hidden></div>`;
+      <div class="settings-row"><span>Projects sync through your GitHub when sync is on. A backup file is a spare copy.</span><button class="btn small" type="button" id="export-btn">Export backup</button><label class="btn small" for="import-file">Import backup</label><input id="import-file" type="file" accept="application/json,.json" hidden></div>`;
   }
 
   /* ---------- render ---------- */
@@ -579,9 +597,168 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     if (e.target.id === "import-file") { const f = e.target.files && e.target.files[0]; if (f) await importBackup(f); e.target.value = ""; return; }
     if (e.target.id !== "currency") return;
     const v = e.target.value.trim().slice(0, 5) || "RM";
-    state.currency = v; render();
+    state.currency = v; state.currencyAt = new Date().toISOString(); render();
     try { persist(); toast("Currency updated"); } catch (_) { toast("Couldn't save the currency."); }
   });
+
+
+  /* ---------- sync through a private GitHub Gist ---------- */
+  const SYNC_KEY = "kemas-sync-v1", FILE = "kemas-data.json", DESC = "KEMAS APPAREL data (used by the KEMAS app, do not delete)";
+  const sync = { token: "", gistId: "", login: "", status: "off", last: "", msg: "", running: false, again: false, timer: 0 };
+  try { Object.assign(sync, JSON.parse(localStorage.getItem(SYNC_KEY) || "{}")); } catch (_) {}
+  sync.status = sync.token ? "idle" : "off";
+  const saveSyncCfg = () => { try { localStorage.setItem(SYNC_KEY, JSON.stringify({ token: sync.token, gistId: sync.gistId, login: sync.login, last: sync.last })); } catch (_) {} };
+
+  async function gh(path, opts = {}) {
+    const headers = { Authorization: "Bearer " + sync.token, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+    if (opts.body) headers["Content-Type"] = "application/json";
+    const r = await fetch("https://api.github.com" + path, { ...opts, headers, cache: "no-store" });
+    if (!r.ok) { const e = new Error("GitHub " + r.status); e.status = r.status; throw e; }
+    return r.status === 204 ? null : r.json();
+  }
+  const stable = v => Array.isArray(v) ? "[" + v.map(stable).join(",") + "]" : v && typeof v === "object" ? "{" + Object.keys(v).sort().map(k => JSON.stringify(k) + ":" + stable(v[k])).join(",") + "}" : JSON.stringify(v ?? null);
+  const snapshot = () => ({ app: "kemas-apparel", version: 1, projects: state.projects, deleted: state.deleted, currency: state.currency, currencyAt: state.currencyAt });
+  const sig = d => stable({ p: [...(d.projects || [])].sort((a, b) => String(a.id).localeCompare(String(b.id))), d: d.deleted || {}, c: d.currency || "", ca: d.currencyAt || "" });
+
+  function merge(a, b) {
+    const deleted = { ...(a.deleted || {}) };
+    Object.entries(b.deleted || {}).forEach(([id, t]) => { if (!deleted[id] || t > deleted[id]) deleted[id] = t; });
+    const byId = new Map();
+    [...(a.projects || []), ...(b.projects || [])].forEach(p => {
+      if (!p || !p.id) return;
+      const cur = byId.get(p.id);
+      if (!cur || String(p.updatedAt || "") > String(cur.updatedAt || "")) byId.set(p.id, p);
+    });
+    const projects = [...byId.values()].filter(p => !(deleted[p.id] && deleted[p.id] >= String(p.updatedAt || "")));
+    const useB = String(b.currencyAt || "") > String(a.currencyAt || "");
+    return { app: "kemas-apparel", version: 1, projects, deleted, currency: (useB ? b.currency : a.currency) || a.currency || b.currency || "RM", currencyAt: useB ? b.currencyAt : a.currencyAt };
+  }
+
+  async function findOrCreateGist() {
+    for (let page = 1; page <= 5; page++) {
+      const list = await gh(`/gists?per_page=100&page=${page}`);
+      const hit = list.find(g => g.files && g.files[FILE]);
+      if (hit) return hit.id;
+      if (list.length < 100) break;
+    }
+    const g = await gh("/gists", { method: "POST", body: JSON.stringify({ description: DESC, public: false, files: { [FILE]: { content: JSON.stringify(snapshot()) } } }) });
+    return g.id;
+  }
+  async function readRemote() {
+    const g = await gh(`/gists/${sync.gistId}`);
+    const f = g.files && g.files[FILE];
+    if (!f) return null;
+    const text = f.truncated ? await (await fetch(f.raw_url, { cache: "no-store" })).text() : f.content;
+    try { return JSON.parse(text); } catch (_) { return null; }
+  }
+
+  async function syncNow() {
+    if (!sync.token) return;
+    if (sync.running) { sync.again = true; return; }
+    sync.running = true; sync.again = false; setSync("syncing");
+    try {
+      if (!sync.gistId) { sync.gistId = await findOrCreateGist(); saveSyncCfg(); }
+      let remote;
+      try { remote = await readRemote(); }
+      catch (e) { if (e.status === 404) { sync.gistId = await findOrCreateGist(); saveSyncCfg(); remote = await readRemote(); } else throw e; }
+      remote = remote || { projects: [], deleted: {} };
+      const local = snapshot();
+      const merged = merge(local, remote);
+      if (sig(merged) !== sig(local)) {
+        state.projects = merged.projects; state.deleted = merged.deleted; state.currency = merged.currency; state.currencyAt = merged.currencyAt;
+        persistLocal(); render();
+      }
+      if (sig(merged) !== sig(remote)) {
+        await gh(`/gists/${sync.gistId}`, { method: "PATCH", body: JSON.stringify({ files: { [FILE]: { content: JSON.stringify(merged) } } }) });
+      }
+      sync.last = new Date().toISOString(); saveSyncCfg(); setSync("ok");
+    } catch (e) {
+      if (e.status === 401) setSync("error", "GitHub didn't accept the key. It may have expired. Open Sync and connect again with a new key.");
+      else if (e.status === 403 || e.status === 404) setSync("error", "The key can't use Gists. Make a new key with the “gist” box ticked.");
+      else if (e.status === 429) setSync("error", "GitHub asked to slow down. It will try again shortly.");
+      else setSync("offline", "No internet connection. Your changes are kept on this device and will sync when you're back online.");
+    } finally {
+      sync.running = false;
+      if (sync.again) syncNow();
+    }
+  }
+  function scheduleSync() { if (!sync.token) return; clearTimeout(sync.timer); sync.timer = setTimeout(syncNow, 1200); if (sync.status !== "syncing") setSync("syncing"); }
+
+  const ago = iso => { if (!iso) return "never"; const s = Math.round((Date.now() - new Date(iso)) / 1000); if (s < 45) return "just now"; const m = Math.round(s / 60); if (m < 60) return m + " min ago"; const h = Math.round(m / 60); if (h < 24) return h + " h ago"; return fmtStamp(iso); };
+  function setSync(status, msg) {
+    sync.status = status; sync.msg = msg || "";
+    const btn = $("#sync-btn"), t = $("#sync-text");
+    btn.dataset.s = status;
+    t.textContent = { off: "Connect sync", idle: "Sync", syncing: "Syncing…", ok: "Synced", offline: "Offline", error: "Sync problem" }[status] || "Sync";
+    btn.title = status === "ok" ? "Last synced " + ago(sync.last) : sync.msg || "";
+    if (status === "error") banner(sync.msg, "warn"); else if (status === "ok") banner(null);
+    const live = document.getElementById("sync-live"); if (live) fillSyncModal();
+  }
+
+  function openSyncModal() {
+    const root = $("#modal-root"); const lastFocus = document.activeElement;
+    root.innerHTML = `<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="s-title">
+      <div class="sheet-head"><div><div class="code">PHONE ⇄ LAPTOP</div><h2 id="s-title">Sync your projects</h2></div><button type="button" class="x" id="s-close" aria-label="Close">×</button></div>
+      <div class="sheet-body" id="sync-live"></div></div></div>`;
+    const close = () => { root.innerHTML = ""; document.removeEventListener("keydown", onKey); if (lastFocus && lastFocus.focus) lastFocus.focus(); };
+    const onKey = e => { if (e.key === "Escape") close(); };
+    document.addEventListener("keydown", onKey);
+    $("#s-close").onclick = close;
+    $("#scrim").addEventListener("mousedown", e => { if (e.target.id === "scrim") close(); });
+    fillSyncModal();
+    setTimeout(() => ($("#s-token") || $("#s-close")).focus(), 0);
+  }
+  function fillSyncModal() {
+    const box = document.getElementById("sync-live"); if (!box) return;
+    if (!sync.token) {
+      box.innerHTML = `<p class="note" style="font-size:14px;color:var(--ink)">Your projects are saved in a private file on your GitHub account. Every device you connect reads and saves that same file, so your phone and laptop always match.</p>
+        <ol class="steps">
+          <li><a href="https://github.com/settings/tokens/new?scopes=gist&description=KEMAS%20APPAREL%20sync" target="_blank" rel="noopener">Make a GitHub key</a> (opens GitHub). Set <b>Expiration</b> to <b>No expiration</b>, leave only <b>gist</b> ticked, then tap <b>Generate token</b> and copy it.</li>
+          <li>Paste it here and tap Connect.</li>
+        </ol>
+        <div class="field"><label for="s-token">GitHub key</label><input id="s-token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ghp_…"><span class="err" id="s-err" hidden></span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" id="s-connect">Connect</button></div>
+        <p class="note">Do the same on your other device. You can paste the same key, or make a new one there. Any key from your GitHub account finds the same file.</p>`;
+      $("#s-connect").onclick = async () => {
+        const v = $("#s-token").value.trim(), err = $("#s-err"), b = $("#s-connect");
+        if (!v) { err.textContent = "Paste your GitHub key first."; err.hidden = false; return; }
+        b.disabled = true; b.textContent = "Connecting…"; err.hidden = true;
+        sync.token = v;
+        try {
+          const me = await gh("/user"); sync.login = me.login || ""; sync.gistId = ""; saveSyncCfg();
+          await syncNow();
+          if (sync.status === "error") { throw Object.assign(new Error(), { status: 403 }); }
+          toast("Sync is on"); fillSyncModal();
+        } catch (e) {
+          sync.token = ""; sync.login = ""; saveSyncCfg(); setSync("off");
+          const err = $("#s-err"), b = $("#s-connect"); $("#s-token").value = v;
+          err.textContent = e.status === 401 ? "That key didn't work. Check you copied all of it." : e.status === 403 ? "That key can't use Gists. Make a new one with “gist” ticked." : "Couldn't reach GitHub. Check your internet and try again.";
+          err.hidden = false; b.disabled = false; b.textContent = "Connect";
+        }
+      };
+      return;
+    }
+    const label = { idle: "Waiting", syncing: "Syncing…", ok: "Up to date", offline: "Offline, will sync later", error: "Needs attention" }[sync.status] || "";
+    box.innerHTML = `<dl class="kv">
+        <dt>Status</dt><dd>${esc(label)}</dd>
+        <dt>Last synced</dt><dd>${esc(ago(sync.last))}</dd>
+        <dt>GitHub account</dt><dd>${esc(sync.login || "—")}</dd>
+        <dt>Data file</dt><dd>${sync.gistId ? `<a href="https://gist.github.com/${encodeURIComponent(sync.gistId)}" target="_blank" rel="noopener" style="color:var(--accent)">Open on GitHub</a>` : "—"}</dd>
+      </dl>
+      ${sync.msg ? `<p class="note" style="color:var(--warn)">${esc(sync.msg)}</p>` : ""}
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" id="s-now">Sync now</button><button class="btn danger" type="button" id="s-off">Turn off sync on this device</button></div>
+      <p class="note">Changes sync a second after you save, when you open the app, and every minute while it's open.</p>`;
+    $("#s-now").onclick = () => syncNow();
+    const off = $("#s-off");
+    off.onclick = () => {
+      if (!off.classList.contains("armed")) { off.classList.add("armed"); off.textContent = "Tap again to turn off"; return; }
+      sync.token = ""; sync.gistId = ""; sync.login = ""; sync.last = ""; saveSyncCfg(); setSync("off"); banner(null); fillSyncModal(); toast("Sync turned off. Projects stay on this device.");
+    };
+  }
+  document.addEventListener("click", e => { if (e.target.closest("#sync-btn")) openSyncModal(); });
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") syncNow(); });
+  window.addEventListener("online", () => syncNow());
+  setInterval(() => { if (document.visibilityState === "visible" && !sync.running) syncNow(); }, 60000);
 
   /* ---------- boot ---------- */
   try { const t = localStorage.getItem("kemas-tab"); if (["board", "jobs", "money"].includes(t)) state.tab = t; } catch (_) {}
@@ -590,11 +767,13 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   function boot() {
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) { const d = JSON.parse(raw); state.projects = Array.isArray(d.projects) ? d.projects : []; if (d.currency) state.currency = String(d.currency); }
+      if (raw) { const d = JSON.parse(raw); state.projects = Array.isArray(d.projects) ? d.projects : []; state.deleted = d.deleted || {}; state.currencyAt = d.currencyAt || ""; if (d.currency) state.currency = String(d.currency); }
     } catch (_) { banner("This browser is blocking storage, so projects can't be saved. Turn off Private Browsing and reopen the app.", "warn"); }
     state.loaded = true; state.mode = "local";
     render();
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+    setSync(sync.token ? "idle" : "off");
+    syncNow();
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
   }
   boot();

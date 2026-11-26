@@ -12,6 +12,17 @@ A job board for shirt projects. Track every project from design to delivery, alo
 ## Live link
 `https://adamdanish28.github.io/test/kemas/` (once GitHub Pages is on; see the root `docs/README.md`).
 
-## Data
-Projects are saved on the device you use (browser storage). Nothing is sent to a server.
-Use **Money → Export backup / Import backup** to keep a copy or move projects between your phone and laptop.
+## Sync between phone and laptop
+Tap **Connect sync** at the top of the app and paste a GitHub key. The key only needs the `gist` permission:
+make one at <https://github.com/settings/tokens/new?scopes=gist&description=KEMAS%20APPAREL%20sync>.
+
+The app keeps your projects in one secret Gist (`kemas-data.json`) on your GitHub account. Every connected device reads and saves that file:
+- a second after you save a change
+- when you open or return to the app
+- every minute while it's open
+
+It also works offline. Changes are kept on the device and sync when you're back online.
+If both devices edit the same project, the newer save wins.
+
+## Backup
+**Money → Export backup / Import backup** saves or loads a JSON copy of everything.
