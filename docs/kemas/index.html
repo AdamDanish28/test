@@ -207,8 +207,33 @@ legend { font-family: var(--f-mono); font-size: 11px; letter-spacing: .09em; tex
 .stages button { border: 1px solid var(--line); background: var(--paper); padding: 6px 11px; border-radius: 99px; font-size: 13px; font-weight: 600; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
 .stages button::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--c); }
 .stages button[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); color: var(--ink); }
-.sizes { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
-@media (max-width: 560px) { .sizes { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.sizes { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 640px) { .sizes { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.size label.big { color: var(--warn); }
+.line-box { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 12px; background: var(--paper); min-width: 0; }
+.line-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.line-head b { font-family: var(--f-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.line-head input { flex: 1 1 140px; min-width: 0; }
+.inp { padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); width: 100%; min-width: 0; }
+.line-box .field input, .line-box .field select, .line-box .size input { background: var(--surface); }
+.sub-label { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.toggles { display: flex; flex-wrap: wrap; gap: 6px; }
+.toggle { border: 1px solid var(--line); background: var(--surface); padding: 6px 10px; border-radius: 99px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.toggle small { font-family: var(--f-mono); font-weight: 500; font-size: 11.5px; margin-left: 3px; }
+.toggle[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, var(--surface)); color: var(--ink); }
+.line-sum { display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--f-mono); font-size: 13px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 10px; }
+.line-sum b { color: var(--ink); font-weight: 600; }
+.linkbtn { border: 0; background: transparent; padding: 4px 2px; color: var(--accent); font-weight: 600; font-size: 13px; }
+.linkbtn.danger { color: var(--bad); }
+.lines { display: flex; flex-direction: column; gap: 10px; }
+.pl-sec { display: flex; flex-direction: column; gap: 6px; }
+.pl-row { display: grid; grid-template-columns: minmax(0, 1fr) 96px 34px; gap: 6px; align-items: center; }
+.pl-row.has-note { grid-template-columns: minmax(0, 1fr) minmax(0, .7fr) 96px 34px; }
+.pl-row .x2 { border: 0; background: transparent; color: var(--muted); font-size: 18px; padding: 4px; border-radius: 6px; }
+.pl-row .x2:hover { color: var(--bad); }
+.pl-head { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.share-row { display: flex; gap: 8px; flex-wrap: wrap; }
+@media (max-width: 560px) { .line-box .grid2 { grid-template-columns: 1fr; } .line-box { padding: 10px; } }
 .size { display: flex; flex-direction: column; align-items: stretch; gap: 3px; }
 .size label { font-family: var(--f-mono); font-size: 12px; font-weight: 600; text-align: center; color: var(--muted); }
 .size input { text-align: center; padding: 7px 4px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); font-family: var(--f-mono); width: 100%; }
@@ -268,16 +293,88 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   const HOLD = { id: "hold", label: "On hold", hint: "Paused", c: "--s-hold", next: null };
   const ALL = [...STAGES, HOLD];
   const stageOf = id => ALL.find(s => s.id === id) || STAGES[0];
-  const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
+  const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
+  const DEFAULT_PL = {
+    base: "",
+    fabrics: [
+      { id: "mini-eyelet", name: "Mini Eyelet", note: "160 gsm", price: 0 },
+      { id: "interlock", name: "Interlock", note: "160 gsm", price: 0 },
+      { id: "eyelet", name: "Eyelet", note: "160 gsm", price: 0 },
+      { id: "diamond", name: "Diamond", note: "150–155 gsm", price: 2 },
+      { id: "sparkling-eyelet", name: "Sparkling Eyelet", note: "160 gsm", price: 2 },
+      { id: "rjpk", name: "RJPK", note: "175 gsm", price: 2 },
+      { id: "mini-square", name: "Mini Square", note: "120 gsm", price: 2 },
+      { id: "premium-mini-square", name: "Premium Mini Square", note: "120 gsm", price: 2 },
+      { id: "ultron", name: "Ultron", note: "140 gsm", price: 2 },
+      { id: "lycra-220", name: "Lycra", note: "220 gsm", price: 4 },
+      { id: "lycra-260", name: "Lycra", note: "260 gsm", price: 6 },
+      { id: "lycra-280", name: "Lycra", note: "280 gsm", price: 10 },
+    ],
+    collars: [
+      { id: "round", name: "Round neck", price: 0 },
+      { id: "vneck", name: "V-neck", price: 1 },
+      { id: "polo", name: "Polo", price: 3 },
+      { id: "nfl", name: "NFL", price: 4 },
+      { id: "retro", name: "Retro", price: 5 },
+      { id: "mandarin", name: "Mandarin", price: 5 },
+    ],
+    sleeves: [
+      { id: "normal", name: "Normal sleeve", price: 0 },
+      { id: "raglan-round", name: "Raglan round neck", price: 3 },
+      { id: "raglan-collar", name: "Raglan collar", price: 5 },
+    ],
+    addons: [
+      { id: "muslimah", name: "Muslimah", price: 8 },
+      { id: "oversize", name: "Oversize", price: 8 },
+      { id: "backtape", name: "Backtape with printing", price: 2 },
+      { id: "numbering", name: "Numbering or naming", price: 3 },
+      { id: "dtf-label", name: "DTF label tag", price: 1 },
+      { id: "pen-pocket", name: "Pen pocket", price: 2 },
+    ],
+    bigFrom: "3XL", big: 4,
+  };
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const pick = (list, id) => (list || []).find(x => x.id === id) || (list || [])[0] || { id: "", name: "", price: 0 };
+  const plus = n => (num(n) ? "+" + money(num(n)).replace(state.currency + " ", state.currency) : "free");
+  const fabricLabel = f => f.name + (f.note ? ` · ${f.note}` : "");
+  const newLine = pl => ({ id: "l" + Math.random().toString(36).slice(2, 8), label: "", collar: pl.collars[0] ? pl.collars[0].id : "", sleeve: pl.sleeves[0] ? pl.sleeves[0].id : "", addons: [], sizes: {}, pieces: "" });
+  const bigIdx = pl => { const i = SIZES.indexOf(pl.bigFrom || "3XL"); return i < 0 ? SIZES.length : i; };
+  function unitOf(p, line) {
+    const pl = p.pl || state.priceList;
+    return num(p.base) + num(pick(pl.fabrics, p.fabric).price) + num(pick(pl.collars, line.collar).price) + num(pick(pl.sleeves, line.sleeve).price)
+      + (line.addons || []).reduce((a, id) => a + num(((pl.addons || []).find(x => x.id === id) || {}).price), 0);
+  }
+  function lineCalc(p, line) {
+    const pl = p.pl || state.priceList, bi = bigIdx(pl), unit = unitOf(p, line);
+    const sizes = line.sizes || {};
+    let pcs = 0, bigPcs = 0;
+    SIZES.forEach((k, i) => { const n = num(sizes[k]); pcs += n; if (i >= bi) bigPcs += n; });
+    const bySize = pcs > 0;
+    if (!bySize) pcs = num(line.pieces);
+    return { unit, bigUnit: unit + num(pl.big), pcs, bigPcs, bySize, sale: pcs * unit + bigPcs * num(pl.big) };
+  }
+  const hasLines = p => Array.isArray(p.lines) && p.lines.length > 0;
 
-  const state = { projects: [], deleted: {}, currencyAt: "", currency: "RM", tab: "board", q: "", stageFilter: "active", mode: "loading", loaded: false };
+  const state = { projects: [], deleted: {}, currencyAt: "", priceList: null, priceListAt: "", currency: "RM", tab: "board", q: "", stageFilter: "active", mode: "loading", loaded: false };
 
   const $ = s => document.querySelector(s);
   const esc = v => String(v ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
   const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
   const money = n => { const neg = n < 0; n = Math.abs(n); const s = n.toLocaleString(undefined, { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }); return (neg ? "−" : "") + state.currency + " " + s; };
-  const qtyOf = p => { const s = SIZES.reduce((a, k) => a + num(p.sizes && p.sizes[k]), 0); return s > 0 ? s : num(p.qty); };
-  const calc = p => { const q = qtyOf(p); const sale = q * num(p.price); const cost = q * num(p.cost) + num(p.extra); return { q, sale, cost, profit: sale - cost, paid: num(p.paid), balance: sale - num(p.paid) }; };
+  const qtyOf = p => { if (hasLines(p)) return p.lines.reduce((a, l) => a + lineCalc(p, l).pcs, 0); const s = SIZES.reduce((a, k) => a + num(p.sizes && p.sizes[k]), 0); return s > 0 ? s : num(p.qty); };
+  const calc = p => {
+    const q = qtyOf(p);
+    const sale = hasLines(p) ? p.lines.reduce((a, l) => a + lineCalc(p, l).sale, 0) + num(p.adjust) : q * num(p.price);
+    const cost = q * num(p.cost) + num(p.extra);
+    return { q, sale, cost, profit: sale - cost, paid: num(p.paid), balance: sale - num(p.paid) };
+  };
+  const avgPrice = p => { const c = calc(p); return c.q ? c.sale / c.q : num(p.price); };
+  function specLine(p) {
+    if (!hasLines(p)) return p.shirt || "";
+    const pl = p.pl || state.priceList;
+    const collars = [...new Set(p.lines.map(l => pick(pl.collars, l.collar).name))].join(", ");
+    return [p.fabric ? pick(pl.fabrics, p.fabric).name : "", collars].filter(Boolean).join(" · ");
+  }
   const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
   const parseDay = s => { if (!s) return null; const [y, m, d] = s.split("-").map(Number); return y ? new Date(y, m - 1, d) : null; };
   const fmtDay = s => { const d = parseDay(s); return d ? d.toLocaleDateString(undefined, { day: "numeric", month: "short" }) : ""; };
@@ -298,7 +395,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   /* ---------- data ---------- */
   const KEY = "kemas-apparel-v1";
   function persistLocal() {
-    try { localStorage.setItem(KEY, JSON.stringify({ projects: state.projects, deleted: state.deleted, currency: state.currency, currencyAt: state.currencyAt, savedAt: new Date().toISOString() })); }
+    try { localStorage.setItem(KEY, JSON.stringify({ projects: state.projects, deleted: state.deleted, currency: state.currency, currencyAt: state.currencyAt, priceList: state.priceList, priceListAt: state.priceListAt, savedAt: new Date().toISOString() })); }
     catch (e) { const err = new Error("save failed"); err.code = "quota_exceeded"; throw err; }
   }
   function persist() { persistLocal(); scheduleSync(); }
@@ -314,7 +411,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     state.projects = state.projects.filter(p => p.id !== id); state.deleted[id] = new Date().toISOString(); persist(); render();
   }
   function exportBackup() {
-    const blob = new Blob([JSON.stringify({ app: "kemas-apparel", version: 1, exportedAt: new Date().toISOString(), currency: state.currency, projects: state.projects }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ app: "kemas-apparel", version: 1, exportedAt: new Date().toISOString(), currency: state.currency, priceList: state.priceList, priceListAt: state.priceListAt, projects: state.projects }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `kemas-backup-${new Date().toISOString().slice(0, 10)}.json`;
@@ -329,6 +426,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       const byId = new Map(state.projects.map(p => [p.id, p]));
       d.projects.forEach(p => { if (p && typeof p === "object") { const id = String(p.id || "p-" + Math.random().toString(36).slice(2)); const old = byId.get(id); if (!old || String(p.updatedAt) >= String(old.updatedAt)) byId.set(id, { ...p, id }); } });
       state.projects = [...byId.values()];
+      if (d.priceList && String(d.priceListAt || "") > String(state.priceListAt || "")) { state.priceList = d.priceList; state.priceListAt = d.priceListAt; }
       if (d.currency) { state.currency = String(d.currency).slice(0, 5); state.currencyAt = new Date().toISOString(); }
       persist(); render(); toast(`Imported ${d.projects.length} project${d.projects.length === 1 ? "" : "s"}`);
     } catch (_) { toast("That file isn't a KEMAS backup."); }
@@ -367,6 +465,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       <div class="row1"><span class="code">${esc(p.code)}</span>${p.printer && p.stage === "print" ? `<span class="code">@ ${esc(p.printer)}</span>` : ""}</div>
       <div class="name">${esc(p.name || "Untitled")}</div>
       ${p.client ? `<div class="client">${esc(p.client)}</div>` : ""}
+      ${specLine(p) ? `<div class="client" style="font-size:12.5px">${esc(specLine(p))}</div>` : ""}
       <div class="chips">${chips.join("")}</div>
       ${s.next ? `<button class="next" type="button" data-advance="${esc(p.id)}">Next: ${esc(s.next)} →</button>` : ""}
     </article>`;
@@ -389,7 +488,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         <div class="cards">${items.map(cardHTML).join("") || `<div class="empty-col">Nothing here</div>`}${more}</div>
       </section>`;
     }).join("");
-    return `<div class="viewhead"><div><h2>Where every job is</h2><p>Tap a card to edit it. Tap “Next” when a job moves forward.</p></div></div>
+    return `<div class="viewhead"><div><h2>Where every job is</h2><p>Tap a card to edit it. Tap “Next” when a job moves forward.</p></div><button class="btn small" type="button" data-pricelist>Price list</button></div>
       <div class="board-scroll"><div class="board" style="--cols:${cols.length}">${html}</div></div>`;
   }
 
@@ -477,9 +576,10 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       <div class="viewhead"><div><h2>Profit per project</h2></div></div>
       ${rows.length ? `<div class="tablebox"><table>
         <thead><tr><th>Job</th><th>Project</th><th class="num">Pcs</th><th class="num">Price/pc</th><th class="num">Sale</th><th class="num">Cost</th><th class="num">Profit</th><th class="num">Margin</th></tr></thead>
-        <tbody>${rows.map(p => { const c = calc(p); return `<tr class="click" data-open="${esc(p.id)}" tabindex="0"><td class="mono" style="color:var(--muted);font-size:12.5px">${esc(p.code)}</td><td><div class="t1">${esc(p.name)}</div><div class="t2">${esc(p.client || "—")}</div></td><td class="num">${c.q}</td><td class="num">${esc(money(num(p.price)))}</td><td class="num">${esc(money(c.sale))}</td><td class="num">${esc(money(c.cost))}</td><td class="num ${c.profit >= 0 ? "pos" : "neg"}">${esc(money(c.profit))}</td><td class="num">${c.sale ? Math.round(c.profit / c.sale * 100) + "%" : "—"}</td></tr>`; }).join("")}</tbody>
+        <tbody>${rows.map(p => { const c = calc(p); return `<tr class="click" data-open="${esc(p.id)}" tabindex="0"><td class="mono" style="color:var(--muted);font-size:12.5px">${esc(p.code)}</td><td><div class="t1">${esc(p.name)}</div><div class="t2">${esc(p.client || "—")}</div></td><td class="num">${c.q}</td><td class="num">${esc(money(Math.round(avgPrice(p) * 100) / 100))}</td><td class="num">${esc(money(c.sale))}</td><td class="num">${esc(money(c.cost))}</td><td class="num ${c.profit >= 0 ? "pos" : "neg"}">${esc(money(c.profit))}</td><td class="num">${c.sale ? Math.round(c.profit / c.sale * 100) + "%" : "—"}</td></tr>`; }).join("")}</tbody>
         <tfoot><tr><td></td><td>Total</td><td class="num">${t.q}</td><td></td><td class="num">${esc(money(t.sale))}</td><td class="num">${esc(money(t.cost))}</td><td class="num ${t.profit >= 0 ? "pos" : "neg"}">${esc(money(t.profit))}</td><td class="num">${t.sale ? Math.round(t.profit / t.sale * 100) + "%" : "—"}</td></tr></tfoot>
       </table></div>` : ""}
+      <div class="settings-row"><button class="btn small" type="button" data-pricelist>Edit price list</button><span>Fabrics, collars, sleeves and add-ons from your sales kit.</span></div>
       <div class="settings-row"><label for="currency">Currency shown as</label><input id="currency" value="${esc(state.currency)}" maxlength="5"><span>e.g. RM, $, SGD</span></div>
       <div class="settings-row"><span>Projects sync through your GitHub when sync is on. A backup file is a spare copy.</span><button class="btn small" type="button" id="export-btn">Export backup</button><label class="btn small" for="import-file">Import backup</label><input id="import-file" type="file" accept="application/json,.json" hidden></div>`;
   }
@@ -500,35 +600,92 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   }
 
   /* ---------- modal ---------- */
+  function copyText(text) {
+    const fallback = () => { const t = document.createElement("textarea"); t.value = text; t.style.position = "fixed"; t.style.opacity = "0"; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); } catch (_) {} t.remove(); };
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).catch(fallback);
+    fallback(); return Promise.resolve();
+  }
+  function sizesText(line) { return SIZES.filter(k => num(line.sizes && line.sizes[k])).map(k => `${k} ${num(line.sizes[k])}`).join(" · "); }
+  function orderText(p, withPrices) {
+    const pl = p.pl || state.priceList, c = calc(p), out = [];
+    out.push(`KEMAS APPAREL · ${p.code}`);
+    out.push(p.name || "Untitled");
+    if (p.client) out.push(`Client: ${p.client}`);
+    if (p.due) out.push(`Due: ${fmtDay(p.due)}`);
+    if (hasLines(p)) {
+      out.push(`Fabric: ${fabricLabel(pick(pl.fabrics, p.fabric))}`);
+      p.lines.forEach((l, i) => {
+        const lc = lineCalc(p, l);
+        const opts = [pick(pl.collars, l.collar).name, pick(pl.sleeves, l.sleeve).name, ...(l.addons || []).map(id => ((pl.addons || []).find(x => x.id === id) || {}).name).filter(Boolean)];
+        out.push("");
+        out.push(`${i + 1}. ${l.label ? l.label + ": " : ""}${opts.join(", ")}`);
+        out.push(`   ${lc.bySize ? sizesText(l) + " = " : ""}${lc.pcs} pcs`);
+        if (withPrices) out.push(`   ${money(lc.unit)}/pc${lc.bigPcs ? ` · 3XL+ ${money(lc.bigUnit)}/pc` : ""} → ${money(lc.sale)}`);
+      });
+      out.push("");
+    } else if (p.shirt) out.push(`Shirt: ${p.shirt}`);
+    out.push(`Total: ${c.q} pcs`);
+    if (withPrices) {
+      if (num(p.adjust)) out.push(`${num(p.adjust) < 0 ? "Discount" : "Adjustment"}: ${money(num(p.adjust))}`);
+      out.push(`Total price: ${money(c.sale)}`);
+      if (c.paid) out.push(`Paid: ${money(c.paid)}`);
+      if (c.paid) out.push(`Balance: ${c.balance > 0 ? money(c.balance) : "Fully paid"}`);
+    }
+    return out.join("\n");
+  }
+
   function openModal(p) {
     const isNew = !p;
-    const draft = p ? JSON.parse(JSON.stringify(p)) : { code: nextCode(), name: "", client: "", contact: "", stage: "design", due: "", printer: "", shirt: "", sizes: {}, qty: "", price: "", cost: "", extra: "", paid: "", notes: "", history: [] };
-    draft.sizes = draft.sizes || {};
+    const draft = p ? clone(p) : { code: nextCode(), name: "", client: "", contact: "", stage: "design", due: "", printer: "", shirt: "", cost: "", extra: "", paid: "", adjust: "", notes: "", history: [] };
+    if (!hasLines(draft)) {
+      // new project, or an older one saved before shirt types existed
+      draft.pl = clone(state.priceList);
+      const line = newLine(draft.pl);
+      if (!isNew) { line.sizes = { ...(draft.sizes || {}) }; if (!SIZES.some(k => num(line.sizes[k]))) line.pieces = draft.qty || ""; }
+      draft.lines = [line];
+      draft.base = isNew ? (draft.pl.base || "") : (draft.price || "");
+      draft.fabric = draft.pl.fabrics[0] ? draft.pl.fabrics[0].id : "";
+    }
+    draft.pl = draft.pl || clone(state.priceList);
     const root = $("#modal-root");
     const lastFocus = document.activeElement;
+    const opt = (list, sel, lab) => list.map(x => `<option value="${esc(x.id)}" ${x.id === sel ? "selected" : ""}>${esc(lab(x))}</option>`).join("");
+    const nameWithPrice = x => `${x.name} (${plus(x.price)})`;
     root.innerHTML = `<div class="scrim" id="scrim"><form class="sheet" id="pform" role="dialog" aria-modal="true" aria-labelledby="m-title" novalidate>
       <div class="sheet-head"><div><div class="code">${esc(draft.code)}</div><h2 id="m-title">${isNew ? "New project" : esc(draft.name || "Project")}</h2></div><button type="button" class="x" id="m-close" aria-label="Close">×</button></div>
       <div class="sheet-body">
         <fieldset><legend>Stage</legend><div class="stages" id="m-stages">${ALL.map(s => `<button type="button" style="--c:var(${s.c})" data-stage="${s.id}" aria-pressed="${draft.stage === s.id}">${esc(s.label)}</button>`).join("")}</div></fieldset>
         <fieldset><legend>Project</legend><div class="grid2">
-          <div class="field full"><label for="f-name">Project name</label><input id="f-name" name="name" required value="${esc(draft.name)}" placeholder="e.g. Class of 2026 reunion tee"><span class="err" id="name-err" hidden>Give the project a name so you can find it later.</span></div>
+          <div class="field full"><label for="f-name">Project name</label><input id="f-name" name="name" required value="${esc(draft.name)}" placeholder="e.g. Futsal club jersey 2027"><span class="err" id="name-err" hidden>Give the project a name so you can find it later.</span></div>
           <div class="field"><label for="f-client">Client</label><input id="f-client" name="client" value="${esc(draft.client)}" placeholder="Person or group"></div>
           <div class="field"><label for="f-contact">Contact</label><input id="f-contact" name="contact" value="${esc(draft.contact)}" placeholder="Phone, WhatsApp or IG"></div>
           <div class="field"><label for="f-due">Due date</label><input id="f-due" name="due" type="date" value="${esc(draft.due)}"></div>
           <div class="field"><label for="f-printer">Printer / supplier</label><input id="f-printer" name="printer" value="${esc(draft.printer)}" placeholder="Who is printing it"></div>
-          <div class="field full"><label for="f-shirt">Shirt details</label><input id="f-shirt" name="shirt" value="${esc(draft.shirt)}" placeholder="e.g. Black cotton 180gsm, DTF front + back"></div>
+          <div class="field full"><label for="f-shirt">Design notes</label><input id="f-shirt" name="shirt" value="${esc(draft.shirt)}" placeholder="e.g. Black and gold, logo front, sponsor on back"></div>
         </div></fieldset>
-        <fieldset><legend>Quantity by size</legend>
-          <div class="sizes">${SIZES.map(k => `<div class="size"><label for="sz-${k}">${k}</label><input id="sz-${k}" data-size="${k}" type="number" min="0" inputmode="numeric" value="${esc(draft.sizes[k] || "")}"></div>`).join("")}</div>
-          <div class="grid2" style="margin-top:10px"><div class="field"><label for="f-qty">Or total pieces</label><input id="f-qty" name="qty" type="number" min="0" inputmode="numeric" value="${esc(draft.qty)}"><span class="help">Used when no sizes are filled in yet.</span></div></div>
+        <fieldset><legend>Order</legend>
+          <div class="grid2">
+            <div class="field"><label for="f-base">Base price per shirt (${esc(state.currency)})</label><input id="f-base" name="base" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.base)}"><span class="help">Round neck, free fabric, before add-ons</span></div>
+            <div class="field"><label for="f-fabric">Fabric</label><select id="f-fabric" name="fabric">${opt(draft.pl.fabrics, draft.fabric, x => `${fabricLabel(x)} (${plus(x.price)})`)}</select><span class="help">Same fabric for the whole order</span></div>
+          </div>
+          <div class="lines" id="m-lines" style="margin-top:12px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px">
+            <button type="button" class="btn small" id="m-addline">+ Add shirt type</button>
+            <span class="help" style="font-size:12.5px;color:var(--muted)">Add a type for each mix, e.g. normal and Muslimah, or players and officials.</span>
+          </div>
+          <div id="m-plnote" style="margin-top:8px"></div>
         </fieldset>
         <fieldset><legend>Money (${esc(state.currency)})</legend><div class="grid4">
-          <div class="field"><label for="f-price">Price per shirt</label><input id="f-price" name="price" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.price)}"><span class="help">What the client pays</span></div>
-          <div class="field"><label for="f-cost">Cost per shirt</label><input id="f-cost" name="cost" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.cost)}"><span class="help">Blank + printing</span></div>
+          <div class="field"><label for="f-adjust">Discount / extra</label><input id="f-adjust" name="adjust" type="number" step="0.01" inputmode="decimal" value="${esc(draft.adjust)}"><span class="help">For the whole order. Minus for a discount, e.g. -50</span></div>
+          <div class="field"><label for="f-cost">Your cost per shirt</label><input id="f-cost" name="cost" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.cost)}"><span class="help">What the printer charges you</span></div>
           <div class="field"><label for="f-extra">Other costs</label><input id="f-extra" name="extra" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.extra)}"><span class="help">Delivery, setup, packaging</span></div>
           <div class="field"><label for="f-paid">Paid so far</label><input id="f-paid" name="paid" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.paid)}"><span class="help">Deposits + payments</span></div>
         </div>
         <div class="calc" id="m-calc" style="margin-top:12px"></div></fieldset>
+        <fieldset><legend>Send</legend><div class="share-row">
+          <button type="button" class="btn small" id="m-copy-print">Copy order for printer</button>
+          <button type="button" class="btn small" id="m-copy-quote">Copy quote for client</button>
+        </div><p class="note" style="margin-top:6px">Copies the order as text, ready to paste into WhatsApp. The printer copy has no prices.</p></fieldset>
         <fieldset><legend>Notes</legend><div class="field"><label for="f-notes" style="position:absolute;left:-9999px">Notes</label><textarea id="f-notes" name="notes" placeholder="Design changes, colours, what the client asked for…">${esc(draft.notes)}</textarea></div></fieldset>
         ${(draft.history || []).length ? `<fieldset><legend>Stage history</legend><ul class="history">${[...draft.history].reverse().map(h => `<li><time>${esc(fmtStamp(h.at))}</time><span class="pill" style="--c:var(${stageOf(h.stage).c})">${esc(stageOf(h.stage).label)}</span></li>`).join("")}</ul></fieldset>` : ""}
       </div>
@@ -541,19 +698,82 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       </div>
     </form></div>`;
     const form = $("#pform");
-    const read = () => {
+    const bi = () => bigIdx(draft.pl);
+
+    function linesHTML() {
+      const pl = draft.pl, many = draft.lines.length > 1;
+      return draft.lines.map((l, i) => `<div class="line-box" data-line="${i}">
+        <div class="line-head"><b>Type ${i + 1}</b>
+          <input class="inp" data-k="label" value="${esc(l.label)}" placeholder="Name, e.g. Players or Muslimah" aria-label="Shirt type ${i + 1} name">
+          <button type="button" class="linkbtn" data-act="dup">Duplicate</button>
+          ${many ? `<button type="button" class="linkbtn danger" data-act="del">Remove</button>` : ""}
+        </div>
+        <div class="grid2">
+          <div class="field"><label for="ln-${l.id}-collar">Collar</label><select id="ln-${l.id}-collar" data-k="collar">${opt(pl.collars, l.collar, nameWithPrice)}</select></div>
+          <div class="field"><label for="ln-${l.id}-sleeve">Sleeve</label><select id="ln-${l.id}-sleeve" data-k="sleeve">${opt(pl.sleeves, l.sleeve, nameWithPrice)}</select></div>
+        </div>
+        <div><div class="sub-label">Add-ons</div><div class="toggles">${(pl.addons || []).map(a => `<button type="button" class="toggle" data-addon="${esc(a.id)}" aria-pressed="${(l.addons || []).includes(a.id)}">${esc(a.name)}<small>${esc(plus(a.price))}</small></button>`).join("")}</div></div>
+        <div><div class="sub-label">Sizes</div>
+          <div class="sizes">${SIZES.map((k, si) => `<div class="size"><label for="ln-${l.id}-${k}" class="${si >= bi() && num(pl.big) ? "big" : ""}">${k}</label><input id="ln-${l.id}-${k}" data-size="${k}" type="number" min="0" inputmode="numeric" value="${esc((l.sizes || {})[k] || "")}"></div>`).join("")}</div>
+          ${num(pl.big) ? `<div class="help" style="font-size:12px;color:var(--warn);margin-top:4px">${esc(pl.bigFrom)} and above ${esc(plus(pl.big))} per shirt</div>` : ""}
+        </div>
+        <div class="field" style="max-width:260px"><label for="ln-${l.id}-pcs">Or total pieces</label><input id="ln-${l.id}-pcs" data-k="pieces" type="number" min="0" inputmode="numeric" value="${esc(l.pieces)}"><span class="help">When the client hasn't sent sizes yet</span></div>
+        <div class="line-sum" data-sum></div>
+      </div>`).join("");
+    }
+    function drawLines() { $("#m-lines").innerHTML = linesHTML(); updCalc(); }
+    function readTop() {
       const f = form.elements;
-      ["name", "client", "contact", "due", "printer", "shirt", "qty", "price", "cost", "extra", "paid", "notes"].forEach(k => (draft[k] = f[k].value));
+      ["name", "client", "contact", "due", "printer", "shirt", "base", "fabric", "adjust", "cost", "extra", "paid", "notes"].forEach(k => (draft[k] = f[k].value));
       draft.name = draft.name.trim();
-      SIZES.forEach(k => { const v = form.querySelector(`[data-size="${k}"]`).value; if (v === "" || num(v) === 0) delete draft.sizes[k]; else draft.sizes[k] = num(v); });
-    };
-    const updCalc = () => {
-      read(); const c = calc(draft);
+    }
+    function updCalc() {
+      readTop();
+      document.querySelectorAll("#m-lines [data-line]").forEach(box => {
+        const l = draft.lines[+box.dataset.line], lc = lineCalc(draft, l);
+        box.querySelector("[data-sum]").innerHTML = `<span><b>${esc(money(lc.unit))}</b> / pc</span>${lc.bigPcs ? `<span>${esc(draft.pl.bigFrom)}+ <b>${esc(money(lc.bigUnit))}</b> / pc</span>` : ""}<span><b>${lc.pcs}</b> pcs</span><span>Subtotal <b>${esc(money(lc.sale))}</b></span>`;
+        const pcsIn = box.querySelector('[data-k="pieces"]'); pcsIn.disabled = lc.bySize; pcsIn.placeholder = lc.bySize ? "Using sizes" : "";
+      });
+      const c = calc(draft);
       $("#m-calc").innerHTML = [["Pieces", c.q.toLocaleString()], ["Sale", money(c.sale)], ["Cost", money(c.cost)], ["Profit", money(c.profit)], ["Balance", c.sale ? (c.balance > 0 ? money(c.balance) : "Paid") : "—"]]
         .map(([k, v]) => `<div><div class="k">${k}</div><div class="v ${k === "Profit" ? (c.profit >= 0 ? "pos" : "neg") : ""}">${esc(v)}</div></div>`).join("");
-    };
-    updCalc();
-    form.addEventListener("input", updCalc);
+      const stale = stable(draft.pl) !== stable(state.priceList);
+      $("#m-plnote").innerHTML = stale ? `<p class="note">This project uses the prices from when it was created. <button type="button" class="linkbtn" id="m-plupdate">Use current price list</button></p>` : "";
+    }
+    drawLines();
+    form.addEventListener("input", e => {
+      const box = e.target.closest("[data-line]");
+      if (box) {
+        const l = draft.lines[+box.dataset.line];
+        if (e.target.dataset.size) { const v = num(e.target.value); if (v > 0) l.sizes[e.target.dataset.size] = v; else delete l.sizes[e.target.dataset.size]; }
+        else if (e.target.dataset.k) l[e.target.dataset.k] = e.target.value;
+      }
+      updCalc();
+    });
+    form.addEventListener("change", e => { if (e.target.closest("[data-line]") && e.target.tagName === "SELECT") { const l = draft.lines[+e.target.closest("[data-line]").dataset.line]; l[e.target.dataset.k] = e.target.value; updCalc(); } });
+    form.addEventListener("click", e => {
+      const t = e.target.closest("button"); if (!t) return;
+      const box = t.closest("[data-line]");
+      if (t.dataset.addon && box) {
+        const l = draft.lines[+box.dataset.line]; l.addons = l.addons || [];
+        const on = l.addons.includes(t.dataset.addon);
+        l.addons = on ? l.addons.filter(x => x !== t.dataset.addon) : [...l.addons, t.dataset.addon];
+        t.setAttribute("aria-pressed", String(!on)); updCalc(); return;
+      }
+      if (t.dataset.act === "dup" && box) { const i = +box.dataset.line; const c = clone(draft.lines[i]); c.id = newLine(draft.pl).id; c.sizes = {}; c.pieces = ""; c.label = ""; draft.lines.splice(i + 1, 0, c); drawLines(); return; }
+      if (t.dataset.act === "del" && box) { draft.lines.splice(+box.dataset.line, 1); drawLines(); return; }
+      if (t.id === "m-addline") { draft.lines.push(newLine(draft.pl)); drawLines(); return; }
+      if (t.id === "m-plupdate") {
+        const pl = clone(state.priceList);
+        const has = (list, id) => (list || []).some(x => x.id === id);
+        if (!has(pl.fabrics, draft.fabric)) draft.fabric = pl.fabrics[0] ? pl.fabrics[0].id : "";
+        draft.lines.forEach(l => { if (!has(pl.collars, l.collar)) l.collar = pl.collars[0] ? pl.collars[0].id : ""; if (!has(pl.sleeves, l.sleeve)) l.sleeve = pl.sleeves[0] ? pl.sleeves[0].id : ""; l.addons = (l.addons || []).filter(id => has(pl.addons, id)); });
+        draft.pl = pl;
+        $("#f-fabric").innerHTML = opt(pl.fabrics, draft.fabric, x => `${fabricLabel(x)} (${plus(x.price)})`);
+        drawLines(); toast("Updated to current prices"); return;
+      }
+      if (t.id === "m-copy-print" || t.id === "m-copy-quote") { readTop(); copyText(orderText(draft, t.id === "m-copy-quote")).then(() => toast("Copied. Paste it in WhatsApp")); }
+    });
     $("#m-stages").addEventListener("click", e => { const b = e.target.closest("[data-stage]"); if (!b) return; draft.stage = b.dataset.stage; $("#m-stages").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); });
     const close = () => { root.innerHTML = ""; document.removeEventListener("keydown", onKey); if (lastFocus && lastFocus.focus) lastFocus.focus(); };
     const onKey = e => { if (e.key === "Escape") close(); };
@@ -565,11 +785,12 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       if (!del.classList.contains("armed")) { del.classList.add("armed"); del.textContent = "Tap again to delete"; setTimeout(() => { if (del.isConnected) { del.classList.remove("armed"); del.textContent = "Delete"; } }, 4000); return; }
       try { await deleteProject(p.id); close(); toast("Project deleted"); } catch (err) { showErr(err); }
     };
-    const showErr = err => { const el = $("#save-err"); el.textContent = err && err.code === "quota_exceeded" ? "Storage is full. Delete old projects and try again." : "Couldn't save. Check your connection and try again."; el.hidden = false; };
+    const showErr = err => { const el = $("#save-err"); el.textContent = err && err.code === "quota_exceeded" ? "Storage is full. Delete old projects and try again." : "Couldn't save. Try again."; el.hidden = false; };
     form.addEventListener("submit", async e => {
-      e.preventDefault(); read();
+      e.preventDefault(); readTop();
       if (!draft.name) { $("#name-err").hidden = false; $("#f-name").focus(); return; }
       const { id, ...data } = draft;
+      delete data.sizes; delete data.qty; delete data.price;
       if (isNew) { data.createdAt = new Date().toISOString(); data.history = [{ stage: data.stage, at: data.createdAt }]; }
       else if (p.stage !== data.stage) data.history = [...(data.history || []), { stage: data.stage, at: new Date().toISOString() }];
       const btn = $("#m-save"); btn.disabled = true; btn.textContent = "Saving…";
@@ -579,11 +800,73 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     setTimeout(() => (isNew ? $("#f-name") : $("#m-close")).focus(), 0);
   }
 
+  /* ---------- price list editor ---------- */
+  const PL_SECTIONS = [["fabrics", "Fabrics", true], ["collars", "Collars", false], ["sleeves", "Sleeves", false], ["addons", "Add-ons", false]];
+  function openPriceList() {
+    const draft = clone(state.priceList);
+    const root = $("#modal-root"); const lastFocus = document.activeElement;
+    root.innerHTML = `<div class="scrim" id="scrim"><form class="sheet" id="plform" role="dialog" aria-modal="true" aria-labelledby="pl-title" novalidate>
+      <div class="sheet-head"><div><div class="code">SALES KIT</div><h2 id="pl-title">Price list</h2></div><button type="button" class="x" id="pl-close" aria-label="Close">×</button></div>
+      <div class="sheet-body" id="pl-body"></div>
+      <div class="sheet-foot"><button type="button" class="btn" id="pl-reset">Reset to sales kit</button><span class="spacer"></span><button type="button" class="btn" id="pl-cancel">Cancel</button><button type="submit" class="btn primary">Save price list</button></div>
+    </form></div>`;
+    const body = $("#pl-body");
+    function draw() {
+      body.innerHTML = `<p class="note" style="font-size:14px">Prices are per shirt, added on top of the base price. New projects use this list. Projects you already made keep their own prices.</p>
+        <div class="grid2">
+          <div class="field"><label for="pl-base">Default base price (${esc(state.currency)})</label><input id="pl-base" data-top="base" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.base)}"><span class="help">Filled in for new projects. You can change it per project.</span></div>
+          <div class="field"><label for="pl-big">Big size charge (${esc(state.currency)})</label><div style="display:flex;gap:6px"><select id="pl-bigfrom" data-top="bigFrom" class="inp" style="max-width:110px" aria-label="From size">${SIZES.map(k => `<option ${k === draft.bigFrom ? "selected" : ""}>${k}</option>`).join("")}</select><input id="pl-big" data-top="big" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.big)}"></div><span class="help">This size and above, per shirt</span></div>
+        </div>
+        ${PL_SECTIONS.map(([key, title, note]) => `<fieldset class="pl-sec"><legend>${title}</legend>
+          <div class="pl-row ${note ? "has-note" : ""}"><span class="pl-head">Name</span>${note ? `<span class="pl-head">Detail</span>` : ""}<span class="pl-head">+ ${esc(state.currency)}</span><span></span></div>
+          ${draft[key].map((it, i) => `<div class="pl-row ${note ? "has-note" : ""}" data-sec="${key}" data-i="${i}">
+            <input class="inp" data-f="name" value="${esc(it.name)}" aria-label="${title} name">
+            ${note ? `<input class="inp" data-f="note" value="${esc(it.note || "")}" placeholder="e.g. 160 gsm" aria-label="Detail">` : ""}
+            <input class="inp" data-f="price" type="number" step="0.01" inputmode="decimal" value="${esc(it.price)}" aria-label="Price">
+            <button type="button" class="x2" data-rm aria-label="Remove ${esc(it.name)}">×</button></div>`).join("")}
+          <div><button type="button" class="linkbtn" data-addsec="${key}">+ Add ${title.toLowerCase().replace(/s$/, "")}</button></div>
+        </fieldset>`).join("")}`;
+    }
+    draw();
+    body.addEventListener("input", e => {
+      const t = e.target;
+      if (t.dataset.top) { draft[t.dataset.top] = t.dataset.top === "big" ? num(t.value) : t.value; return; }
+      const row = t.closest("[data-sec]"); if (!row) return;
+      const it = draft[row.dataset.sec][+row.dataset.i];
+      it[t.dataset.f] = t.dataset.f === "price" ? num(t.value) : t.value;
+    });
+    body.addEventListener("change", e => { if (e.target.dataset.top === "bigFrom") draft.bigFrom = e.target.value; });
+    body.addEventListener("click", e => {
+      const rm = e.target.closest("[data-rm]");
+      if (rm) { const row = rm.closest("[data-sec]"); if (draft[row.dataset.sec].length <= 1) { toast("Keep at least one in each list."); return; } draft[row.dataset.sec].splice(+row.dataset.i, 1); draw(); return; }
+      const add = e.target.closest("[data-addsec]");
+      if (add) { draft[add.dataset.addsec].push({ id: "x" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: "", note: "", price: 0 }); draw(); const rows = body.querySelectorAll(`[data-sec="${add.dataset.addsec}"]`); rows[rows.length - 1].querySelector("input").focus(); }
+    });
+    const close = () => { root.innerHTML = ""; document.removeEventListener("keydown", onKey); if (lastFocus && lastFocus.focus) lastFocus.focus(); };
+    const onKey = e => { if (e.key === "Escape") close(); };
+    document.addEventListener("keydown", onKey);
+    $("#pl-close").onclick = close; $("#pl-cancel").onclick = close;
+    $("#scrim").addEventListener("mousedown", e => { if (e.target.id === "scrim") close(); });
+    const reset = $("#pl-reset");
+    reset.onclick = () => {
+      if (!reset.classList.contains("armed")) { reset.classList.add("armed", "danger"); reset.textContent = "Tap again to reset"; return; }
+      Object.assign(draft, clone(DEFAULT_PL), { base: draft.base }); reset.classList.remove("armed", "danger"); reset.textContent = "Reset to sales kit"; draw();
+    };
+    $("#plform").addEventListener("submit", e => {
+      e.preventDefault();
+      PL_SECTIONS.forEach(([k]) => { draft[k] = draft[k].filter(it => String(it.name).trim()); if (!draft[k].length) draft[k] = clone(DEFAULT_PL[k]); });
+      state.priceList = draft; state.priceListAt = new Date().toISOString();
+      try { persist(); } catch (_) { toast("Couldn't save the price list."); return; }
+      close(); render(); toast("Price list saved");
+    });
+  }
+
   /* ---------- events ---------- */
   document.addEventListener("click", async e => {
     const tab = e.target.closest("[data-tab]"); if (tab) { state.tab = tab.dataset.tab; try { localStorage.setItem("kemas-tab", state.tab); } catch (_) {} render(); return; }
     if (e.target.closest("#new-btn, [data-new]")) { openModal(null); return; }
     if (e.target.closest("#export-btn")) { exportBackup(); return; }
+    if (e.target.closest("[data-pricelist]")) { openPriceList(); return; }
     const adv = e.target.closest("[data-advance]");
     if (adv) { e.stopPropagation(); const p = state.projects.find(x => x.id === adv.dataset.advance); const i = STAGES.findIndex(s => s.id === p.stage); if (p && i >= 0 && STAGES[i + 1]) { adv.disabled = true; try { await moveStage(p, STAGES[i + 1].id); } catch (_) { adv.disabled = false; toast("Couldn't move it. Try again."); } } return; }
     const f = e.target.closest("[data-filter]"); if (f) { state.stageFilter = f.dataset.filter; render(); return; }
@@ -617,8 +900,8 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     return r.status === 204 ? null : r.json();
   }
   const stable = v => Array.isArray(v) ? "[" + v.map(stable).join(",") + "]" : v && typeof v === "object" ? "{" + Object.keys(v).sort().map(k => JSON.stringify(k) + ":" + stable(v[k])).join(",") + "}" : JSON.stringify(v ?? null);
-  const snapshot = () => ({ app: "kemas-apparel", version: 1, projects: state.projects, deleted: state.deleted, currency: state.currency, currencyAt: state.currencyAt });
-  const sig = d => stable({ p: [...(d.projects || [])].sort((a, b) => String(a.id).localeCompare(String(b.id))), d: d.deleted || {}, c: d.currency || "", ca: d.currencyAt || "" });
+  const snapshot = () => ({ app: "kemas-apparel", version: 1, projects: state.projects, deleted: state.deleted, currency: state.currency, currencyAt: state.currencyAt, priceList: state.priceListAt ? state.priceList : null, priceListAt: state.priceListAt });
+  const sig = d => stable({ p: [...(d.projects || [])].sort((a, b) => String(a.id).localeCompare(String(b.id))), d: d.deleted || {}, c: d.currency || "", ca: d.currencyAt || "", pl: d.priceListAt ? d.priceList : null, pla: d.priceListAt || "" });
 
   function merge(a, b) {
     const deleted = { ...(a.deleted || {}) };
@@ -631,7 +914,9 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     });
     const projects = [...byId.values()].filter(p => !(deleted[p.id] && deleted[p.id] >= String(p.updatedAt || "")));
     const useB = String(b.currencyAt || "") > String(a.currencyAt || "");
-    return { app: "kemas-apparel", version: 1, projects, deleted, currency: (useB ? b.currency : a.currency) || a.currency || b.currency || "RM", currencyAt: useB ? b.currencyAt : a.currencyAt };
+    const plB = String(b.priceListAt || "") > String(a.priceListAt || "");
+    return { app: "kemas-apparel", version: 1, projects, deleted, currency: (useB ? b.currency : a.currency) || a.currency || b.currency || "RM", currencyAt: useB ? b.currencyAt : a.currencyAt,
+      priceList: plB ? b.priceList : a.priceList, priceListAt: plB ? b.priceListAt : a.priceListAt };
   }
 
   async function findOrCreateGist() {
@@ -666,6 +951,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       const merged = merge(local, remote);
       if (sig(merged) !== sig(local)) {
         state.projects = merged.projects; state.deleted = merged.deleted; state.currency = merged.currency; state.currencyAt = merged.currencyAt;
+        if (merged.priceListAt && merged.priceList) { state.priceList = merged.priceList; state.priceListAt = merged.priceListAt; }
         persistLocal(); render();
       }
       if (sig(merged) !== sig(remote)) {
@@ -765,9 +1051,10 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   render();
 
   function boot() {
+    state.priceList = clone(DEFAULT_PL);
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) { const d = JSON.parse(raw); state.projects = Array.isArray(d.projects) ? d.projects : []; state.deleted = d.deleted || {}; state.currencyAt = d.currencyAt || ""; if (d.currency) state.currency = String(d.currency); }
+      if (raw) { const d = JSON.parse(raw); state.projects = Array.isArray(d.projects) ? d.projects : []; state.deleted = d.deleted || {}; state.currencyAt = d.currencyAt || ""; if (d.priceList) { state.priceList = d.priceList; state.priceListAt = d.priceListAt || ""; } if (d.currency) state.currency = String(d.currency); }
     } catch (_) { banner("This browser is blocking storage, so projects can't be saved. Turn off Private Browsing and reopen the app.", "warn"); }
     state.loaded = true; state.mode = "local";
     render();
