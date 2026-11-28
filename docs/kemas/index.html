@@ -280,6 +280,13 @@ legend { font-family: var(--f-mono); font-size: 11px; letter-spacing: .09em; tex
 .var-row { display: grid; grid-template-columns: minmax(0, 1fr) 100px 34px; gap: 6px; align-items: center; }
 .var-row + .var-row { margin-top: 6px; }
 .check-row { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+.agents { display: flex; flex-direction: column; gap: 10px; }
+.agent { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--paper); }
+.agent .field input, .agent .field select { background: var(--surface); }
+.agent-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.agent-foot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.agent-foot .astats { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); margin-right: auto; }
+.agent-foot .astats b { color: var(--ink); }
 @media (max-width: 560px) { .line-box .grid2 { grid-template-columns: 1fr; } .line-box { padding: 10px; } }
 .size { display: flex; flex-direction: column; align-items: stretch; gap: 3px; }
 .size label { font-family: var(--f-mono); font-size: 12px; font-weight: 600; text-align: center; color: var(--muted); }
@@ -436,7 +443,17 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
   const money = n => { const neg = n < 0; n = Math.abs(n); const s = n.toLocaleString(undefined, { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }); return (neg ? "−" : "") + state.currency + " " + s; };
   const qtyOf = p => { if (buyersOf(p).length) return buyerCalc(p).pcs; if (hasLines(p)) return p.lines.reduce((a, l) => a + lineCalc(p, l).pcs, 0); const s = SIZES.reduce((a, k) => a + num(p.sizes && p.sizes[k]), 0); return s > 0 ? s : num(p.qty); };
-  const calc = p => {
+  const agentsOf = p => (Array.isArray(p.agents) ? p.agents : []);
+  const sameCode = (a, b) => !!a && !!b && String(a).trim().toUpperCase() === String(b).trim().toUpperCase();
+  function agentStats(p, a, totalQ, totalSale) {
+    const bs = buyersOf(p), mine = bs.filter(b => sameCode(b.agent, a.code));
+    const pcs = mine.reduce((x, b) => x + (b.items || []).reduce((y, it) => y + num(it.qty || 1), 0), 0);
+    const sales = mine.reduce((x, b) => x + num(b.amount), 0);
+    const rate = num(a.rate), basePcs = bs.length ? pcs : totalQ, baseSales = bs.length ? sales : totalSale;
+    const commission = a.type === "percent" ? rate / 100 * baseSales : a.type === "fixed" ? rate : rate * basePcs;
+    return { buyers: mine, n: mine.length, pcs, sales, commission };
+  }
+  const baseCalc = p => {
     if (buyersOf(p).length) {
       const bc = buyerCalc(p), sale = bc.amount + num(p.adjust);
       const lineCost = hasLines(p) && p.v === 2 ? p.lines.filter(l => l.auto).reduce((a, l) => a + lineCalc(p, l).cost, 0) : bc.pcs * num(p.cost);
@@ -453,6 +470,13 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     const sale = hasLines(p) ? p.lines.reduce((a, l) => a + lineCalc(p, l).cost, 0) + num(p.adjust) : q * num(p.price);
     const cost = q * num(p.cost) + num(p.extra);
     return { q, sale, cost, profit: sale - cost, paid: num(p.paid), balance: sale - num(p.paid) };
+  };
+  const calc = p => {
+    const c = baseCalc(p);
+    const agents = agentsOf(p).reduce((a, ag) => a + agentStats(p, ag, c.q, c.sale).commission, 0);
+    if (!agents) return { ...c, agents: 0 };
+    const cost = c.cost + agents;
+    return { ...c, cost, profit: c.sale - cost, agents };
   };
   const avgPrice = p => { const c = calc(p); return c.q ? c.sale / c.q : num(p.price); };
   function specLine(p) {
@@ -590,7 +614,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     let rows = state.projects.filter(p => {
       if (state.stageFilter === "active" && (p.stage === "done" || p.stage === "hold")) return false;
       if (!["active", "all"].includes(state.stageFilter) && p.stage !== state.stageFilter) return false;
-      if (q && ![p.code, p.name, p.client, p.contact, p.printer, p.shirt, p.notes, ...buyersOf(p).map(b => `${b.name} ${b.phone}`)].some(v => String(v || "").toLowerCase().includes(q))) return false;
+      if (q && ![p.code, p.name, p.client, p.contact, p.printer, p.shirt, p.notes, ...buyersOf(p).map(b => `${b.name} ${b.phone}`), ...agentsOf(p).map(a => `${a.name} ${a.code}`)].some(v => String(v || "").toLowerCase().includes(q))) return false;
       return true;
     }).sort((a, b) => String(b.code).localeCompare(String(a.code)));
     const tot = rows.reduce((a, p) => { const c = calc(p); a.q += c.q; a.sale += c.sale; a.bal += Math.max(0, c.balance); return a; }, { q: 0, sale: 0, bal: 0 });
@@ -839,6 +863,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       const gm = h.match(/\[([^\]]+)\]\s*$/);
       if (gm && SIZES.includes(normSize(gm[1].trim()))) { (idx.grid = idx.grid || []).push({ i, size: normSize(gm[1].trim()), variant: h.replace(/\[[^\]]*\]\s*$/, "").replace(/\s*[—–-]\s*how many.*$/i, "").trim() }); return; }
       if (/timestamp|cap masa/.test(x)) idx.ts ??= i;
+      else if (/agent|ejen|referr|\bkod\b|\bcode\b/.test(x)) idx.agent ??= i;
       else if (/unit cost|line cost|\bcost\b|\bkos\b/.test(x)) return;
       else if (/\bqty\b|quantity|kuantiti/.test(x)) idx.qty ??= i;
       else if (/unit price|harga/.test(x)) idx.unitPrice ??= i;
@@ -861,7 +886,23 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   const FORM_DEFAULT = { ts: 0, name: 1, phone: 2, place: 3, type: 4, size: 5, details: 6, type2: 7, receipt: 8, note: 9 };
   // Reads three layouts: the KEMAS order form (a size grid per shirt type), a one-row-per-shirt order record,
   // and free-text forms like "Combo - 1pc Navy(M), Maroon(L)".
-  function parseOrders(text, setup) {
+  // Match what a buyer picked ("AIMAN01 (Aiman)", "aiman01", "No agent") to a project agent.
+  function resolveAgents(buyers, agents) {
+    buyers.forEach(b => {
+      const raw = cleanText(b.agentRaw); delete b.agentRaw;
+      b.agent = b.agent || "";
+      if (!raw || /^(no agent|none|tiada|tiada ejen|-|n\/?a|nil|no)$/i.test(raw)) return;
+      const hit = (agents || []).find(a => a.code && new RegExp("(^|[^A-Za-z0-9])" + a.code.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "([^A-Za-z0-9]|$)", "i").test(raw)) || (agents || []).find(a => a.name && a.name.trim().toLowerCase() === raw.toLowerCase());
+      if (hit) b.agent = hit.code; else b.flags.push(`Agent "${raw}" isn't in this project`);
+    });
+    return buyers;
+  }
+  function parseOrders(text, setup, agents) {
+    const res = parseOrdersRaw(text, setup);
+    resolveAgents(res.buyers, agents);
+    return res;
+  }
+  function parseOrdersRaw(text, setup) {
     const rows = parseDelimited(text);
     if (!rows.length) return { buyers: [], mode: "", hasReceipt: false };
     let hi = -1, h = {};
@@ -879,7 +920,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         const receipt = cell(r, "receipt"), flags = [];
         if (!items.length) flags.push("Nothing ordered");
         if (hasReceipt && !receipt) flags.push("No receipt");
-        return { id: "b" + Math.random().toString(36).slice(2, 10), ts: cell(r, "ts"), name: cleanText(cell(r, "name")), phone: fixPhone(cell(r, "phone")), place: cleanText(cell(r, "place")), pickup: cleanText(cell(r, "pickup")), items, amount, paid: hasReceipt ? !!receipt : false, receipt: /^https:\/\//.test(receipt) ? receipt : "", note: cleanText(cell(r, "note")), flags, collected: false, src: "" };
+        return { id: "b" + Math.random().toString(36).slice(2, 10), ts: cell(r, "ts"), name: cleanText(cell(r, "name")), phone: fixPhone(cell(r, "phone")), place: cleanText(cell(r, "place")), pickup: cleanText(cell(r, "pickup")), agentRaw: cell(r, "agent"), items, amount, paid: hasReceipt ? !!receipt : false, receipt: /^https:\/\//.test(receipt) ? receipt : "", note: cleanText(cell(r, "note")), flags, collected: false, src: "" };
       });
       return { buyers, mode: "grid", hasReceipt };
     }
@@ -892,7 +933,8 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         const sz = sizesIn(cell(r, "size"))[0] || normSize(cell(r, "size")), qty = num(cell(r, "qty")) || 1;
         const amount = cell(r, "lineSales") !== "" ? num(cell(r, "lineSales")) : num(cell(r, "unitPrice")) * qty;
         let b = by.get(key);
-        if (!b) { b = { id: "b" + Math.random().toString(36).slice(2, 10), ts: "", name, phone, place: cleanText(cell(r, "place")), pickup: cleanText(cell(r, "pickup")), items: [], amount: 0, paid: false, receipt: "", note: "", flags: [], collected: false, src: "" }; by.set(key, b); }
+        if (!b) { b = { id: "b" + Math.random().toString(36).slice(2, 10), ts: "", name, phone, place: cleanText(cell(r, "place")), pickup: cleanText(cell(r, "pickup")), agentRaw: "", items: [], amount: 0, paid: false, receipt: "", note: "", flags: [], collected: false, src: "" }; by.set(key, b); }
+        if (!b.agentRaw && cell(r, "agent")) b.agentRaw = cell(r, "agent");
         b.items.push({ color: colorOf(cell(r, "color")) || cleanText(cell(r, "color")), sleeve: sleeveOf(cell(r, "sleeve")), size: sz, qty });
         b.amount += amount;
         const cat = cleanText(cell(r, "category"));
@@ -903,7 +945,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       return { buyers: [...by.values()], mode: "rows", hasReceipt };
     }
     const buyers = body.map(r => { const o = {}; Object.entries(map).forEach(([k, i]) => { if (typeof i === "number") o[k] = r[i] || ""; }); return o; })
-      .filter(o => o.name || o.details || o.type).map(o => { const b = rowToBuyer(o); b.pickup = ""; return b; });
+      .filter(o => o.name || o.details || o.type).map(o => { const b = rowToBuyer(o); b.pickup = ""; b.agentRaw = o.agent || ""; return b; });
     return { buyers, mode: "text", hasReceipt: true };
   }
   const buyerKey = b => String(b.ts || "").trim() ? `${String(b.ts).trim()}|${String(b.name || "").trim().toLowerCase()}` : `${String(b.name || "").trim().toLowerCase()}|${String(b.phone || "").replace(/\D/g, "")}`;
@@ -941,7 +983,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     const keep = d.lines.filter(l => !out.includes(l) && !l.auto && (l.label || Object.keys(l.sizes || {}).length || num(l.pieces)));
     d.lines = [...out, ...keep];
   }
-  function openImport(existing, onAdd, setup) {
+  function openImport(existing, onAdd, setup, agents) {
     const wrap = document.createElement("div"); wrap.className = "scrim"; wrap.style.zIndex = "60";
     wrap.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="imp-title">
       <div class="sheet-head"><div><div class="code">GOOGLE FORM · SHEET</div><h2 id="imp-title">Import buyer orders</h2></div><button type="button" class="x" data-imp="close" aria-label="Close">×</button></div>
@@ -965,7 +1007,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     let lastText = "";
     function preview(text) {
       lastText = text;
-      const res = text.trim() ? parseOrders(text, setup) : { buyers: [], mode: "", hasReceipt: true };
+      const res = text.trim() ? parseOrders(text, setup, agents) : { buyers: [], mode: "", hasReceipt: true };
       parsed = res.buyers;
       const pr = wrap.querySelector("#imp-paid-row"), pc = wrap.querySelector("#imp-paid");
       pr.hidden = res.hasReceipt || !parsed.length;
@@ -996,6 +1038,53 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     setTimeout(() => wrap.querySelector("#imp-text").focus(), 0);
   }
 
+  const agentChoices = agents => ["No agent", ...agents.filter(a => a.code).map(a => `${a.code}${a.name ? ` (${a.name})` : ""}`)];
+  const AGENT_HELP = "If an agent told you about this, pick their code.";
+  function agentUpdateScript(editUrl, agents) {
+    const J = v => JSON.stringify(v);
+    return `// KEMAS APPAREL: update the "Agent code" list on your order form. Paste at script.google.com and press Run.
+function updateKemasAgentCodes() {
+  var form = FormApp.openByUrl(${J(editUrl)});
+  var choices = ${J(agentChoices(agents))};
+  var found = form.getItems(FormApp.ItemType.LIST).filter(function (i) { return i.getTitle() === "Agent code"; })[0];
+  var list = found ? found.asListItem() : form.addListItem().setTitle("Agent code").setHelpText(${J(AGENT_HELP)});
+  list.setChoiceValues(choices);
+  if (!found) form.moveItem(form.getItems().length - 1, 2);
+  Logger.log("Agent codes on the form: " + choices.join(", "));
+}
+`;
+  }
+  function openAgentScript(d, onSaveUrl) {
+    const wrap = document.createElement("div"); wrap.className = "scrim"; wrap.style.zIndex = "60";
+    let url = (d.form && d.form.editUrl) || "";
+    wrap.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="as-title">
+      <div class="sheet-head"><div><div class="code">GOOGLE FORM</div><h2 id="as-title">Update agent codes on the form</h2></div><button type="button" class="x" data-as="close" aria-label="Close">×</button></div>
+      <div class="sheet-body">
+        <p class="note" style="font-size:14px">Buyers pick from: ${esc(agentChoices(agentsOf(d)).join(", "))}</p>
+        <div class="field"><label for="as-url">Your form's edit link</label><input id="as-url" value="${esc(url)}" placeholder="https://docs.google.com/forms/d/…/edit" autocapitalize="off" spellcheck="false"><span class="help">Open the form in Google Forms and copy the address from the browser. It ends in /edit. The app remembers it for next time.</span></div>
+        <div id="as-out"></div>
+      </div>
+      <div class="sheet-foot"><span class="spacer"></span><button type="button" class="btn" data-as="close">Close</button></div>
+    </div>`;
+    document.body.appendChild(wrap);
+    const out = wrap.querySelector("#as-out");
+    const draw = () => {
+      if (!/^https:\/\/docs\.google\.com\/forms\/d\//.test(url)) { out.innerHTML = url ? `<p class="err">That doesn't look like a Google Forms edit link.</p>` : ""; return; }
+      out.innerHTML = `<ol class="steps"><li>On a laptop, open <a href="https://script.google.com/home/projects/create" target="_blank" rel="noopener">script.google.com</a>.</li><li>Paste this script and press <b>Run</b>. Allow access the first time.</li><li>The form's <b>Agent code</b> list now matches this project. Run it again whenever you add or change agents.</li></ol>
+        <pre class="code-out">${esc(agentUpdateScript(url, agentsOf(d)))}</pre>
+        <div class="share-row" style="margin-top:8px"><button type="button" class="btn small primary" data-as="copy">Copy script</button></div>`;
+    };
+    draw();
+    wrap.querySelector("#as-url").addEventListener("input", e => { url = e.target.value.trim(); onSaveUrl(url); draw(); });
+    const close = () => { wrap.remove(); document.removeEventListener("keydown", onKey, true); };
+    const onKey = e => { if (e.key === "Escape") { e.stopImmediatePropagation(); close(); } };
+    document.addEventListener("keydown", onKey, true);
+    wrap.addEventListener("click", e => {
+      const b = e.target.closest("[data-as]"); if (!b) return;
+      if (b.dataset.as === "close") close();
+      if (b.dataset.as === "copy") copyText(agentUpdateScript(url, agentsOf(d))).then(() => toast("Script copied"));
+    });
+  }
   function formScript(setup) {
     const sizes = setup.sizes.length ? setup.sizes : SIZES.slice(0, 7);
     const lines = setup.variants.map(v => `- ${v.name}: ${money(num(v.price))}`);
@@ -1008,6 +1097,7 @@ function createKemasOrderForm() {
   form.setDescription(${J(desc)});
   form.addTextItem().setTitle("Name").setRequired(true);
   form.addTextItem().setTitle("Phone number (WhatsApp)").setRequired(true);
+  ${(setup.agents || []).length ? `form.addListItem().setTitle("Agent code").setHelpText(${J(AGENT_HELP)}).setChoiceValues(${J(agentChoices(setup.agents))});` : ""}
   ${setup.pickups.length ? `form.addListItem().setTitle("Pickup point").setChoiceValues(${J(setup.pickups)}).setRequired(true);` : `form.addTextItem().setTitle("College / address").setRequired(true);`}
   var sizes = ${J(sizes)};
   var types = ${J(setup.variants.map(v => ({ name: v.name, help: `${money(num(v.price))} each` })))};
@@ -1031,6 +1121,8 @@ function createKemasOrderForm() {
       sizes: base.sizes || SIZES.slice(),
       pickups: base.pickups || [...new Set(buyersOf(d).map(b => b.pickup).filter(Boolean))],
       info: base.info || "",
+      editUrl: base.editUrl || "",
+      agents: agentsOf(d).filter(a => a.code).map(a => ({ code: a.code, name: a.name })),
     };
     if (!setup.variants.length) setup.variants = [{ name: "Short sleeve", price: "" }, { name: "Long sleeve", price: "" }];
     const wrap = document.createElement("div"); wrap.className = "scrim"; wrap.style.zIndex = "60";
@@ -1052,6 +1144,7 @@ function createKemasOrderForm() {
         <fieldset><legend>Sizes on the form</legend><div class="toggles">${SIZES.map(k => `<button type="button" class="toggle" data-size="${k}" aria-pressed="${setup.sizes.includes(k)}">${k}</button>`).join("")}</div></fieldset>
         <div class="field"><label for="fm-p">Pickup points (one per line)</label><textarea id="fm-p" data-s="pickups" placeholder="KK12&#10;KK7&#10;Kona Mokapot">${esc(setup.pickups.join("\n"))}</textarea><span class="help">Leave empty to ask for their college or address instead.</span></div>
         <div class="field"><label for="fm-i">Shown at the top of the form</label><textarea id="fm-i" data-s="info" placeholder="Payment: Maybank 1234 5678 (Kemas Apparel). Closes 20 Dec. Pickup from 5 Jan.">${esc(setup.info)}</textarea><span class="help">Payment details, closing date, pickup dates. The prices are added for you.</span></div>
+        ${setup.agents.length ? `<p class="note">The form also asks for an agent code. Choices: ${esc(agentChoices(setup.agents).join(", "))}.</p>` : `<p class="note">Add agents to this project first if you want the form to ask for an agent code.</p>`}
         <div id="fm-out"></div>`;
     }
     draw();
@@ -1083,6 +1176,7 @@ function createKemasOrderForm() {
             <li>Google asks for permission. Choose your account, then <b>Advanced → Go to project (unsafe)</b> → <b>Allow</b>. It says unsafe only because you wrote the script yourself.</li>
             <li>The <b>Execution log</b> shows 3 links: the form to share with buyers, the form editor, and the responses sheet.</li>
             <li>Optional: in the form editor, add a <b>File upload</b> question called <b>Payment receipt</b>. Scripts can't add that one for you.</li>
+            <li>Copy the <b>Edit the form</b> link from the log. You'll need it to update the agent list later (Agents → Update agents on the form).</li>
             <li>When orders come in, open the responses sheet, copy everything and use <b>Import orders</b> here. Prices are worked out from this setup.</li>
           </ol>
           <pre class="code-out">${esc(formScript(setup))}</pre>
@@ -1177,6 +1271,7 @@ function createKemasOrderForm() {
           <div class="field"><label for="f-paid" id="f-paid-label">Paid so far</label><input id="f-paid" name="paid" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.paid)}"><span class="help">Deposits + payments</span></div>
         </div>
         <div class="calc" id="m-calc" style="margin-top:12px"></div></fieldset>
+        <fieldset><legend>Agents</legend><div id="m-agents"></div></fieldset>
         <fieldset><legend>Buyers</legend><div id="m-buyers"></div></fieldset>
         <fieldset><legend>Design photos</legend>
           <div class="photos" id="m-photos"></div>
@@ -1243,7 +1338,7 @@ function createKemasOrderForm() {
       const fp = $("#f-paid"), hasB = buyersOf(draft).length > 0;
       fp.disabled = hasB; if (hasB) fp.value = c.paid; fp.nextElementSibling.textContent = hasB ? "Adds up buyers marked paid" : "Deposits + payments";
       $("#f-paid-label").textContent = hasB ? "Collected from buyers" : "Paid so far";
-      $("#m-calc").innerHTML = [["Pieces", c.q.toLocaleString()], ["Sales", money(c.sale)], ["Cost", money(c.cost)], ["Profit", money(c.profit)], ["Balance", c.sale ? (c.balance > 0 ? money(c.balance) : "Paid") : "—"]]
+      $("#m-calc").innerHTML = [["Pieces", c.q.toLocaleString()], ["Sales", money(c.sale)], ["Cost", money(c.cost)], ["Profit", money(c.profit)], ["Balance", c.sale ? (c.balance > 0 ? money(c.balance) : "Paid") : "—"], ...(c.agents ? [["Agents", money(c.agents)]] : [])]
         .map(([k, v]) => `<div><div class="k">${k}</div><div class="v ${k === "Profit" ? (c.profit >= 0 ? "pos" : "neg") : ""}">${esc(v)}</div></div>`).join("");
       const stale = stable(draft.pl) !== stable(state.priceList);
       $("#m-plnote").innerHTML = stale ? `<p class="note">This project uses the costs from when it was created. <button type="button" class="linkbtn" id="m-plupdate">Use current cost list</button></p>` : "";
@@ -1278,11 +1373,87 @@ function createKemasOrderForm() {
       drawPhotos();
     });
     draft.buyers = draft.buyers || [];
-    let openB = null, bFilter = "all", bQuery = "";
+    draft.agents = draft.agents || [];
+    const TASKS = ["Promote", "Distribute", "Promote + distribute"];
+    const CTYPES = [["shirt", "per shirt"], ["percent", "% of their sales"], ["fixed", "fixed amount"]];
+    function genCode(name) {
+      const stem = (String(name || "").trim().split(/\s+/)[0] || "AGENT").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) || "AGENT";
+      for (let n = 1; n < 100; n++) { const c = stem + String(n).padStart(2, "0"); if (!draft.agents.some(a => sameCode(a.code, c))) return c; }
+      return stem + Date.now().toString(36).slice(-3).toUpperCase();
+    }
+    function agentStatsHTML(a) {
+      const c = baseCalc(draft), st = agentStats(draft, a, c.q, c.sale), hasB = buyersOf(draft).length > 0;
+      const basis = a.type === "fixed" ? "fixed" : a.type === "percent" ? `${num(a.rate)}% of ${esc(money(hasB ? st.sales : c.sale))}` : `${hasB ? st.pcs : c.q} pcs × ${esc(money(num(a.rate)))}`;
+      return `${hasB ? `<b>${st.n}</b> buyer${st.n === 1 ? "" : "s"} · <b>${st.pcs}</b> ${st.pcs === 1 ? "pc" : "pcs"} · ${esc(money(st.sales))} · ` : ""}Commission <b>${esc(money(st.commission))}</b> <span>(${basis})</span>`;
+    }
+    function drawAgentStats() { document.querySelectorAll("#m-agents [data-aid]").forEach(el => { const a = draft.agents.find(x => x.id === el.dataset.aid); if (a) el.querySelector(".astats").innerHTML = agentStatsHTML(a); }); drawAgentTotal(); }
+    function drawAgentTotal() {
+      const el = $("#a-total"); if (!el) return;
+      const c = baseCalc(draft); let tot = 0, unpaid = 0;
+      draft.agents.forEach(a => { const v = agentStats(draft, a, c.q, c.sale).commission; tot += v; if (!a.paid) unpaid += v; });
+      el.innerHTML = `<span class="chip">${draft.agents.length} agent${draft.agents.length === 1 ? "" : "s"}</span><span class="chip">Commission ${esc(money(tot))}</span>${unpaid > 0 ? `<span class="chip warn">${esc(money(unpaid))} not paid out</span>` : tot ? `<span class="chip ok">All paid out</span>` : ""}`;
+    }
+    function drawAgents() {
+      const box = $("#m-agents");
+      const buttons = `<div class="share-row"><button type="button" class="btn small" data-aact="add">+ Add agent</button>${draft.agents.length ? `<button type="button" class="btn small" data-aact="formupdate">Update agents on the form</button>` : ""}</div>`;
+      if (!draft.agents.length) { box.innerHTML = `<p class="note" style="margin-bottom:10px">Agents promote or distribute for you. Give each one a code; buyers put the code in the Google Form, and the app works out each agent's commission. Commission counts as a cost.</p>${buttons}`; return; }
+      box.innerHTML = `<div class="bstats" id="a-total"></div><div class="agents">${draft.agents.map(a => `<div class="agent" data-aid="${esc(a.id)}">
+          <div class="agent-grid">
+            <div class="field"><label>Name</label><input data-af="name" value="${esc(a.name)}" placeholder="Agent's name"></div>
+            <div class="field"><label>Agent code</label><input data-af="code" value="${esc(a.code)}" placeholder="e.g. AIMAN01" autocapitalize="characters" spellcheck="false"></div>
+            <div class="field"><label>Phone</label><input data-af="phone" value="${esc(a.phone || "")}" inputmode="tel"></div>
+            <div class="field"><label>Task</label><select data-af="task">${TASKS.map(t => `<option ${a.task === t ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+            <div class="field"><label>Commission</label><select data-af="type">${CTYPES.map(([k, l]) => `<option value="${k}" ${a.type === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+            <div class="field"><label>${a.type === "percent" ? "Percent (%)" : `Amount (${esc(state.currency)})`}</label><input data-af="rate" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(a.rate)}"></div>
+          </div>
+          <div class="agent-foot"><span class="astats"></span>
+            <button type="button" class="toggle" data-aact="paid" aria-pressed="${!!a.paid}">Paid out</button>
+            ${buyersOf(draft).length ? `<button type="button" class="linkbtn" data-aact="copy">Copy their buyers</button>` : ""}
+            <button type="button" class="linkbtn danger" data-aact="rm">Remove</button>
+          </div>
+        </div>`).join("")}</div><div style="margin-top:10px">${buttons}</div>`;
+      drawAgentStats();
+    }
+    drawAgents();
+    const findA = el => draft.agents.find(a => a.id === (el.closest("[data-aid]") || {}).dataset?.aid);
+    $("#m-agents").addEventListener("input", e => {
+      const t = e.target, a = findA(t); if (!a || !t.dataset.af) return;
+      if (t.dataset.af === "code") {
+        const v = t.value.trim().toUpperCase().replace(/\s+/g, "");
+        draft.buyers.forEach(b => { if (sameCode(b.agent, a.code)) b.agent = v; });
+        a.code = v;
+      } else a[t.dataset.af] = t.dataset.af === "rate" ? t.value : t.value;
+      if (t.dataset.af === "type") { drawAgents(); updCalc(); return; }
+      drawAgentStats(); updCalc();
+    });
+    $("#m-agents").addEventListener("change", e => {
+      const t = e.target, a = findA(t); if (!a) return;
+      if (t.dataset.af === "name" && !a.code && a.name.trim()) { a.code = genCode(a.name); const ci = t.closest("[data-aid]").querySelector('[data-af="code"]'); ci.value = a.code; drawAgentStats(); }
+      if (t.dataset.af === "code") { t.value = a.code; drawBuyers(); }
+    });
+    $("#m-agents").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.tagName === "INPUT") e.preventDefault(); });
+    $("#m-agents").addEventListener("click", e => {
+      const t = e.target.closest("button"); if (!t || !t.dataset.aact) return;
+      const act = t.dataset.aact, a = findA(t);
+      if (act === "add") { draft.agents.push({ id: "a" + Math.random().toString(36).slice(2, 9), name: "", code: "", phone: "", task: "Promote", type: "shirt", rate: "", paid: false }); drawAgents(); drawBuyers(); const ins = document.querySelectorAll('#m-agents [data-af="name"]'); ins[ins.length - 1].focus(); return; }
+      if (act === "formupdate") { openAgentScript(draft, url => { draft.form = { ...(draft.form || {}), editUrl: url }; }); return; }
+      if (!a) return;
+      if (act === "paid") { a.paid = !a.paid; t.setAttribute("aria-pressed", String(a.paid)); drawAgentTotal(); return; }
+      if (act === "copy") {
+        const c = baseCalc(draft), st = agentStats(draft, a, c.q, c.sale);
+        const txt = [`${draft.code} ${draft.name} · ${a.name || a.code} (${a.code})`, `${st.n} buyers · ${st.pcs} pcs · ${money(st.sales)}`, "", ...st.buyers.map(b => `${b.collected ? "✓" : "☐"} ${b.name} · ${itemsText(b)}${b.pickup ? " · " + b.pickup : ""}${b.paid ? "" : " · UNPAID"}${b.phone ? " · " + b.phone : ""}`)].join("\n");
+        copyText(txt).then(() => toast("Buyer list copied")); return;
+      }
+      if (act === "rm") {
+        if (!t.classList.contains("armed")) { t.classList.add("armed"); t.textContent = "Tap again to remove"; return; }
+        draft.agents = draft.agents.filter(x => x !== a); drawAgents(); drawBuyers(); updCalc(); return;
+      }
+    });
+    let openB = null, bFilter = "all", bQuery = "", bAgent = "";
     const knownColors = () => [...new Set([...draft.buyers.flatMap(b => (b.items || []).map(it => it.color)), "Maroon", "Navy", "Black", "White"].filter(Boolean))];
     function buyerRow(b) {
       const fl = (b.flags || []).length;
-      const head = `<button type="button" class="brow" data-bopen="${esc(b.id)}" aria-expanded="${openB === b.id}"><span class="bn">${esc(b.name)}</span><span class="ba">${esc(money(num(b.amount)))}</span><span class="bi">${esc(itemsText(b) || "No items")}${b.place ? " · " + esc(b.place) : ""}</span><span class="bc">${fl ? `<span class="chip warn">Check</span>` : ""}${b.paid ? "" : `<span class="chip bad">Unpaid</span>`}${b.collected ? `<span class="chip ok">Collected</span>` : ""}</span></button>`;
+      const head = `<button type="button" class="brow" data-bopen="${esc(b.id)}" aria-expanded="${openB === b.id}"><span class="bn">${esc(b.name)}</span><span class="ba">${esc(money(num(b.amount)))}</span><span class="bi">${esc(itemsText(b) || "No items")}${b.place ? " · " + esc(b.place) : ""}</span><span class="bc">${b.agent ? `<span class="chip">${esc(b.agent)}</span>` : ""}${fl ? `<span class="chip warn">Check</span>` : ""}${b.paid ? "" : `<span class="chip bad">Unpaid</span>`}${b.collected ? `<span class="chip ok">Collected</span>` : ""}</span></button>`;
       if (openB !== b.id) return `<div class="buyer">${head}</div>`;
       const wa = waLink(b.phone);
       return `<div class="buyer">${head}<div class="bedit" data-bid="${esc(b.id)}">
@@ -1296,6 +1467,7 @@ function createKemasOrderForm() {
           <div class="field"><label>Phone</label><input data-bf="phone" value="${esc(b.phone)}" inputmode="tel"></div>
           <div class="field"><label>College / address</label><input data-bf="place" value="${esc(b.place)}"></div>
           <div class="field"><label>Pickup point</label><input data-bf="pickup" value="${esc(b.pickup || "")}"></div>
+          ${agentsOf(draft).length || b.agent ? `<div class="field"><label>Agent</label><select data-bf="agent"><option value="">No agent</option>${agentsOf(draft).filter(a => a.code).map(a => `<option value="${esc(a.code)}" ${sameCode(a.code, b.agent) ? "selected" : ""}>${esc(a.code)}${a.name ? " · " + esc(a.name) : ""}</option>`).join("")}${b.agent && !agentsOf(draft).some(a => sameCode(a.code, b.agent)) ? `<option selected value="${esc(b.agent)}">${esc(b.agent)} (not in agents)</option>` : ""}</select></div>` : ""}
           <div class="field"><label>Amount (${esc(state.currency)})</label><input data-bf="amount" type="number" step="0.01" inputmode="decimal" value="${esc(b.amount)}"></div>
         </div>
         <div class="toggles"><button type="button" class="toggle" data-btog="paid" aria-pressed="${!!b.paid}">Paid</button><button type="button" class="toggle" data-btog="collected" aria-pressed="${!!b.collected}">Collected</button></div>
@@ -1309,6 +1481,7 @@ function createKemasOrderForm() {
         if (bFilter === "check" && !(b.flags || []).length) return false;
         if (bFilter === "unpaid" && b.paid) return false;
         if (bFilter === "uncollected" && b.collected) return false;
+        if (bAgent && !(bAgent === "-" ? !b.agent : sameCode(b.agent, bAgent))) return false;
         if (q && !`${b.name} ${b.phone} ${b.place} ${b.pickup || ""} ${itemsText(b)}`.toLowerCase().includes(q)) return false;
         return true;
       });
@@ -1328,7 +1501,7 @@ function createKemasOrderForm() {
       }
       const filters = [["all", "All"], ["check", "To check"], ["unpaid", "Unpaid"], ["uncollected", "Not collected"]];
       box.innerHTML = `<div id="b-top"></div>
-        <div class="btools"><input class="search inp" id="b-search" type="search" placeholder="Search buyers…" value="${esc(bQuery)}" aria-label="Search buyers">${filters.map(([k, l]) => `<button type="button" class="filter" data-bfilter="${k}" aria-pressed="${bFilter === k}">${l}</button>`).join("")}</div>
+        <div class="btools"><input class="search inp" id="b-search" type="search" placeholder="Search buyers…" value="${esc(bQuery)}" aria-label="Search buyers">${filters.map(([k, l]) => `<button type="button" class="filter" data-bfilter="${k}" aria-pressed="${bFilter === k}">${l}</button>`).join("")}${agentsOf(draft).length ? `<select class="inp" id="b-agent" style="width:auto;max-width:170px" aria-label="Filter by agent"><option value="">All agents</option><option value="-" ${bAgent === "-" ? "selected" : ""}>No agent</option>${agentsOf(draft).filter(a => a.code).map(a => `<option value="${esc(a.code)}" ${bAgent === a.code ? "selected" : ""}>${esc(a.code)}</option>`).join("")}</select>` : ""}</div>
         <div class="blist" id="b-list"></div>
         <datalist id="b-colors">${knownColors().map(c => `<option value="${esc(c)}">`).join("")}</datalist>
         <div class="share-row" style="margin-top:10px"><button type="button" class="btn small" data-bact="import">Import more</button><button type="button" class="btn small" data-bact="addb">+ Add buyer</button><button type="button" class="btn small" data-bact="pickup">Copy pickup list</button><button type="button" class="btn small" data-bact="formmaker">Google Form</button></div>`;
@@ -1340,9 +1513,10 @@ function createKemasOrderForm() {
     $("#m-buyers").addEventListener("input", e => {
       const t = e.target;
       if (t.id === "b-search") { bQuery = t.value; drawBuyerList(); return; }
+      if (t.id === "b-agent") { bAgent = t.value; drawBuyerList(); return; }
       const ed = t.closest("[data-bid]"); if (!ed) return;
       const b = findB(ed.dataset.bid); if (!b) return;
-      if (t.dataset.bf) { b[t.dataset.bf] = t.dataset.bf === "amount" ? num(t.value) : t.value; drawBuyerTop(); updCalc(); return; }
+      if (t.dataset.bf) { b[t.dataset.bf] = t.dataset.bf === "amount" ? num(t.value) : t.value; drawBuyerTop(); updCalc(); drawAgentStats(); return; }
       const row = t.closest("[data-it]");
       if (row && t.dataset.itf) { const it = b.items[+row.dataset.it]; it[t.dataset.itf] = t.dataset.itf === "qty" ? Math.max(1, num(t.value) || 1) : t.value.trim(); buyersChanged(false); }
     });
@@ -1359,7 +1533,7 @@ function createKemasOrderForm() {
       const ed = t.closest("[data-bid]"), b = ed && findB(ed.dataset.bid);
       if (t.dataset.btog && b) { b[t.dataset.btog] = !b[t.dataset.btog]; t.setAttribute("aria-pressed", String(!!b[t.dataset.btog])); drawBuyerTop(); updCalc(); return; }
       const act = t.dataset.bact; if (!act) return;
-      if (act === "import") { openImport(draft.buyers, fresh => { draft.buyers.push(...fresh); buyersChanged(true); updCalc(); toast(`${fresh.length} order${fresh.length === 1 ? "" : "s"} added. Tap Save to keep them.`); }, draft.form); return; }
+      if (act === "import") { openImport(draft.buyers, fresh => { draft.buyers.push(...fresh); buyersChanged(true); updCalc(); drawAgents(); toast(`${fresh.length} order${fresh.length === 1 ? "" : "s"} added. Tap Save to keep them.`); }, draft.form, agentsOf(draft)); return; }
       if (act === "formmaker") { readTop(); openFormMaker(draft, setup => { draft.form = setup; }); return; }
       if (act === "addb") { const nb = { id: "b" + Math.random().toString(36).slice(2, 10), ts: new Date().toLocaleString(), name: "", phone: "", place: "", items: [{ color: knownColors()[0] || "", size: "M", qty: 1 }], amount: 0, paid: false, receipt: "", note: "", flags: [], collected: false, src: "" }; draft.buyers.unshift(nb); openB = nb.id; bFilter = "all"; buyersChanged(true); updCalc(); const inp = document.querySelector(`[data-bid="${nb.id}"] [data-bf="name"]`); if (inp) inp.focus(); return; }
       if (act === "pickup") {
@@ -1374,7 +1548,7 @@ function createKemasOrderForm() {
       if (act === "rmit") { b.items.splice(+t.closest("[data-it]").dataset.it, 1); buyersChanged(true); return; }
       if (act === "del") {
         if (!t.classList.contains("armed")) { t.classList.add("armed"); t.textContent = "Tap again to delete"; return; }
-        draft.buyers = draft.buyers.filter(x => x.id !== b.id); openB = null; buyersChanged(true); updCalc(); return;
+        draft.buyers = draft.buyers.filter(x => x.id !== b.id); openB = null; buyersChanged(true); updCalc(); drawAgentStats(); return;
       }
     });
     form.addEventListener("input", e => {

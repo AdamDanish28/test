@@ -9,6 +9,7 @@ A job board for shirt projects. Track every project from design to delivery, alo
 - **Design photos**: add mockups or artwork to each project (stored on the device, and synced as private Gists when sync is on). The first photo shows on the board card.
 - **Google Form maker**: builds an Apps Script that creates a clean order form (name, phone, pickup point, a size grid per shirt type) and its responses sheet.
 - **Buyers from Google Forms**: paste the form responses, a one-row-per-shirt order record, or a CSV into a project. The app reads each order (colours, sizes, combos, price, receipt), totals sizes per colour for the printer, tracks paid and collected, flags orders to check, and copies a pickup list.
+- **Agents**: name, code, phone, task (promote / distribute), commission per shirt, % of their sales or fixed. Buyers pick an agent code on the Google Form; commission is worked out per agent and counted as a cost. The app also writes a script that updates the form's agent list.
 - **Copy order for printer** (no prices) and **Copy quote for client**, ready to paste into WhatsApp.
 - **Projects**: client, contact, due date, printer, shirt details, quantity by size (XS–3XL), price and cost per shirt, other costs, amount paid, notes and stage history.
 - **All jobs**: search and filter by stage.
