@@ -134,6 +134,24 @@ main { padding-block: 0 64px; }
 .card:hover { border-color: var(--muted); border-left-color: var(--c); }
 .card .row1 { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
 .card .code { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); letter-spacing: .04em; }
+.card .top { display: flex; gap: 10px; align-items: flex-start; }
+.card .top > div { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.thumb { width: 54px; height: 54px; object-fit: cover; border-radius: 6px; background: var(--sunk); flex: none; border: 1px solid var(--line); }
+.photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; margin-bottom: 10px; }
+.photos:empty { display: none; }
+.ph { position: relative; aspect-ratio: 1; max-width: 100%; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--sunk); padding: 0; }
+.ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ph .badge { position: absolute; left: 4px; bottom: 4px; font-family: var(--f-mono); font-size: 10px; padding: 1px 5px; border-radius: 4px; background: rgba(0,0,0,.6); color: #fff; }
+.viewer { position: fixed; inset: 0; z-index: 70; background: rgba(6,8,12,.94); display: flex; flex-direction: column; padding: calc(env(safe-area-inset-top, 0px) + 10px) max(12px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 12px) max(12px, env(safe-area-inset-left, 0px)); }
+.viewer .vbar { display: flex; gap: 8px; align-items: center; color: #fff; }
+.viewer .vbar .cnt { font-family: var(--f-mono); font-size: 13px; margin-right: auto; opacity: .8; }
+.viewer .vbtn { border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #fff; padding: 8px 12px; border-radius: 8px; font-weight: 600; font-size: 14px; }
+.viewer .vbtn.armed { background: #c0302a; border-color: #c0302a; }
+.viewer .stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; position: relative; margin-top: 10px; }
+.viewer .stage img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; }
+.viewer .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 99px; border: 0; background: rgba(255,255,255,.14); color: #fff; font-size: 22px; }
+.viewer .nav.prev { left: 0; } .viewer .nav.next { right: 0; }
+.viewer .hint { color: rgba(255,255,255,.65); font-size: 12.5px; text-align: center; margin-top: 8px; }
 .card .name { font-weight: 700; font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; }
 .card .client { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
 .chips { display: flex; flex-wrap: wrap; gap: 5px; }
@@ -207,16 +225,77 @@ legend { font-family: var(--f-mono); font-size: 11px; letter-spacing: .09em; tex
 .stages button { border: 1px solid var(--line); background: var(--paper); padding: 6px 11px; border-radius: 99px; font-size: 13px; font-weight: 600; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
 .stages button::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--c); }
 .stages button[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); color: var(--ink); }
-.sizes { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
-@media (max-width: 560px) { .sizes { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.sizes { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 640px) { .sizes { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.size label.big { color: var(--warn); }
+.line-box { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 12px; background: var(--paper); min-width: 0; }
+.line-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.line-head b { font-family: var(--f-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.line-head input { flex: 1 1 140px; min-width: 0; }
+.inp { padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); width: 100%; min-width: 0; }
+.line-box .field input, .line-box .field select, .line-box .size input { background: var(--surface); }
+.sub-label { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.toggles { display: flex; flex-wrap: wrap; gap: 6px; }
+.toggle { border: 1px solid var(--line); background: var(--surface); padding: 6px 10px; border-radius: 99px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.toggle small { font-family: var(--f-mono); font-weight: 500; font-size: 11.5px; margin-left: 3px; }
+.toggle[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, var(--surface)); color: var(--ink); }
+.line-sum { display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--f-mono); font-size: 13px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 10px; }
+.line-sum b { color: var(--ink); font-weight: 600; }
+.linkbtn { border: 0; background: transparent; padding: 4px 2px; color: var(--accent); font-weight: 600; font-size: 13px; }
+.linkbtn.danger { color: var(--bad); }
+.lines { display: flex; flex-direction: column; gap: 10px; }
+.pl-sec { display: flex; flex-direction: column; gap: 6px; }
+.pl-row { display: grid; grid-template-columns: minmax(0, 1fr) 96px 34px; gap: 6px; align-items: center; }
+.pl-row.has-note { grid-template-columns: minmax(0, 1fr) minmax(0, .7fr) 96px 34px; }
+.pl-row .x2 { border: 0; background: transparent; color: var(--muted); font-size: 18px; padding: 4px; border-radius: 6px; }
+.pl-row .x2:hover { color: var(--bad); }
+.pl-head { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.share-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.bstats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.mini table { font-size: 13px; } .mini th, .mini td { padding: 7px 9px; }
+.btools { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 12px 0 8px; }
+.btools .search { flex: 1 1 180px; padding: 7px 10px; }
+.blist { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.blist:empty { display: none; }
+.buyer + .buyer { border-top: 1px solid var(--line); }
+.brow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; width: 100%; text-align: left; border: 0; background: transparent; padding: 10px 12px; }
+.brow:hover { background: var(--sunk); }
+.brow .bn { font-weight: 600; overflow-wrap: anywhere; }
+.brow .ba { font-family: var(--f-mono); font-size: 13px; text-align: right; white-space: nowrap; }
+.brow .bi { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.brow .bc { display: flex; gap: 4px; justify-content: flex-end; flex-wrap: wrap; }
+.bedit { padding: 12px; display: flex; flex-direction: column; gap: 12px; background: var(--paper); border-top: 1px dashed var(--line); }
+.bedit .field input, .bedit .field select, .bedit .field textarea { background: var(--surface); }
+.it { display: grid; grid-template-columns: minmax(0, 1fr) 78px 74px 54px 30px; gap: 6px; align-items: center; }
+.it + .it { margin-top: 6px; }
+.links { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
+.links a { color: var(--accent); font-weight: 600; }
+.raw { font-size: 12.5px; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 7px; padding: 7px 9px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.imp-list { max-height: 46vh; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; }
+.imp-row { padding: 8px 12px; font-size: 13.5px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; }
+.imp-row + .imp-row { border-top: 1px solid var(--line); }
+.imp-row .why { grid-column: 1 / -1; font-size: 12px; color: var(--warn); }
+.imp-row.dupe { opacity: .55; }
+.code-out { background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-family: var(--f-mono); font-size: 12px; line-height: 1.5; max-height: 260px; overflow: auto; white-space: pre; margin: 0; }
+.var-row { display: grid; grid-template-columns: minmax(0, 1fr) 100px 34px; gap: 6px; align-items: center; }
+.var-row + .var-row { margin-top: 6px; }
+.check-row { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+.agents { display: flex; flex-direction: column; gap: 10px; }
+.agent { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--paper); }
+.agent .field input, .agent .field select { background: var(--surface); }
+.agent-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.agent-foot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.agent-foot .astats { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); margin-right: auto; }
+.agent-foot .astats b { color: var(--ink); }
+@media (max-width: 560px) { .line-box .grid2 { grid-template-columns: 1fr; } .line-box { padding: 10px; } }
 .size { display: flex; flex-direction: column; align-items: stretch; gap: 3px; }
 .size label { font-family: var(--f-mono); font-size: 12px; font-weight: 600; text-align: center; color: var(--muted); }
 .size input { text-align: center; padding: 7px 4px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); font-family: var(--f-mono); width: 100%; }
-.calc { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
 @media (max-width: 560px) { .calc { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .calc div { background: var(--sunk); padding: 9px 11px; min-width: 0; }
 .calc .k { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
-.calc .v { font-family: var(--f-mono); font-weight: 600; font-size: 15px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.calc .v { font-family: var(--f-mono); font-weight: 600; font-size: 15px; margin-top: 2px; overflow-wrap: anywhere; }
 .history { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
 .history li { display: flex; gap: 10px; align-items: center; }
 .history time { font-family: var(--f-mono); color: var(--muted); font-size: 12px; min-width: 96px; }
@@ -268,16 +347,144 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   const HOLD = { id: "hold", label: "On hold", hint: "Paused", c: "--s-hold", next: null };
   const ALL = [...STAGES, HOLD];
   const stageOf = id => ALL.find(s => s.id === id) || STAGES[0];
-  const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
+  const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];
+  const DEFAULT_PL = {
+    base: 14,
+    fabrics: [
+      { id: "mini-eyelet", name: "Mini Eyelet", note: "160 gsm", price: 0 },
+      { id: "interlock", name: "Interlock", note: "160 gsm", price: 0 },
+      { id: "eyelet", name: "Eyelet", note: "160 gsm", price: 0 },
+      { id: "diamond", name: "Diamond", note: "150–155 gsm", price: 2 },
+      { id: "sparkling-eyelet", name: "Sparkling Eyelet", note: "160 gsm", price: 2 },
+      { id: "rjpk", name: "RJPK", note: "175 gsm", price: 2 },
+      { id: "mini-square", name: "Mini Square", note: "120 gsm", price: 2 },
+      { id: "premium-mini-square", name: "Premium Mini Square", note: "120 gsm", price: 2 },
+      { id: "ultron", name: "Ultron", note: "140 gsm", price: 2 },
+      { id: "lycra-220", name: "Lycra", note: "220 gsm", price: 4 },
+      { id: "lycra-260", name: "Lycra", note: "260 gsm", price: 6 },
+      { id: "lycra-280", name: "Lycra", note: "280 gsm", price: 10 },
+    ],
+    collars: [
+      { id: "round", name: "Round neck", price: 0 },
+      { id: "vneck", name: "V-neck", price: 1 },
+      { id: "polo", name: "Polo", price: 3 },
+      { id: "nfl", name: "NFL", price: 4 },
+      { id: "retro", name: "Retro", price: 5 },
+      { id: "mandarin", name: "Mandarin", price: 5 },
+      { id: "raglan-round", name: "Raglan round neck", price: 3 },
+      { id: "raglan-collar", name: "Raglan collar", price: 5 },
+    ],
+    addons: [
+      { id: "muslimah", name: "Muslimah", price: 8 },
+      { id: "oversize", name: "Oversize", price: 8 },
+      { id: "backtape", name: "Backtape with printing", price: 2 },
+      { id: "numbering", name: "Numbering or naming", price: 3 },
+      { id: "dtf-label", name: "DTF label tag", price: 1 },
+      { id: "pen-pocket", name: "Pen pocket", price: 2 },
+      { id: "long-sleeve", name: "Long sleeve", price: 2 },
+    ],
+    bigFrom: "3XL", big: 4,
+  };
+  const clone = o => JSON.parse(JSON.stringify(o));
+  // older saved price lists: raglan was a sleeve option and the base price was blank
+  function normalizePL(src) {
+    const pl = clone(src || DEFAULT_PL);
+    if (pl.base === "" || pl.base == null) pl.base = DEFAULT_PL.base;
+    if (Array.isArray(pl.sleeves)) {
+      pl.collars = pl.collars || [];
+      pl.sleeves.filter(x => num(x.price) > 0).forEach(x => { if (!pl.collars.some(c => c.id === x.id)) pl.collars.push({ id: x.id, name: x.name, price: x.price }); });
+      delete pl.sleeves;
+    }
+    ["fabrics", "collars", "addons"].forEach(k => { if (!Array.isArray(pl[k]) || !pl[k].length) pl[k] = clone(DEFAULT_PL[k]); });
+    if (!pl.lsAdded) { if (!pl.addons.some(a => /long/i.test(a.name))) pl.addons.push({ id: "long-sleeve", name: "Long sleeve", price: 2 }); pl.lsAdded = true; }
+    return pl;
+  }
+  const pick = (list, id) => (list || []).find(x => x.id === id) || (list || [])[0] || { id: "", name: "", price: 0 };
+  const plus = n => (num(n) ? "+" + money(num(n)).replace(state.currency + " ", state.currency) : "free");
+  const fabricLabel = f => f.name + (f.note ? ` · ${f.note}` : "");
+  const newLine = pl => ({ id: "l" + Math.random().toString(36).slice(2, 8), label: "", collar: pl.collars[0] ? pl.collars[0].id : "", addons: [], sizes: {}, pieces: "", sell: "" });
+  const bigIdx = pl => { const i = SIZES.indexOf(pl.bigFrom || "3XL"); return i < 0 ? SIZES.length : i; };
+  function unitOf(p, line) {
+    const pl = p.pl || state.priceList;
+    return num(p.base) + num(pick(pl.fabrics, p.fabric).price) + num(pick(pl.collars, line.collar).price) + (pl.sleeves && line.sleeve ? num(pick(pl.sleeves, line.sleeve).price) : 0)
+      + (line.addons || []).reduce((a, id) => a + num(((pl.addons || []).find(x => x.id === id) || {}).price), 0);
+  }
+  function lineCalc(p, line) {
+    const pl = p.pl || state.priceList, bi = bigIdx(pl), unit = unitOf(p, line);
+    const sizes = line.sizes || {};
+    let pcs = 0, bigPcs = 0;
+    SIZES.forEach((k, i) => { const n = num(sizes[k]); pcs += n; if (i >= bi) bigPcs += n; });
+    const bySize = pcs > 0;
+    if (!bySize) pcs = num(line.pieces);
+    const sell = num(line.sell);
+    return { unit, bigUnit: unit + num(pl.big), pcs, bigPcs, bySize, cost: pcs * unit + bigPcs * num(pl.big), sell, sale: pcs * sell };
+  }
+  // v2: "base" and the cost list are what a shirt costs Kemas; each shirt type has its own selling price
+  function migrateProject(p) {
+    if (!p || p.v === 2 || !Array.isArray(p.lines) || !p.lines.length) return p;
+    const q = JSON.parse(JSON.stringify(p));
+    q.lines.forEach(l => { if (l.sell == null || l.sell === "") { const u = unitOf(q, l); l.sell = u ? String(u) : ""; } });
+    q.base = num(q.cost) || num((q.pl || state.priceList || {}).base) || 14;
+    delete q.cost; q.v = 2;
+    return q;
+  }
+  const hasLines = p => Array.isArray(p.lines) && p.lines.length > 0;
+  const buyersOf = p => (Array.isArray(p.buyers) ? p.buyers : []);
+  function buyerCalc(p) {
+    let pcs = 0, amount = 0, paid = 0, check = 0, collected = 0;
+    buyersOf(p).forEach(b => { (b.items || []).forEach(it => (pcs += num(it.qty || 1))); amount += num(b.amount); if (b.paid) paid += num(b.amount); if ((b.flags || []).length) check++; if (b.collected) collected++; });
+    return { n: buyersOf(p).length, pcs, amount, paid, check, collected };
+  }
 
-  const state = { projects: [], deleted: {}, currencyAt: "", currency: "RM", tab: "board", q: "", stageFilter: "active", mode: "loading", loaded: false };
+  const state = { projects: [], deleted: {}, currencyAt: "", priceList: null, priceListAt: "", currency: "RM", tab: "board", q: "", stageFilter: "active", mode: "loading", loaded: false };
 
   const $ = s => document.querySelector(s);
   const esc = v => String(v ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
   const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
   const money = n => { const neg = n < 0; n = Math.abs(n); const s = n.toLocaleString(undefined, { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }); return (neg ? "−" : "") + state.currency + " " + s; };
-  const qtyOf = p => { const s = SIZES.reduce((a, k) => a + num(p.sizes && p.sizes[k]), 0); return s > 0 ? s : num(p.qty); };
-  const calc = p => { const q = qtyOf(p); const sale = q * num(p.price); const cost = q * num(p.cost) + num(p.extra); return { q, sale, cost, profit: sale - cost, paid: num(p.paid), balance: sale - num(p.paid) }; };
+  const qtyOf = p => { if (buyersOf(p).length) return buyerCalc(p).pcs; if (hasLines(p)) return p.lines.reduce((a, l) => a + lineCalc(p, l).pcs, 0); const s = SIZES.reduce((a, k) => a + num(p.sizes && p.sizes[k]), 0); return s > 0 ? s : num(p.qty); };
+  const agentsOf = p => (Array.isArray(p.agents) ? p.agents : []);
+  const sameCode = (a, b) => !!a && !!b && String(a).trim().toUpperCase() === String(b).trim().toUpperCase();
+  function agentStats(p, a, totalQ, totalSale) {
+    const bs = buyersOf(p), mine = bs.filter(b => sameCode(b.agent, a.code));
+    const pcs = mine.reduce((x, b) => x + (b.items || []).reduce((y, it) => y + num(it.qty || 1), 0), 0);
+    const sales = mine.reduce((x, b) => x + num(b.amount), 0);
+    const rate = num(a.rate), basePcs = bs.length ? pcs : totalQ, baseSales = bs.length ? sales : totalSale;
+    const commission = a.type === "percent" ? rate / 100 * baseSales : a.type === "fixed" ? rate : rate * basePcs;
+    return { buyers: mine, n: mine.length, pcs, sales, commission };
+  }
+  const baseCalc = p => {
+    if (buyersOf(p).length) {
+      const bc = buyerCalc(p), sale = bc.amount + num(p.adjust);
+      const lineCost = hasLines(p) && p.v === 2 ? p.lines.filter(l => l.auto).reduce((a, l) => a + lineCalc(p, l).cost, 0) : bc.pcs * num(p.cost);
+      const cost = lineCost + num(p.extra);
+      return { q: bc.pcs, sale, cost, profit: sale - cost, paid: bc.paid, balance: sale - bc.paid };
+    }
+    if (hasLines(p) && p.v === 2) {
+      const ls = p.lines.map(l => lineCalc(p, l));
+      const q = ls.reduce((a, x) => a + x.pcs, 0), sale = ls.reduce((a, x) => a + x.sale, 0) + num(p.adjust), cost = ls.reduce((a, x) => a + x.cost, 0) + num(p.extra);
+      return { q, sale, cost, profit: sale - cost, paid: num(p.paid), balance: sale - num(p.paid) };
+    }
+    const q = qtyOf(p);
+    // projects saved before v2 that haven't been migrated yet: old base was the selling price
+    const sale = hasLines(p) ? p.lines.reduce((a, l) => a + lineCalc(p, l).cost, 0) + num(p.adjust) : q * num(p.price);
+    const cost = q * num(p.cost) + num(p.extra);
+    return { q, sale, cost, profit: sale - cost, paid: num(p.paid), balance: sale - num(p.paid) };
+  };
+  const calc = p => {
+    const c = baseCalc(p);
+    const agents = agentsOf(p).reduce((a, ag) => a + agentStats(p, ag, c.q, c.sale).commission, 0);
+    if (!agents) return { ...c, agents: 0 };
+    const cost = c.cost + agents;
+    return { ...c, cost, profit: c.sale - cost, agents };
+  };
+  const avgPrice = p => { const c = calc(p); return c.q ? c.sale / c.q : num(p.price); };
+  function specLine(p) {
+    if (!hasLines(p)) return p.shirt || "";
+    const pl = p.pl || state.priceList;
+    const collars = [...new Set(p.lines.map(l => pick(pl.collars, l.collar).name))].join(", ");
+    return [p.fabric ? pick(pl.fabrics, p.fabric).name : "", collars].filter(Boolean).join(" · ");
+  }
   const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
   const parseDay = s => { if (!s) return null; const [y, m, d] = s.split("-").map(Number); return y ? new Date(y, m - 1, d) : null; };
   const fmtDay = s => { const d = parseDay(s); return d ? d.toLocaleDateString(undefined, { day: "numeric", month: "short" }) : ""; };
@@ -298,7 +505,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   /* ---------- data ---------- */
   const KEY = "kemas-apparel-v1";
   function persistLocal() {
-    try { localStorage.setItem(KEY, JSON.stringify({ projects: state.projects, deleted: state.deleted, currency: state.currency, currencyAt: state.currencyAt, savedAt: new Date().toISOString() })); }
+    try { localStorage.setItem(KEY, JSON.stringify({ projects: state.projects, deleted: state.deleted, currency: state.currency, currencyAt: state.currencyAt, priceList: state.priceList, priceListAt: state.priceListAt, savedAt: new Date().toISOString() })); }
     catch (e) { const err = new Error("save failed"); err.code = "quota_exceeded"; throw err; }
   }
   function persist() { persistLocal(); scheduleSync(); }
@@ -314,7 +521,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     state.projects = state.projects.filter(p => p.id !== id); state.deleted[id] = new Date().toISOString(); persist(); render();
   }
   function exportBackup() {
-    const blob = new Blob([JSON.stringify({ app: "kemas-apparel", version: 1, exportedAt: new Date().toISOString(), currency: state.currency, projects: state.projects }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ app: "kemas-apparel", version: 1, exportedAt: new Date().toISOString(), currency: state.currency, priceList: state.priceList, priceListAt: state.priceListAt, projects: state.projects }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `kemas-backup-${new Date().toISOString().slice(0, 10)}.json`;
@@ -328,7 +535,8 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       if (!d || !Array.isArray(d.projects)) throw new Error("bad");
       const byId = new Map(state.projects.map(p => [p.id, p]));
       d.projects.forEach(p => { if (p && typeof p === "object") { const id = String(p.id || "p-" + Math.random().toString(36).slice(2)); const old = byId.get(id); if (!old || String(p.updatedAt) >= String(old.updatedAt)) byId.set(id, { ...p, id }); } });
-      state.projects = [...byId.values()];
+      state.projects = [...byId.values()].map(migrateProject);
+      if (d.priceList && String(d.priceListAt || "") > String(state.priceListAt || "")) { state.priceList = normalizePL(d.priceList); state.priceListAt = d.priceListAt; }
       if (d.currency) { state.currency = String(d.currency).slice(0, 5); state.currencyAt = new Date().toISOString(); }
       persist(); render(); toast(`Imported ${d.projects.length} project${d.projects.length === 1 ? "" : "s"}`);
     } catch (_) { toast("That file isn't a KEMAS backup."); }
@@ -360,13 +568,19 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   function cardHTML(p) {
     const s = stageOf(p.stage), c = calc(p), d = dueInfo(p);
     const chips = [`<span class="chip">${c.q.toLocaleString()} pcs</span>`];
+    const bcx = buyerCalc(p);
+    if (bcx.n) chips.push(`<span class="chip">${bcx.n} buyers</span>`);
+    if (bcx.check) chips.push(`<span class="chip warn">${bcx.check} to check</span>`);
     if (d) chips.push(`<span class="chip ${d.cls}">${esc(d.text)}</span>`);
     if (c.sale > 0 && c.balance > 0) chips.push(`<span class="chip warn">Owes ${esc(money(c.balance))}</span>`);
     else if (c.sale > 0 && c.balance <= 0) chips.push(`<span class="chip ok">Paid</span>`);
     return `<article class="card" style="--c:var(${s.c})" data-open="${esc(p.id)}" tabindex="0" aria-label="${esc(p.name)}">
       <div class="row1"><span class="code">${esc(p.code)}</span>${p.printer && p.stage === "print" ? `<span class="code">@ ${esc(p.printer)}</span>` : ""}</div>
-      <div class="name">${esc(p.name || "Untitled")}</div>
-      ${p.client ? `<div class="client">${esc(p.client)}</div>` : ""}
+      <div class="top"><div>
+        <div class="name">${esc(p.name || "Untitled")}</div>
+        ${p.client ? `<div class="client">${esc(p.client)}</div>` : ""}
+        ${specLine(p) ? `<div class="client" style="font-size:12.5px">${esc(specLine(p))}</div>` : ""}
+      </div>${(p.photos || []).length ? `<img class="thumb" data-ph="${esc(p.photos[0].id)}" alt="Design photo">` : ""}</div>
       <div class="chips">${chips.join("")}</div>
       ${s.next ? `<button class="next" type="button" data-advance="${esc(p.id)}">Next: ${esc(s.next)} →</button>` : ""}
     </article>`;
@@ -389,7 +603,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
         <div class="cards">${items.map(cardHTML).join("") || `<div class="empty-col">Nothing here</div>`}${more}</div>
       </section>`;
     }).join("");
-    return `<div class="viewhead"><div><h2>Where every job is</h2><p>Tap a card to edit it. Tap “Next” when a job moves forward.</p></div></div>
+    return `<div class="viewhead"><div><h2>Where every job is</h2><p>Tap a card to edit it. Tap “Next” when a job moves forward.</p></div><button class="btn small" type="button" data-pricelist>Cost list</button></div>
       <div class="board-scroll"><div class="board" style="--cols:${cols.length}">${html}</div></div>`;
   }
 
@@ -400,7 +614,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     let rows = state.projects.filter(p => {
       if (state.stageFilter === "active" && (p.stage === "done" || p.stage === "hold")) return false;
       if (!["active", "all"].includes(state.stageFilter) && p.stage !== state.stageFilter) return false;
-      if (q && ![p.code, p.name, p.client, p.contact, p.printer, p.shirt, p.notes].some(v => String(v || "").toLowerCase().includes(q))) return false;
+      if (q && ![p.code, p.name, p.client, p.contact, p.printer, p.shirt, p.notes, ...buyersOf(p).map(b => `${b.name} ${b.phone}`), ...agentsOf(p).map(a => `${a.name} ${a.code}`)].some(v => String(v || "").toLowerCase().includes(q))) return false;
       return true;
     }).sort((a, b) => String(b.code).localeCompare(String(a.code)));
     const tot = rows.reduce((a, p) => { const c = calc(p); a.q += c.q; a.sale += c.sale; a.bal += Math.max(0, c.balance); return a; }, { q: 0, sale: 0, bal: 0 });
@@ -477,9 +691,10 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       <div class="viewhead"><div><h2>Profit per project</h2></div></div>
       ${rows.length ? `<div class="tablebox"><table>
         <thead><tr><th>Job</th><th>Project</th><th class="num">Pcs</th><th class="num">Price/pc</th><th class="num">Sale</th><th class="num">Cost</th><th class="num">Profit</th><th class="num">Margin</th></tr></thead>
-        <tbody>${rows.map(p => { const c = calc(p); return `<tr class="click" data-open="${esc(p.id)}" tabindex="0"><td class="mono" style="color:var(--muted);font-size:12.5px">${esc(p.code)}</td><td><div class="t1">${esc(p.name)}</div><div class="t2">${esc(p.client || "—")}</div></td><td class="num">${c.q}</td><td class="num">${esc(money(num(p.price)))}</td><td class="num">${esc(money(c.sale))}</td><td class="num">${esc(money(c.cost))}</td><td class="num ${c.profit >= 0 ? "pos" : "neg"}">${esc(money(c.profit))}</td><td class="num">${c.sale ? Math.round(c.profit / c.sale * 100) + "%" : "—"}</td></tr>`; }).join("")}</tbody>
+        <tbody>${rows.map(p => { const c = calc(p); return `<tr class="click" data-open="${esc(p.id)}" tabindex="0"><td class="mono" style="color:var(--muted);font-size:12.5px">${esc(p.code)}</td><td><div class="t1">${esc(p.name)}</div><div class="t2">${esc(p.client || "—")}</div></td><td class="num">${c.q}</td><td class="num">${esc(money(Math.round(avgPrice(p) * 100) / 100))}</td><td class="num">${esc(money(c.sale))}</td><td class="num">${esc(money(c.cost))}</td><td class="num ${c.profit >= 0 ? "pos" : "neg"}">${esc(money(c.profit))}</td><td class="num">${c.sale ? Math.round(c.profit / c.sale * 100) + "%" : "—"}</td></tr>`; }).join("")}</tbody>
         <tfoot><tr><td></td><td>Total</td><td class="num">${t.q}</td><td></td><td class="num">${esc(money(t.sale))}</td><td class="num">${esc(money(t.cost))}</td><td class="num ${t.profit >= 0 ? "pos" : "neg"}">${esc(money(t.profit))}</td><td class="num">${t.sale ? Math.round(t.profit / t.sale * 100) + "%" : "—"}</td></tr></tfoot>
       </table></div>` : ""}
+      <div class="settings-row"><button class="btn small" type="button" data-pricelist>Edit cost list</button><span>What each shirt costs you: base cost, fabrics, collars and add-ons.</span></div>
       <div class="settings-row"><label for="currency">Currency shown as</label><input id="currency" value="${esc(state.currency)}" maxlength="5"><span>e.g. RM, $, SGD</span></div>
       <div class="settings-row"><span>Projects sync through your GitHub when sync is on. A backup file is a spare copy.</span><button class="btn small" type="button" id="export-btn">Export backup</button><label class="btn small" for="import-file">Import backup</label><input id="import-file" type="file" accept="application/json,.json" hidden></div>`;
   }
@@ -496,39 +711,576 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     }
     const hadFocus = document.activeElement && document.activeElement.id === "search";
     v.innerHTML = state.tab === "board" ? renderBoard() : state.tab === "jobs" ? renderJobs() : renderMoney();
+    hydratePhotos(v);
     if (hadFocus) { const s = $("#search"); s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
   }
 
+  /* ---------- design photos ---------- */
+  const photoDB = (() => {
+    let dbp = null;
+    const open = () => dbp || (dbp = new Promise((res, rej) => { const r = indexedDB.open("kemas-photos", 1); r.onupgradeneeded = () => r.result.createObjectStore("photos"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }));
+    const run = (mode, fn) => open().then(db => new Promise((res, rej) => { const t = db.transaction("photos", mode); const req = fn(t.objectStore("photos")); t.oncomplete = () => res(req && req.result); t.onerror = () => rej(t.error); }));
+    return { get: k => run("readonly", st => st.get(k)).catch(() => null), set: (k, v) => run("readwrite", st => st.put(v, k)), del: k => run("readwrite", st => st.delete(k)).catch(() => {}) };
+  })();
+  const photoMem = new Map(), photoLoading = new Map();
+  const MAX_PHOTOS = 12;
+  function findPhoto(id, extra) { for (const p of [...(extra || []), ...state.projects]) { const ph = (p.photos || []).find(x => x.id === id); if (ph) return ph; } return null; }
+  function photoURL(ph) {
+    if (!ph) return Promise.resolve(null);
+    if (photoMem.has(ph.id)) return Promise.resolve(photoMem.get(ph.id));
+    if (photoLoading.has(ph.id)) return photoLoading.get(ph.id);
+    const job = (async () => {
+      let d = await photoDB.get(ph.id);
+      if (!d && ph.raw && /^https:\/\/gist\.githubusercontent\.com\//.test(ph.raw)) {
+        try { const t = await (await fetch(ph.raw, { cache: "force-cache" })).text(); if (t.startsWith("data:image/")) { d = t; photoDB.set(ph.id, d).catch(() => {}); } } catch (_) {}
+      }
+      if (d) photoMem.set(ph.id, d);
+      photoLoading.delete(ph.id);
+      return d || null;
+    })();
+    photoLoading.set(ph.id, job);
+    return job;
+  }
+  function hydratePhotos(root, extra) {
+    root.querySelectorAll("img[data-ph]").forEach(img => {
+      if (img.dataset.done) return; img.dataset.done = "1";
+      photoURL(findPhoto(img.dataset.ph, extra)).then(u => { if (u) img.src = u; else img.alt = "Photo not downloaded yet"; });
+    });
+  }
+  async function shrinkImage(file) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error("bad image")); i.src = url; });
+      const MAX = 1600, k = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * k)), h = Math.max(1, Math.round(img.naturalHeight * k));
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      const ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h); ctx.drawImage(img, 0, 0, w, h);
+      let q = 0.82, d = c.toDataURL("image/jpeg", q);
+      while (d.length > 600000 && q > 0.5) { q -= 0.1; d = c.toDataURL("image/jpeg", q); }
+      return { data: d, w, h };
+    } finally { URL.revokeObjectURL(url); }
+  }
+  function openViewer(list, index, onRemove) {
+    const root = document.createElement("div"); root.className = "viewer"; root.setAttribute("role", "dialog"); root.setAttribute("aria-label", "Design photo");
+    document.body.appendChild(root);
+    let i = index;
+    const draw = () => {
+      const ph = list[i];
+      root.innerHTML = `<div class="vbar"><span class="cnt">${i + 1} / ${list.length}</span>${onRemove ? `<button class="vbtn" type="button" data-v="rm">Remove</button>` : ""}<button class="vbtn" type="button" data-v="close" aria-label="Close">Close</button></div>
+        <div class="stage">${list.length > 1 ? `<button class="nav prev" type="button" data-v="prev" aria-label="Previous">‹</button>` : ""}<img data-ph="${esc(ph.id)}" alt="Design photo ${i + 1}">${list.length > 1 ? `<button class="nav next" type="button" data-v="next" aria-label="Next">›</button>` : ""}</div>
+        <div class="hint">Press and hold the photo to save it or send it.</div>`;
+      const img = root.querySelector("img"); photoURL(ph).then(u => { if (u) img.src = u; else img.alt = "This photo hasn't downloaded yet. Check your internet."; });
+    };
+    const close = () => { root.remove(); document.removeEventListener("keydown", onKey, true); };
+    const onKey = e => { if (e.key === "Escape") { e.stopImmediatePropagation(); close(); } else if (e.key === "ArrowRight") { i = (i + 1) % list.length; draw(); } else if (e.key === "ArrowLeft") { i = (i - 1 + list.length) % list.length; draw(); } };
+    document.addEventListener("keydown", onKey, true);
+    root.addEventListener("click", e => {
+      const b = e.target.closest("[data-v]"); if (!b) return;
+      const v = b.dataset.v;
+      if (v === "close") close();
+      else if (v === "next") { i = (i + 1) % list.length; draw(); }
+      else if (v === "prev") { i = (i - 1 + list.length) % list.length; draw(); }
+      else if (v === "rm") {
+        if (!b.classList.contains("armed")) { b.classList.add("armed"); b.textContent = "Tap again to remove"; return; }
+        onRemove(list[i]); list.splice(i, 1);
+        if (!list.length) close(); else { i = Math.min(i, list.length - 1); draw(); }
+      }
+    });
+    draw();
+  }
+
+  /* ---------- buyers: group orders from Google Forms ---------- */
+  const COLOR_WORDS = [["maroon", "Maroon"], ["navy", "Navy"], ["black", "Black"], ["hitam", "Black"], ["white", "White"], ["putih", "White"], ["red", "Red"], ["merah", "Red"], ["blue", "Blue"], ["biru", "Blue"], ["green", "Green"], ["hijau", "Green"], ["yellow", "Yellow"], ["kuning", "Yellow"], ["grey", "Grey"], ["gray", "Grey"], ["kelabu", "Grey"], ["pink", "Pink"], ["purple", "Purple"], ["ungu", "Purple"], ["orange", "Orange"], ["oren", "Orange"], ["brown", "Brown"], ["coklat", "Brown"], ["cream", "Cream"], ["beige", "Beige"]];
+  const COLOR_MAP = Object.fromEntries(COLOR_WORDS);
+  const colorRe = () => new RegExp("\\b(" + COLOR_WORDS.map(c => c[0]).join("|") + ")\\b", "gi");
+  const normSize = x => { const u = x.toUpperCase(); return { XXL: "2XL", XXXL: "3XL", XXXXL: "4XL" }[u] || u; };
+  function sizesIn(text) {
+    const re = /(^|[^A-Za-z0-9])(XXXXL|XXXL|XXL|[2-5]XL|XS|XL|S|M|L)(?=[^A-Za-z0-9]|$)/gi, out = []; let m;
+    while ((m = re.exec(text))) out.push(normSize(m[2]));
+    return out;
+  }
+  const cleanText = t => String(t || "").replace(/（/g, "(").replace(/）/g, ")").replace(/，/g, ",").replace(/^"+|"+$/g, "").trim();
+  function parseItems(text) {
+    const t = cleanText(text), re = colorRe(), hits = []; let m;
+    while ((m = re.exec(t))) hits.push({ color: COLOR_MAP[m[1].toLowerCase()], start: m.index, end: m.index + m[0].length });
+    const items = [], unsized = [];
+    hits.forEach((h, i) => {
+      const seg = t.slice(h.end, i + 1 < hits.length ? hits[i + 1].start : t.length);
+      const sz = sizesIn(seg);
+      const q = +((seg.match(/(\d+)\s*(?:pcs?|pieces?|helai)\b/i) || [])[1] || 0);
+      if (!sz.length) unsized.push(h.color);
+      else if (sz.length === 1) items.push({ color: h.color, size: sz[0], qty: q > 1 && q <= 20 ? q : 1 });
+      else sz.forEach(x => items.push({ color: h.color, size: x, qty: 1 }));
+    });
+    return { items, unsized, colors: hits.map(h => h.color), sizes: sizesIn(t) };
+  }
+  const priceIn = t => { const m = String(t || "").match(/RM\s*(\d+(?:\.\d+)?)/i); return m ? +m[1] : 0; };
+  function fixPhone(x) { const t = String(x || "").replace(/\s+/g, " ").trim(), d = t.replace(/\D/g, ""); return /^1\d{8,9}$/.test(d) ? "0" + d : t; }
+  const waLink = phone => { let d = String(phone || "").replace(/\D/g, ""); if (d.startsWith("0")) d = "6" + d; return d.length >= 10 ? "https://wa.me/" + d : ""; };
+  function rowToBuyer(r) {
+    let P = parseItems(r.details);
+    if (!P.colors.length) P = parseItems(r.type);
+    const items = P.items.slice();
+    if (P.unsized.length) {
+      const pool = sizesIn(cleanText(r.size)).length ? sizesIn(cleanText(r.size)) : P.sizes;
+      P.unsized.forEach((c, i) => { const sz = pool.length === P.unsized.length ? pool[i] : pool[0]; if (sz) items.push({ color: c, size: sz, qty: 1 }); });
+    }
+    const pcs = items.reduce((a, it) => a + it.qty, 0);
+    const priceText = r.type2 || r.type;
+    const amount = priceIn(r.type2) || priceIn(r.type);
+    const expected = /combo|2 colou?rs?/i.test(priceText || "") ? 2 : 1;
+    const flags = [];
+    if (!items.length) flags.push("Couldn't read the colour or size");
+    else if (amount && pcs !== expected) flags.push(`${pcs} pcs but paid the ${expected === 2 ? "combo" : "single"} price`);
+    if (!amount) flags.push("No price");
+    if (!r.receipt) flags.push("No receipt");
+    return {
+      id: "b" + Math.random().toString(36).slice(2, 10), ts: r.ts || "", name: cleanText(r.name) || "No name", phone: fixPhone(r.phone), place: cleanText(r.place),
+      items, amount, paid: !!r.receipt, receipt: /^https:\/\//.test(r.receipt || "") ? r.receipt.trim() : "", note: cleanText(r.note), flags, collected: false,
+      src: [cleanText(r.type), cleanText(r.size) && "Size: " + cleanText(r.size), cleanText(r.details)].filter(Boolean).join("\n"),
+    };
+  }
+  function parseDelimited(text) {
+    const first = text.split(/\r?\n/, 1)[0], delim = first.includes("\t") ? "\t" : ",";
+    const rows = []; let row = [], cell = "", q = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (q) { if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; }
+      else if (ch === '"' && cell === "") q = true;
+      else if (ch === delim) { row.push(cell); cell = ""; }
+      else if (ch === "\n" || ch === "\r") { if (ch === "\r" && text[i + 1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; }
+      else cell += ch;
+    }
+    if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+    return rows.map(r => r.map(c => c.trim())).filter(r => r.some(Boolean));
+  }
+  const sleeveOf = t => (/long|panjang/i.test(t || "") ? "Long" : /short|pendek/i.test(t || "") ? "Short" : "");
+  function colorOf(t) { const m = String(t || "").match(colorRe()); return m ? COLOR_MAP[m[0].toLowerCase()] : ""; }
+  function mapHeader(cells) {
+    const idx = {};
+    cells.forEach((h, i) => {
+      const x = h.toLowerCase();
+      const gm = h.match(/\[([^\]]+)\]\s*$/);
+      if (gm && SIZES.includes(normSize(gm[1].trim()))) { (idx.grid = idx.grid || []).push({ i, size: normSize(gm[1].trim()), variant: h.replace(/\[[^\]]*\]\s*$/, "").replace(/\s*[—–-]\s*how many.*$/i, "").trim() }); return; }
+      if (/timestamp|cap masa/.test(x)) idx.ts ??= i;
+      else if (/agent|ejen|referr|\bkod\b|\bcode\b/.test(x)) idx.agent ??= i;
+      else if (/unit cost|line cost|\bcost\b|\bkos\b/.test(x)) return;
+      else if (/\bqty\b|quantity|kuantiti/.test(x)) idx.qty ??= i;
+      else if (/unit price|harga/.test(x)) idx.unitPrice ??= i;
+      else if (/line sales|total sales|jumlah/.test(x)) idx.lineSales ??= i;
+      else if (/sleeve|lengan/.test(x)) idx.sleeve ??= i;
+      else if (/colou?r|warna/.test(x)) idx.color ??= i;
+      else if (/pick ?-?up|ambil/.test(x)) idx.pickup ??= i;
+      else if (/category|kategori/.test(x)) idx.category ??= i;
+      else if (/receipt|resit|bukti|proof|payment|bayaran/.test(x)) idx.receipt ??= i;
+      else if (/additional|detail|reconfirm|butiran/.test(x)) idx.details ??= i;
+      else if (/order type|jenis|package|pakej|order/.test(x)) { if (idx.type == null) idx.type = i; else idx.type2 ??= i; }
+      else if (/phone|tel|whatsapp|\bhp\b/.test(x)) idx.phone ??= i;
+      else if (/size|saiz|ukuran/.test(x)) idx.size ??= i;
+      else if (/college|kolej|residen|address|alamat|blok|block|campus|location|lokasi/.test(x)) idx.place ??= i;
+      else if (/nama|name/.test(x)) idx.name ??= i;
+      else if (/column|note|remark|catatan|nota/.test(x)) idx.note ??= i;
+    });
+    return idx;
+  }
+  const FORM_DEFAULT = { ts: 0, name: 1, phone: 2, place: 3, type: 4, size: 5, details: 6, type2: 7, receipt: 8, note: 9 };
+  // Reads three layouts: the KEMAS order form (a size grid per shirt type), a one-row-per-shirt order record,
+  // and free-text forms like "Combo - 1pc Navy(M), Maroon(L)".
+  // Match what a buyer picked ("AIMAN01 (Aiman)", "aiman01", "No agent") to a project agent.
+  function resolveAgents(buyers, agents) {
+    buyers.forEach(b => {
+      const raw = cleanText(b.agentRaw); delete b.agentRaw;
+      b.agent = b.agent || "";
+      if (!raw || /^(no agent|none|tiada|tiada ejen|-|n\/?a|nil|no)$/i.test(raw)) return;
+      const hit = (agents || []).find(a => a.code && new RegExp("(^|[^A-Za-z0-9])" + a.code.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "([^A-Za-z0-9]|$)", "i").test(raw)) || (agents || []).find(a => a.name && a.name.trim().toLowerCase() === raw.toLowerCase());
+      if (hit) b.agent = hit.code; else b.flags.push(`Agent "${raw}" isn't in this project`);
+    });
+    return buyers;
+  }
+  function parseOrders(text, setup, agents) {
+    const res = parseOrdersRaw(text, setup);
+    resolveAgents(res.buyers, agents);
+    return res;
+  }
+  function parseOrdersRaw(text, setup) {
+    const rows = parseDelimited(text);
+    if (!rows.length) return { buyers: [], mode: "", hasReceipt: false };
+    let hi = -1, h = {};
+    for (let i = 0; i < Math.min(rows.length, 6); i++) { const m = mapHeader(rows[i]); if (m.name != null && (m.size != null || m.details != null || m.type != null || m.grid || m.qty != null)) { hi = i; h = m; break; } }
+    const map = hi >= 0 ? h : FORM_DEFAULT, body = rows.slice(hi >= 0 ? hi + 1 : 0);
+    const cell = (r, k) => (map[k] != null ? String(r[map[k]] || "").trim() : "");
+    const hasReceipt = map.receipt != null;
+    const priceOf = variant => { const v = ((setup && setup.variants) || []).find(x => x.name.trim().toLowerCase() === variant.trim().toLowerCase()); return v ? num(v.price) : 0; };
+    if (map.grid) {
+      const buyers = body.filter(r => cell(r, "name")).map(r => {
+        const items = [];
+        map.grid.forEach(g => { const n = num(r[g.i]); if (n > 0) items.push({ color: colorOf(g.variant) || (sleeveOf(g.variant) ? "" : g.variant), sleeve: sleeveOf(g.variant), size: g.size, qty: n, _v: g.variant }); });
+        const amount = items.reduce((a, it) => a + it.qty * priceOf(it._v), 0);
+        items.forEach(it => delete it._v);
+        const receipt = cell(r, "receipt"), flags = [];
+        if (!items.length) flags.push("Nothing ordered");
+        if (hasReceipt && !receipt) flags.push("No receipt");
+        return { id: "b" + Math.random().toString(36).slice(2, 10), ts: cell(r, "ts"), name: cleanText(cell(r, "name")), phone: fixPhone(cell(r, "phone")), place: cleanText(cell(r, "place")), pickup: cleanText(cell(r, "pickup")), agentRaw: cell(r, "agent"), items, amount, paid: hasReceipt ? !!receipt : false, receipt: /^https:\/\//.test(receipt) ? receipt : "", note: cleanText(cell(r, "note")), flags, collected: false, src: "" };
+      });
+      return { buyers, mode: "grid", hasReceipt };
+    }
+    if (map.qty != null && map.size != null) {
+      const by = new Map();
+      body.forEach(r => {
+        const name = cleanText(cell(r, "name")); if (!name || /^total$/i.test(name)) return;
+        if (!cell(r, "size") && !cell(r, "qty")) return; // notes and colour legends under the table
+        const phone = fixPhone(cell(r, "phone")), key = name.toLowerCase() + "|" + phone.replace(/\D/g, "");
+        const sz = sizesIn(cell(r, "size"))[0] || normSize(cell(r, "size")), qty = num(cell(r, "qty")) || 1;
+        const amount = cell(r, "lineSales") !== "" ? num(cell(r, "lineSales")) : num(cell(r, "unitPrice")) * qty;
+        let b = by.get(key);
+        if (!b) { b = { id: "b" + Math.random().toString(36).slice(2, 10), ts: "", name, phone, place: cleanText(cell(r, "place")), pickup: cleanText(cell(r, "pickup")), agentRaw: "", items: [], amount: 0, paid: false, receipt: "", note: "", flags: [], collected: false, src: "" }; by.set(key, b); }
+        if (!b.agentRaw && cell(r, "agent")) b.agentRaw = cell(r, "agent");
+        b.items.push({ color: colorOf(cell(r, "color")) || cleanText(cell(r, "color")), sleeve: sleeveOf(cell(r, "sleeve")), size: sz, qty });
+        b.amount += amount;
+        const cat = cleanText(cell(r, "category"));
+        if (cat && !/^normal$/i.test(cat) && !b.note.includes(cat)) b.note = [b.note, cat + " price"].filter(Boolean).join(", ");
+        const rc = cell(r, "receipt"); if (rc) { b.receipt = /^https:\/\//.test(rc) ? rc : b.receipt; b.paid = true; }
+        if (!sz) b.flags.push("Missing size");
+      });
+      return { buyers: [...by.values()], mode: "rows", hasReceipt };
+    }
+    const buyers = body.map(r => { const o = {}; Object.entries(map).forEach(([k, i]) => { if (typeof i === "number") o[k] = r[i] || ""; }); return o; })
+      .filter(o => o.name || o.details || o.type).map(o => { const b = rowToBuyer(o); b.pickup = ""; b.agentRaw = o.agent || ""; return b; });
+    return { buyers, mode: "text", hasReceipt: true };
+  }
+  const buyerKey = b => String(b.ts || "").trim() ? `${String(b.ts).trim()}|${String(b.name || "").trim().toLowerCase()}` : `${String(b.name || "").trim().toLowerCase()}|${String(b.phone || "").replace(/\D/g, "")}`;
+  const variantName = it => [it.color, it.sleeve ? it.sleeve + " sleeve" : ""].filter(Boolean).join(" ") || "Shirt";
+  const itemsText = b => (b.items || []).map(it => `${variantName(it)} ${it.size}${num(it.qty) > 1 ? " ×" + num(it.qty) : ""}`).join(", ");
+  function sizeTotals(buyers) {
+    const t = {}, sizes = new Set();
+    buyers.forEach(b => (b.items || []).forEach(it => { const c = variantName(it); t[c] = t[c] || {}; t[c][it.size] = (t[c][it.size] || 0) + num(it.qty || 1); sizes.add(it.size); }));
+    const order = [...SIZES.filter(x => sizes.has(x)), ...[...sizes].filter(x => !SIZES.includes(x))];
+    return { t, order, colors: Object.keys(t) };
+  }
+  function totalsTable(buyers) {
+    const { t, order, colors } = sizeTotals(buyers);
+    if (!colors.length) return "";
+    const tot = k => colors.reduce((a, c) => a + (t[c][k] || 0), 0), rowSum = c => order.reduce((a, k) => a + (t[c][k] || 0), 0);
+    return `<div class="tablebox mini"><table><thead><tr><th>Type</th>${order.map(k => `<th class="num">${esc(k)}</th>`).join("")}<th class="num">Total</th></tr></thead>
+      <tbody>${colors.map(c => `<tr><td>${esc(c)}</td>${order.map(k => `<td class="num">${t[c][k] || ""}</td>`).join("")}<td class="num"><b>${rowSum(c)}</b></td></tr>`).join("")}</tbody>
+      <tfoot><tr><td>Total</td>${order.map(k => `<td class="num">${tot(k)}</td>`).join("")}<td class="num">${colors.reduce((a, c) => a + rowSum(c), 0)}</td></tr></tfoot></table></div>`;
+  }
+  function syncLinesFromBuyers(d) {
+    const bs = buyersOf(d);
+    if (!bs.length) { d.lines.forEach(l => delete l.auto); return; }
+    const { t, colors } = sizeTotals(bs);
+    const tmpl = d.lines.find(l => !l.auto) || d.lines[0] || newLine(d.pl);
+    const out = colors.map(c => {
+      const ex = d.lines.find(l => (l.label || "").toLowerCase() === c.toLowerCase());
+      let l = ex;
+      if (!l) {
+        l = { ...clone(tmpl), id: newLine(d.pl).id, label: c };
+        const ls = (d.pl.addons || []).find(a => /long/i.test(a.name));
+        if (ls) { l.addons = (l.addons || []).filter(x => x !== ls.id); if (/long sleeve/i.test(c)) l.addons.push(ls.id); }
+      }
+      l.sizes = { ...t[c] }; l.pieces = ""; l.auto = true; return l;
+    });
+    const keep = d.lines.filter(l => !out.includes(l) && !l.auto && (l.label || Object.keys(l.sizes || {}).length || num(l.pieces)));
+    d.lines = [...out, ...keep];
+  }
+  function openImport(existing, onAdd, setup, agents) {
+    const wrap = document.createElement("div"); wrap.className = "scrim"; wrap.style.zIndex = "60";
+    wrap.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="imp-title">
+      <div class="sheet-head"><div><div class="code">GOOGLE FORM · SHEET</div><h2 id="imp-title">Import buyer orders</h2></div><button type="button" class="x" data-imp="close" aria-label="Close">×</button></div>
+      <div class="sheet-body">
+        <ol class="steps">
+          <li>Open the form's responses (or your order record) in Google Sheets.</li>
+          <li>Select all the cells, header row included, and copy (<b>⌘A</b> then <b>⌘C</b> on a laptop; on a phone, tap the corner box and choose Copy).</li>
+          <li>Paste below. Orders you already imported are skipped, so you can paste the whole sheet again later to add new ones.</li>
+        </ol>
+        <div class="field"><label for="imp-text">Paste rows here</label><textarea id="imp-text" style="min-height:140px;font-family:var(--f-mono);font-size:12.5px" placeholder="Timestamp	NAMA	PHONE NUMBER	…"></textarea></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><label class="btn small" for="imp-file">Or choose a CSV file</label><input id="imp-file" type="file" accept=".csv,.tsv,text/csv,text/plain" hidden><span class="note">In Google Sheets: File → Download → CSV.</span></div>
+        <label class="check-row" id="imp-paid-row" hidden><input type="checkbox" id="imp-paid"> These orders are already paid</label>
+        <div id="imp-out"></div>
+      </div>
+      <div class="sheet-foot"><span class="spacer"></span><button type="button" class="btn" data-imp="close">Cancel</button><button type="button" class="btn primary" data-imp="add" disabled>Add orders</button></div>
+    </div>`;
+    document.body.appendChild(wrap);
+    const keys = new Set(existing.map(buyerKey));
+    let parsed = [];
+    const out = wrap.querySelector("#imp-out"), addBtn = wrap.querySelector('[data-imp="add"]');
+    let lastText = "";
+    function preview(text) {
+      lastText = text;
+      const res = text.trim() ? parseOrders(text, setup, agents) : { buyers: [], mode: "", hasReceipt: true };
+      parsed = res.buyers;
+      const pr = wrap.querySelector("#imp-paid-row"), pc = wrap.querySelector("#imp-paid");
+      pr.hidden = res.hasReceipt || !parsed.length;
+      if (!pr.hidden) { if (pc.dataset.touched !== "1") pc.checked = res.mode === "rows"; parsed.forEach(b => { b.paid = pc.checked; }); }
+      // "biru" / "blue" means the navy shirt when the order has navy
+      if ([...existing, ...parsed].some(b => (b.items || []).some(it => it.color === "Navy"))) parsed.forEach(b => b.items.forEach(it => { if (it.color === "Blue") it.color = "Navy"; }));
+      const fresh = parsed.filter(b => !keys.has(buyerKey(b)));
+      const dupes = parsed.length - fresh.length;
+      if (!parsed.length) { out.innerHTML = text.trim() ? `<p class="err">No orders found. Copy the rows straight from Google Sheets, with the header row.</p>` : ""; addBtn.disabled = true; addBtn.textContent = "Add orders"; return; }
+      const pcs = fresh.reduce((a, b) => a + b.items.reduce((x, it) => x + it.qty, 0), 0), amt = fresh.reduce((a, b) => a + b.amount, 0), chk = fresh.filter(b => b.flags.length).length;
+      out.innerHTML = `<div class="bstats"><span class="chip">${fresh.length} new orders</span><span class="chip">${pcs} pcs</span><span class="chip">${esc(money(amt))}</span>${chk ? `<span class="chip warn">${chk} to check</span>` : ""}${dupes ? `<span class="chip">${dupes} already added</span>` : ""}</div>
+        ${totalsTable(fresh)}
+        <div class="imp-list" style="margin-top:10px">${[...parsed].sort((a, b) => (b.flags.length ? 1 : 0) - (a.flags.length ? 1 : 0)).map(b => { const dup = keys.has(buyerKey(b)); return `<div class="imp-row ${dup ? "dupe" : ""}"><span><b>${esc(b.name)}</b> · ${esc(itemsText(b) || "?")}</span><span class="mono">${esc(money(b.amount))}</span>${dup ? `<span class="why" style="color:var(--muted)">Already in this project</span>` : b.flags.length ? `<span class="why">${esc(b.flags.join(" · "))}</span>` : ""}</div>`; }).join("")}</div>`;
+      addBtn.disabled = !fresh.length; addBtn.textContent = fresh.length ? `Add ${fresh.length} order${fresh.length === 1 ? "" : "s"}` : "Nothing new to add";
+    }
+    let tmr = 0;
+    wrap.querySelector("#imp-paid").addEventListener("change", e => { e.target.dataset.touched = "1"; preview(lastText); });
+    wrap.querySelector("#imp-text").addEventListener("input", e => { clearTimeout(tmr); const v = e.target.value; tmr = setTimeout(() => preview(v), 200); });
+    wrap.querySelector("#imp-file").addEventListener("change", async e => { const f = e.target.files && e.target.files[0]; if (!f) return; const t = await f.text(); wrap.querySelector("#imp-text").value = t; preview(t); });
+    const close = () => { wrap.remove(); document.removeEventListener("keydown", onKey, true); };
+    const onKey = e => { if (e.key === "Escape") { e.stopImmediatePropagation(); close(); } };
+    document.addEventListener("keydown", onKey, true);
+    wrap.addEventListener("click", e => {
+      const b = e.target.closest("[data-imp]"); if (!b) return;
+      if (b.dataset.imp === "close") close();
+      if (b.dataset.imp === "add") { const fresh = parsed.filter(x => !keys.has(buyerKey(x))); onAdd(fresh); close(); }
+    });
+    setTimeout(() => wrap.querySelector("#imp-text").focus(), 0);
+  }
+
+  const agentChoices = agents => ["No agent", ...agents.filter(a => a.code).map(a => `${a.code}${a.name ? ` (${a.name})` : ""}`)];
+  const AGENT_HELP = "If an agent told you about this, pick their code.";
+  function agentUpdateScript(editUrl, agents) {
+    const J = v => JSON.stringify(v);
+    return `// KEMAS APPAREL: update the "Agent code" list on your order form. Paste at script.google.com and press Run.
+function updateKemasAgentCodes() {
+  var form = FormApp.openByUrl(${J(editUrl)});
+  var choices = ${J(agentChoices(agents))};
+  var found = form.getItems(FormApp.ItemType.LIST).filter(function (i) { return i.getTitle() === "Agent code"; })[0];
+  var list = found ? found.asListItem() : form.addListItem().setTitle("Agent code").setHelpText(${J(AGENT_HELP)});
+  list.setChoiceValues(choices);
+  if (!found) form.moveItem(form.getItems().length - 1, 2);
+  Logger.log("Agent codes on the form: " + choices.join(", "));
+}
+`;
+  }
+  function openAgentScript(d, onSaveUrl) {
+    const wrap = document.createElement("div"); wrap.className = "scrim"; wrap.style.zIndex = "60";
+    let url = (d.form && d.form.editUrl) || "";
+    wrap.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="as-title">
+      <div class="sheet-head"><div><div class="code">GOOGLE FORM</div><h2 id="as-title">Update agent codes on the form</h2></div><button type="button" class="x" data-as="close" aria-label="Close">×</button></div>
+      <div class="sheet-body">
+        <p class="note" style="font-size:14px">Buyers pick from: ${esc(agentChoices(agentsOf(d)).join(", "))}</p>
+        <div class="field"><label for="as-url">Your form's edit link</label><input id="as-url" value="${esc(url)}" placeholder="https://docs.google.com/forms/d/…/edit" autocapitalize="off" spellcheck="false"><span class="help">Open the form in Google Forms and copy the address from the browser. It ends in /edit. The app remembers it for next time.</span></div>
+        <div id="as-out"></div>
+      </div>
+      <div class="sheet-foot"><span class="spacer"></span><button type="button" class="btn" data-as="close">Close</button></div>
+    </div>`;
+    document.body.appendChild(wrap);
+    const out = wrap.querySelector("#as-out");
+    const draw = () => {
+      if (!/^https:\/\/docs\.google\.com\/forms\/d\//.test(url)) { out.innerHTML = url ? `<p class="err">That doesn't look like a Google Forms edit link.</p>` : ""; return; }
+      out.innerHTML = `<ol class="steps"><li>On a laptop, open <a href="https://script.google.com/home/projects/create" target="_blank" rel="noopener">script.google.com</a>.</li><li>Paste this script and press <b>Run</b>. Allow access the first time.</li><li>The form's <b>Agent code</b> list now matches this project. Run it again whenever you add or change agents.</li></ol>
+        <pre class="code-out">${esc(agentUpdateScript(url, agentsOf(d)))}</pre>
+        <div class="share-row" style="margin-top:8px"><button type="button" class="btn small primary" data-as="copy">Copy script</button></div>`;
+    };
+    draw();
+    wrap.querySelector("#as-url").addEventListener("input", e => { url = e.target.value.trim(); onSaveUrl(url); draw(); });
+    const close = () => { wrap.remove(); document.removeEventListener("keydown", onKey, true); };
+    const onKey = e => { if (e.key === "Escape") { e.stopImmediatePropagation(); close(); } };
+    document.addEventListener("keydown", onKey, true);
+    wrap.addEventListener("click", e => {
+      const b = e.target.closest("[data-as]"); if (!b) return;
+      if (b.dataset.as === "close") close();
+      if (b.dataset.as === "copy") copyText(agentUpdateScript(url, agentsOf(d))).then(() => toast("Script copied"));
+    });
+  }
+  function formScript(setup) {
+    const sizes = setup.sizes.length ? setup.sizes : SIZES.slice(0, 7);
+    const lines = setup.variants.map(v => `- ${v.name}: ${money(num(v.price))}`);
+    const desc = [setup.info.trim(), lines.length ? "Price per shirt:\n" + lines.join("\n") : "", "Tick how many shirts you want in each size. Leave the other sizes empty."].filter(Boolean).join("\n\n");
+    const J = v => JSON.stringify(v);
+    return `// KEMAS APPAREL order form. Paste this at script.google.com and press Run.
+function createKemasOrderForm() {
+  var title = ${J(setup.title)};
+  var form = FormApp.create(title);
+  form.setDescription(${J(desc)});
+  form.addTextItem().setTitle("Name").setRequired(true);
+  form.addTextItem().setTitle("Phone number (WhatsApp)").setRequired(true);
+  ${(setup.agents || []).length ? `form.addListItem().setTitle("Agent code").setHelpText(${J(AGENT_HELP)}).setChoiceValues(${J(agentChoices(setup.agents))});` : ""}
+  ${setup.pickups.length ? `form.addListItem().setTitle("Pickup point").setChoiceValues(${J(setup.pickups)}).setRequired(true);` : `form.addTextItem().setTitle("College / address").setRequired(true);`}
+  var sizes = ${J(sizes)};
+  var types = ${J(setup.variants.map(v => ({ name: v.name, help: `${money(num(v.price))} each` })))};
+  types.forEach(function (t) {
+    form.addGridItem().setTitle(t.name + " — how many per size?").setHelpText(t.help).setRows(sizes).setColumns(["1", "2", "3", "4", "5"]);
+  });
+  form.addParagraphTextItem().setTitle("Notes (optional)");
+  var sheet = SpreadsheetApp.create(title + " (responses)");
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, sheet.getId());
+  Logger.log("Share this link with buyers: " + form.getPublishedUrl());
+  Logger.log("Edit the form: " + form.getEditUrl());
+  Logger.log("Responses sheet: " + sheet.getUrl());
+}
+`;
+  }
+  function openFormMaker(d, onSave) {
+    const base = d.form || {};
+    const setup = {
+      title: base.title || `${d.name || "KEMAS"} order form`,
+      variants: clone(base.variants || (d.lines || []).filter(l => l.label).map(l => ({ name: l.label, price: l.sell || "" }))),
+      sizes: base.sizes || SIZES.slice(),
+      pickups: base.pickups || [...new Set(buyersOf(d).map(b => b.pickup).filter(Boolean))],
+      info: base.info || "",
+      editUrl: base.editUrl || "",
+      agents: agentsOf(d).filter(a => a.code).map(a => ({ code: a.code, name: a.name })),
+    };
+    if (!setup.variants.length) setup.variants = [{ name: "Short sleeve", price: "" }, { name: "Long sleeve", price: "" }];
+    const wrap = document.createElement("div"); wrap.className = "scrim"; wrap.style.zIndex = "60";
+    wrap.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="fm-title">
+      <div class="sheet-head"><div><div class="code">ORDER FORM</div><h2 id="fm-title">Make a Google Form</h2></div><button type="button" class="x" data-fm="close" aria-label="Close">×</button></div>
+      <div class="sheet-body" id="fm-body"></div>
+      <div class="sheet-foot"><span class="spacer"></span><button type="button" class="btn" data-fm="close">Close</button><button type="button" class="btn primary" data-fm="make">Make the script</button></div>
+    </div>`;
+    document.body.appendChild(wrap);
+    const body = wrap.querySelector("#fm-body");
+    function draw() {
+      body.innerHTML = `<p class="note" style="font-size:14px">This builds a Google Form that asks each buyer for their name, phone, pickup point and how many shirts per size. The app can read its responses exactly, with no guessing.</p>
+        <div class="field"><label for="fm-t">Form title</label><input id="fm-t" data-s="title" value="${esc(setup.title)}"></div>
+        <fieldset class="pl-sec"><legend>Shirt types and prices</legend>
+          ${setup.variants.map((v, i) => `<div class="var-row" data-v="${i}"><input class="inp" data-vf="name" value="${esc(v.name)}" placeholder="e.g. Maroon, or Long sleeve" aria-label="Shirt type"><input class="inp" data-vf="price" type="number" step="0.01" inputmode="decimal" value="${esc(v.price)}" placeholder="${esc(state.currency)}" aria-label="Price"><button type="button" class="x2" data-fm="rmv" aria-label="Remove" style="border:0;background:transparent;font-size:18px;color:var(--muted)">×</button></div>`).join("")}
+          <div><button type="button" class="linkbtn" data-fm="addv">+ Add shirt type</button></div>
+          <p class="note">Each type gets its own size grid. Use the colour or sleeve in the name (e.g. "Maroon", "Navy long sleeve") so the app can sort them.</p>
+        </fieldset>
+        <fieldset><legend>Sizes on the form</legend><div class="toggles">${SIZES.map(k => `<button type="button" class="toggle" data-size="${k}" aria-pressed="${setup.sizes.includes(k)}">${k}</button>`).join("")}</div></fieldset>
+        <div class="field"><label for="fm-p">Pickup points (one per line)</label><textarea id="fm-p" data-s="pickups" placeholder="KK12&#10;KK7&#10;Kona Mokapot">${esc(setup.pickups.join("\n"))}</textarea><span class="help">Leave empty to ask for their college or address instead.</span></div>
+        <div class="field"><label for="fm-i">Shown at the top of the form</label><textarea id="fm-i" data-s="info" placeholder="Payment: Maybank 1234 5678 (Kemas Apparel). Closes 20 Dec. Pickup from 5 Jan.">${esc(setup.info)}</textarea><span class="help">Payment details, closing date, pickup dates. The prices are added for you.</span></div>
+        ${setup.agents.length ? `<p class="note">The form also asks for an agent code. Choices: ${esc(agentChoices(setup.agents).join(", "))}.</p>` : `<p class="note">Add agents to this project first if you want the form to ask for an agent code.</p>`}
+        <div id="fm-out"></div>`;
+    }
+    draw();
+    body.addEventListener("input", e => {
+      const t = e.target;
+      if (t.dataset.s === "pickups") setup.pickups = t.value.split("\n").map(x => x.trim()).filter(Boolean);
+      else if (t.dataset.s) setup[t.dataset.s] = t.value;
+      const row = t.closest("[data-v]"); if (row && t.dataset.vf) setup.variants[+row.dataset.v][t.dataset.vf] = t.value;
+    });
+    const close = () => { wrap.remove(); document.removeEventListener("keydown", onKey, true); };
+    const onKey = e => { if (e.key === "Escape") { e.stopImmediatePropagation(); close(); } };
+    document.addEventListener("keydown", onKey, true);
+    wrap.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.size) { const k = b.dataset.size; setup.sizes = setup.sizes.includes(k) ? setup.sizes.filter(x => x !== k) : SIZES.filter(x => x === k || setup.sizes.includes(x)); b.setAttribute("aria-pressed", String(setup.sizes.includes(k))); return; }
+      const a = b.dataset.fm; if (!a) return;
+      if (a === "close") close();
+      else if (a === "addv") { setup.variants.push({ name: "", price: "" }); draw(); }
+      else if (a === "rmv") { setup.variants.splice(+b.closest("[data-v]").dataset.v, 1); draw(); }
+      else if (a === "copy") copyText(formScript(setup)).then(() => toast("Script copied"));
+      else if (a === "make") {
+        setup.variants = setup.variants.filter(v => v.name.trim());
+        if (!setup.variants.length) { toast("Add at least one shirt type."); draw(); return; }
+        onSave(clone(setup)); draw();
+        wrap.querySelector("#fm-out").innerHTML = `<fieldset><legend>Your script</legend>
+          <ol class="steps">
+            <li>On a laptop, open <a href="https://script.google.com/home/projects/create" target="_blank" rel="noopener">script.google.com</a> (a new project opens), signed in to the Google account that should own the form.</li>
+            <li>Delete what's in the editor, paste the script, then press <b>Run</b>.</li>
+            <li>Google asks for permission. Choose your account, then <b>Advanced → Go to project (unsafe)</b> → <b>Allow</b>. It says unsafe only because you wrote the script yourself.</li>
+            <li>The <b>Execution log</b> shows 3 links: the form to share with buyers, the form editor, and the responses sheet.</li>
+            <li>Optional: in the form editor, add a <b>File upload</b> question called <b>Payment receipt</b>. Scripts can't add that one for you.</li>
+            <li>Copy the <b>Edit the form</b> link from the log. You'll need it to update the agent list later (Agents → Update agents on the form).</li>
+            <li>When orders come in, open the responses sheet, copy everything and use <b>Import orders</b> here. Prices are worked out from this setup.</li>
+          </ol>
+          <pre class="code-out">${esc(formScript(setup))}</pre>
+          <div class="share-row" style="margin-top:8px"><button type="button" class="btn small primary" data-fm="copy">Copy script</button></div>
+        </fieldset>`;
+        wrap.querySelector("#fm-out").scrollIntoView({ block: "start", behavior: "smooth" });
+      }
+    });
+  }
+
   /* ---------- modal ---------- */
+  function copyText(text) {
+    const fallback = () => { const t = document.createElement("textarea"); t.value = text; t.style.position = "fixed"; t.style.opacity = "0"; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); } catch (_) {} t.remove(); };
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).catch(fallback);
+    fallback(); return Promise.resolve();
+  }
+  function sizesText(line) { return SIZES.filter(k => num(line.sizes && line.sizes[k])).map(k => `${k} ${num(line.sizes[k])}`).join(" · "); }
+  function orderText(p, withPrices) {
+    const pl = p.pl || state.priceList, c = calc(p), out = [];
+    out.push(`KEMAS APPAREL · ${p.code}`);
+    out.push(p.name || "Untitled");
+    if (p.client) out.push(`Client: ${p.client}`);
+    if (p.due) out.push(`Due: ${fmtDay(p.due)}`);
+    if (hasLines(p)) {
+      out.push(`Fabric: ${fabricLabel(pick(pl.fabrics, p.fabric))}`);
+      p.lines.forEach((l, i) => {
+        const lc = lineCalc(p, l);
+        const opts = [pick(pl.collars, l.collar).name, ...(pl.sleeves && l.sleeve ? [pick(pl.sleeves, l.sleeve).name] : []), ...(l.addons || []).map(id => ((pl.addons || []).find(x => x.id === id) || {}).name).filter(Boolean)];
+        out.push("");
+        out.push(`${i + 1}. ${l.label ? l.label + ": " : ""}${opts.join(", ")}`);
+        out.push(`   ${lc.bySize ? sizesText(l) + " = " : ""}${lc.pcs} ${lc.pcs === 1 ? "pc" : "pcs"}`);
+        if (withPrices && !buyersOf(p).length && lc.sell) out.push(`   ${money(lc.sell)}/pc → ${money(lc.sale)}`);
+      });
+      out.push("");
+    } else if (p.shirt) out.push(`Shirt: ${p.shirt}`);
+    out.push(`Total: ${c.q} pcs`);
+    if (withPrices) {
+      if (num(p.adjust)) out.push(`${num(p.adjust) < 0 ? "Discount" : "Adjustment"}: ${money(num(p.adjust))}`);
+      out.push(`Total price: ${money(c.sale)}`);
+      if (c.paid) out.push(`Paid: ${money(c.paid)}`);
+      if (c.paid) out.push(`Balance: ${c.balance > 0 ? money(c.balance) : "Fully paid"}`);
+    }
+    return out.join("\n");
+  }
+
   function openModal(p) {
     const isNew = !p;
-    const draft = p ? JSON.parse(JSON.stringify(p)) : { code: nextCode(), name: "", client: "", contact: "", stage: "design", due: "", printer: "", shirt: "", sizes: {}, qty: "", price: "", cost: "", extra: "", paid: "", notes: "", history: [] };
-    draft.sizes = draft.sizes || {};
+    const draft = p ? migrateProject(clone(p)) : { v: 2, code: nextCode(), name: "", client: "", contact: "", stage: "design", due: "", printer: "", shirt: "", extra: "", paid: "", adjust: "", notes: "", history: [] };
+    if (!hasLines(draft)) {
+      // new project, or an older one saved before shirt types existed
+      draft.pl = clone(state.priceList);
+      const line = newLine(draft.pl);
+      if (!isNew) { line.sizes = { ...(draft.sizes || {}) }; if (!SIZES.some(k => num(line.sizes[k]))) line.pieces = draft.qty || ""; line.sell = draft.price || ""; }
+      draft.lines = [line];
+      draft.base = isNew ? (draft.pl.base ?? "") : (num(draft.cost) || draft.pl.base || "");
+      draft.v = 2; delete draft.cost;
+      draft.fabric = draft.pl.fabrics[0] ? draft.pl.fabrics[0].id : "";
+    }
+    draft.pl = draft.pl || clone(state.priceList);
     const root = $("#modal-root");
     const lastFocus = document.activeElement;
+    const opt = (list, sel, lab) => list.map(x => `<option value="${esc(x.id)}" ${x.id === sel ? "selected" : ""}>${esc(lab(x))}</option>`).join("");
+    const nameWithPrice = x => `${x.name} (${plus(x.price)})`;
     root.innerHTML = `<div class="scrim" id="scrim"><form class="sheet" id="pform" role="dialog" aria-modal="true" aria-labelledby="m-title" novalidate>
       <div class="sheet-head"><div><div class="code">${esc(draft.code)}</div><h2 id="m-title">${isNew ? "New project" : esc(draft.name || "Project")}</h2></div><button type="button" class="x" id="m-close" aria-label="Close">×</button></div>
       <div class="sheet-body">
         <fieldset><legend>Stage</legend><div class="stages" id="m-stages">${ALL.map(s => `<button type="button" style="--c:var(${s.c})" data-stage="${s.id}" aria-pressed="${draft.stage === s.id}">${esc(s.label)}</button>`).join("")}</div></fieldset>
         <fieldset><legend>Project</legend><div class="grid2">
-          <div class="field full"><label for="f-name">Project name</label><input id="f-name" name="name" required value="${esc(draft.name)}" placeholder="e.g. Class of 2026 reunion tee"><span class="err" id="name-err" hidden>Give the project a name so you can find it later.</span></div>
+          <div class="field full"><label for="f-name">Project name</label><input id="f-name" name="name" required value="${esc(draft.name)}" placeholder="e.g. Futsal club jersey 2027"><span class="err" id="name-err" hidden>Give the project a name so you can find it later.</span></div>
           <div class="field"><label for="f-client">Client</label><input id="f-client" name="client" value="${esc(draft.client)}" placeholder="Person or group"></div>
           <div class="field"><label for="f-contact">Contact</label><input id="f-contact" name="contact" value="${esc(draft.contact)}" placeholder="Phone, WhatsApp or IG"></div>
           <div class="field"><label for="f-due">Due date</label><input id="f-due" name="due" type="date" value="${esc(draft.due)}"></div>
           <div class="field"><label for="f-printer">Printer / supplier</label><input id="f-printer" name="printer" value="${esc(draft.printer)}" placeholder="Who is printing it"></div>
-          <div class="field full"><label for="f-shirt">Shirt details</label><input id="f-shirt" name="shirt" value="${esc(draft.shirt)}" placeholder="e.g. Black cotton 180gsm, DTF front + back"></div>
+          <div class="field full"><label for="f-shirt">Design notes</label><input id="f-shirt" name="shirt" value="${esc(draft.shirt)}" placeholder="e.g. Black and gold, logo front, sponsor on back"></div>
         </div></fieldset>
-        <fieldset><legend>Quantity by size</legend>
-          <div class="sizes">${SIZES.map(k => `<div class="size"><label for="sz-${k}">${k}</label><input id="sz-${k}" data-size="${k}" type="number" min="0" inputmode="numeric" value="${esc(draft.sizes[k] || "")}"></div>`).join("")}</div>
-          <div class="grid2" style="margin-top:10px"><div class="field"><label for="f-qty">Or total pieces</label><input id="f-qty" name="qty" type="number" min="0" inputmode="numeric" value="${esc(draft.qty)}"><span class="help">Used when no sizes are filled in yet.</span></div></div>
+        <fieldset><legend>Order</legend>
+          <p class="note" style="margin:0 0 10px">The base cost and the +RM options are <b>your costs</b> from your cost list. Put what the customer pays in each shirt type's selling price.</p>
+          <div class="grid2">
+            <div class="field"><label for="f-base">Base cost per shirt (${esc(state.currency)})</label><input id="f-base" name="base" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.base)}"><span class="help">What you pay for round neck + free fabric. Usually ${esc(money(num(state.priceList.base)))}</span></div>
+            <div class="field"><label for="f-fabric">Fabric</label><select id="f-fabric" name="fabric">${opt(draft.pl.fabrics, draft.fabric, x => `${fabricLabel(x)} (${plus(x.price)})`)}</select><span class="help">Same fabric for the whole order</span></div>
+          </div>
+          <div class="lines" id="m-lines" style="margin-top:12px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px">
+            <button type="button" class="btn small" id="m-addline">+ Add shirt type</button>
+            <span class="help" style="font-size:12.5px;color:var(--muted)">Add a type for each mix, e.g. normal and Muslimah, or players and officials.</span>
+          </div>
+          <div id="m-plnote" style="margin-top:8px"></div>
         </fieldset>
-        <fieldset><legend>Money (${esc(state.currency)})</legend><div class="grid4">
-          <div class="field"><label for="f-price">Price per shirt</label><input id="f-price" name="price" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.price)}"><span class="help">What the client pays</span></div>
-          <div class="field"><label for="f-cost">Cost per shirt</label><input id="f-cost" name="cost" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.cost)}"><span class="help">Blank + printing</span></div>
+        <fieldset><legend>Money (${esc(state.currency)})</legend><div class="grid4" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+          <div class="field"><label for="f-adjust">Discount / extra</label><input id="f-adjust" name="adjust" type="number" step="0.01" inputmode="decimal" value="${esc(draft.adjust)}"><span class="help">For the whole order. Minus for a discount, e.g. -50</span></div>
           <div class="field"><label for="f-extra">Other costs</label><input id="f-extra" name="extra" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.extra)}"><span class="help">Delivery, setup, packaging</span></div>
-          <div class="field"><label for="f-paid">Paid so far</label><input id="f-paid" name="paid" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.paid)}"><span class="help">Deposits + payments</span></div>
+          <div class="field"><label for="f-paid" id="f-paid-label">Paid so far</label><input id="f-paid" name="paid" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.paid)}"><span class="help">Deposits + payments</span></div>
         </div>
         <div class="calc" id="m-calc" style="margin-top:12px"></div></fieldset>
+        <fieldset><legend>Agents</legend><div id="m-agents"></div></fieldset>
+        <fieldset><legend>Buyers</legend><div id="m-buyers"></div></fieldset>
+        <fieldset><legend>Design photos</legend>
+          <div class="photos" id="m-photos"></div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="btn small" for="m-photo-in" id="m-photo-btn">+ Add photos</label><input id="m-photo-in" type="file" accept="image/*" multiple hidden><span class="note" id="m-photo-note">Mockups, artwork or the printed sample. Tap a photo to see it full size.</span></div>
+        </fieldset>
+        <fieldset><legend>Send</legend><div class="share-row">
+          <button type="button" class="btn small" id="m-copy-print">Copy order for printer</button>
+          <button type="button" class="btn small" id="m-copy-quote">Copy quote for client</button>
+        </div><p class="note" style="margin-top:6px">Copies the order as text, ready to paste into WhatsApp. The printer copy has no prices.</p></fieldset>
         <fieldset><legend>Notes</legend><div class="field"><label for="f-notes" style="position:absolute;left:-9999px">Notes</label><textarea id="f-notes" name="notes" placeholder="Design changes, colours, what the client asked for…">${esc(draft.notes)}</textarea></div></fieldset>
         ${(draft.history || []).length ? `<fieldset><legend>Stage history</legend><ul class="history">${[...draft.history].reverse().map(h => `<li><time>${esc(fmtStamp(h.at))}</time><span class="pill" style="--c:var(${stageOf(h.stage).c})">${esc(stageOf(h.stage).label)}</span></li>`).join("")}</ul></fieldset>` : ""}
       </div>
@@ -541,19 +1293,297 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       </div>
     </form></div>`;
     const form = $("#pform");
-    const read = () => {
+    const bi = () => bigIdx(draft.pl);
+
+    function linesHTML() {
+      const pl = draft.pl, many = draft.lines.length > 1;
+      return draft.lines.map((l, i) => `<div class="line-box" data-line="${i}">
+        <div class="line-head"><b>Type ${i + 1}</b>
+          <input class="inp" data-k="label" value="${esc(l.label)}" placeholder="Name, e.g. Players or Muslimah" aria-label="Shirt type ${i + 1} name" ${l.auto ? "readonly" : ""}>
+          ${l.auto ? `<span class="chip">From buyers</span>` : `<button type="button" class="linkbtn" data-act="dup">Duplicate</button>
+          ${many ? `<button type="button" class="linkbtn danger" data-act="del">Remove</button>` : ""}`}
+        </div>
+        <div class="grid2">
+          <div class="field"><label for="ln-${l.id}-collar">Collar</label><select id="ln-${l.id}-collar" data-k="collar">${opt(pl.collars, l.collar, nameWithPrice)}</select></div>
+          ${pl.sleeves && pl.sleeves.length ? `<div class="field"><label for="ln-${l.id}-sleeve">Sleeve</label><select id="ln-${l.id}-sleeve" data-k="sleeve">${opt(pl.sleeves, l.sleeve, nameWithPrice)}</select></div>` : ""}
+        </div>
+        <div><div class="sub-label">Add-ons</div><div class="toggles">${(pl.addons || []).map(a => `<button type="button" class="toggle" data-addon="${esc(a.id)}" aria-pressed="${(l.addons || []).includes(a.id)}">${esc(a.name)}<small>${esc(plus(a.price))}</small></button>`).join("")}</div></div>
+        <div><div class="sub-label">Sizes</div>
+          <div class="sizes">${SIZES.map((k, si) => `<div class="size"><label for="ln-${l.id}-${k}" class="${si >= bi() && num(pl.big) ? "big" : ""}">${k}</label><input id="ln-${l.id}-${k}" data-size="${k}" type="number" min="0" inputmode="numeric" value="${esc((l.sizes || {})[k] || "")}" ${l.auto ? "disabled" : ""}></div>`).join("")}</div>
+          ${num(pl.big) ? `<div class="help" style="font-size:12px;color:var(--warn);margin-top:4px">${esc(pl.bigFrom)} and above cost you ${esc(plus(pl.big))} more per shirt</div>` : ""}
+        </div>
+        <div class="grid2">
+          <div class="field" ${buyersOf(draft).length ? "hidden" : ""}><label for="ln-${l.id}-sell">Selling price per shirt (${esc(state.currency)})</label><input id="ln-${l.id}-sell" data-k="sell" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(l.sell)}"><span class="help">What the customer pays</span></div>
+          <div class="field" ${l.auto ? "hidden" : ""}><label for="ln-${l.id}-pcs">Or total pieces</label><input id="ln-${l.id}-pcs" data-k="pieces" type="number" min="0" inputmode="numeric" value="${esc(l.pieces)}"><span class="help">When the client hasn't sent sizes yet</span></div>
+        </div>
+        <div class="line-sum" data-sum></div>
+      </div>`).join("");
+    }
+    function drawLines() { $("#m-lines").innerHTML = linesHTML(); updCalc(); }
+    function readTop() {
       const f = form.elements;
-      ["name", "client", "contact", "due", "printer", "shirt", "qty", "price", "cost", "extra", "paid", "notes"].forEach(k => (draft[k] = f[k].value));
+      ["name", "client", "contact", "due", "printer", "shirt", "base", "fabric", "adjust", "extra", "paid", "notes"].forEach(k => (draft[k] = f[k].value));
       draft.name = draft.name.trim();
-      SIZES.forEach(k => { const v = form.querySelector(`[data-size="${k}"]`).value; if (v === "" || num(v) === 0) delete draft.sizes[k]; else draft.sizes[k] = num(v); });
-    };
-    const updCalc = () => {
-      read(); const c = calc(draft);
-      $("#m-calc").innerHTML = [["Pieces", c.q.toLocaleString()], ["Sale", money(c.sale)], ["Cost", money(c.cost)], ["Profit", money(c.profit)], ["Balance", c.sale ? (c.balance > 0 ? money(c.balance) : "Paid") : "—"]]
+    }
+    function updCalc() {
+      readTop();
+      document.querySelectorAll("#m-lines [data-line]").forEach(box => {
+        const l = draft.lines[+box.dataset.line], lc = lineCalc(draft, l);
+        const pcsTxt = `<span><b>${lc.pcs}</b> ${lc.pcs === 1 ? "pc" : "pcs"}</span>`, costTxt = `<span>Cost <b>${esc(money(lc.unit))}</b>/pc${lc.bigPcs ? ` · ${esc(draft.pl.bigFrom)}+ <b>${esc(money(lc.bigUnit))}</b>` : ""}</span><span>Total cost <b>${esc(money(lc.cost))}</b></span>`;
+        if (buyersOf(draft).length) { box.querySelector("[data-sum]").innerHTML = l.auto ? `${pcsTxt}${costTxt}<span>Sizes add up from the buyer orders</span>` : `${pcsTxt}<span>Not counted: this project uses buyer orders</span>`; return; }
+        box.querySelector("[data-sum]").innerHTML = `${pcsTxt}${costTxt}<span>Sales <b>${esc(money(lc.sale))}</b></span><span>Profit <b class="${lc.sale - lc.cost >= 0 ? "pos" : "neg"}">${esc(money(lc.sale - lc.cost))}</b></span>`;
+        const pcsIn = box.querySelector('[data-k="pieces"]'); pcsIn.disabled = lc.bySize; pcsIn.placeholder = lc.bySize ? "Using sizes" : "";
+      });
+      const c = calc(draft);
+      const fp = $("#f-paid"), hasB = buyersOf(draft).length > 0;
+      fp.disabled = hasB; if (hasB) fp.value = c.paid; fp.nextElementSibling.textContent = hasB ? "Adds up buyers marked paid" : "Deposits + payments";
+      $("#f-paid-label").textContent = hasB ? "Collected from buyers" : "Paid so far";
+      $("#m-calc").innerHTML = [["Pieces", c.q.toLocaleString()], ["Sales", money(c.sale)], ["Cost", money(c.cost)], ["Profit", money(c.profit)], ["Balance", c.sale ? (c.balance > 0 ? money(c.balance) : "Paid") : "—"], ...(c.agents ? [["Agents", money(c.agents)]] : [])]
         .map(([k, v]) => `<div><div class="k">${k}</div><div class="v ${k === "Profit" ? (c.profit >= 0 ? "pos" : "neg") : ""}">${esc(v)}</div></div>`).join("");
-    };
-    updCalc();
-    form.addEventListener("input", updCalc);
+      const stale = stable(draft.pl) !== stable(state.priceList);
+      $("#m-plnote").innerHTML = stale ? `<p class="note">This project uses the costs from when it was created. <button type="button" class="linkbtn" id="m-plupdate">Use current cost list</button></p>` : "";
+    }
+    drawLines();
+    draft.photos = draft.photos || [];
+    const removedPhotos = [];
+    function drawPhotos() {
+      const box = $("#m-photos");
+      box.innerHTML = draft.photos.map((ph, i) => `<button type="button" class="ph" data-phi="${i}" aria-label="Open photo ${i + 1}"><img data-ph="${esc(ph.id)}" alt="">${ph.gist || !sync.token ? "" : `<span class="badge">not synced yet</span>`}</button>`).join("");
+      hydratePhotos(box, [draft]);
+      $("#m-photo-btn").hidden = draft.photos.length >= MAX_PHOTOS;
+    }
+    drawPhotos();
+    $("#m-photos").addEventListener("click", e => {
+      const b = e.target.closest("[data-phi]"); if (!b) return;
+      openViewer(draft.photos, +b.dataset.phi, ph => { removedPhotos.push(ph); setTimeout(drawPhotos, 0); });
+    });
+    $("#m-photo-in").addEventListener("change", async e => {
+      const files = [...(e.target.files || [])].slice(0, MAX_PHOTOS - draft.photos.length); e.target.value = "";
+      const note = $("#m-photo-note");
+      for (const [n, f] of files.entries()) {
+        note.textContent = `Adding photo ${n + 1} of ${files.length}…`;
+        try {
+          const { data, w, h } = await shrinkImage(f);
+          const id = "ph" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+          await photoDB.set(id, data); photoMem.set(id, data);
+          draft.photos.push({ id, w, h, at: new Date().toISOString() });
+        } catch (_) { toast("That file couldn't be opened as a photo."); }
+      }
+      note.textContent = files.length ? "Photo added. Tap Save to keep it." : note.textContent;
+      drawPhotos();
+    });
+    draft.buyers = draft.buyers || [];
+    draft.agents = draft.agents || [];
+    const TASKS = ["Promote", "Distribute", "Promote + distribute"];
+    const CTYPES = [["shirt", "per shirt"], ["percent", "% of their sales"], ["fixed", "fixed amount"]];
+    function genCode(name) {
+      const stem = (String(name || "").trim().split(/\s+/)[0] || "AGENT").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) || "AGENT";
+      for (let n = 1; n < 100; n++) { const c = stem + String(n).padStart(2, "0"); if (!draft.agents.some(a => sameCode(a.code, c))) return c; }
+      return stem + Date.now().toString(36).slice(-3).toUpperCase();
+    }
+    function agentStatsHTML(a) {
+      const c = baseCalc(draft), st = agentStats(draft, a, c.q, c.sale), hasB = buyersOf(draft).length > 0;
+      const basis = a.type === "fixed" ? "fixed" : a.type === "percent" ? `${num(a.rate)}% of ${esc(money(hasB ? st.sales : c.sale))}` : `${hasB ? st.pcs : c.q} pcs × ${esc(money(num(a.rate)))}`;
+      return `${hasB ? `<b>${st.n}</b> buyer${st.n === 1 ? "" : "s"} · <b>${st.pcs}</b> ${st.pcs === 1 ? "pc" : "pcs"} · ${esc(money(st.sales))} · ` : ""}Commission <b>${esc(money(st.commission))}</b> <span>(${basis})</span>`;
+    }
+    function drawAgentStats() { document.querySelectorAll("#m-agents [data-aid]").forEach(el => { const a = draft.agents.find(x => x.id === el.dataset.aid); if (a) el.querySelector(".astats").innerHTML = agentStatsHTML(a); }); drawAgentTotal(); }
+    function drawAgentTotal() {
+      const el = $("#a-total"); if (!el) return;
+      const c = baseCalc(draft); let tot = 0, unpaid = 0;
+      draft.agents.forEach(a => { const v = agentStats(draft, a, c.q, c.sale).commission; tot += v; if (!a.paid) unpaid += v; });
+      el.innerHTML = `<span class="chip">${draft.agents.length} agent${draft.agents.length === 1 ? "" : "s"}</span><span class="chip">Commission ${esc(money(tot))}</span>${unpaid > 0 ? `<span class="chip warn">${esc(money(unpaid))} not paid out</span>` : tot ? `<span class="chip ok">All paid out</span>` : ""}`;
+    }
+    function drawAgents() {
+      const box = $("#m-agents");
+      const buttons = `<div class="share-row"><button type="button" class="btn small" data-aact="add">+ Add agent</button>${draft.agents.length ? `<button type="button" class="btn small" data-aact="formupdate">Update agents on the form</button>` : ""}</div>`;
+      if (!draft.agents.length) { box.innerHTML = `<p class="note" style="margin-bottom:10px">Agents promote or distribute for you. Give each one a code; buyers put the code in the Google Form, and the app works out each agent's commission. Commission counts as a cost.</p>${buttons}`; return; }
+      box.innerHTML = `<div class="bstats" id="a-total"></div><div class="agents">${draft.agents.map(a => `<div class="agent" data-aid="${esc(a.id)}">
+          <div class="agent-grid">
+            <div class="field"><label>Name</label><input data-af="name" value="${esc(a.name)}" placeholder="Agent's name"></div>
+            <div class="field"><label>Agent code</label><input data-af="code" value="${esc(a.code)}" placeholder="e.g. AIMAN01" autocapitalize="characters" spellcheck="false"></div>
+            <div class="field"><label>Phone</label><input data-af="phone" value="${esc(a.phone || "")}" inputmode="tel"></div>
+            <div class="field"><label>Task</label><select data-af="task">${TASKS.map(t => `<option ${a.task === t ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+            <div class="field"><label>Commission</label><select data-af="type">${CTYPES.map(([k, l]) => `<option value="${k}" ${a.type === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+            <div class="field"><label>${a.type === "percent" ? "Percent (%)" : `Amount (${esc(state.currency)})`}</label><input data-af="rate" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(a.rate)}"></div>
+          </div>
+          <div class="agent-foot"><span class="astats"></span>
+            <button type="button" class="toggle" data-aact="paid" aria-pressed="${!!a.paid}">Paid out</button>
+            ${buyersOf(draft).length ? `<button type="button" class="linkbtn" data-aact="copy">Copy their buyers</button>` : ""}
+            <button type="button" class="linkbtn danger" data-aact="rm">Remove</button>
+          </div>
+        </div>`).join("")}</div><div style="margin-top:10px">${buttons}</div>`;
+      drawAgentStats();
+    }
+    drawAgents();
+    const findA = el => draft.agents.find(a => a.id === (el.closest("[data-aid]") || {}).dataset?.aid);
+    $("#m-agents").addEventListener("input", e => {
+      const t = e.target, a = findA(t); if (!a || !t.dataset.af) return;
+      if (t.dataset.af === "code") {
+        const v = t.value.trim().toUpperCase().replace(/\s+/g, "");
+        draft.buyers.forEach(b => { if (sameCode(b.agent, a.code)) b.agent = v; });
+        a.code = v;
+      } else a[t.dataset.af] = t.dataset.af === "rate" ? t.value : t.value;
+      if (t.dataset.af === "type") { drawAgents(); updCalc(); return; }
+      drawAgentStats(); updCalc();
+    });
+    $("#m-agents").addEventListener("change", e => {
+      const t = e.target, a = findA(t); if (!a) return;
+      if (t.dataset.af === "name" && !a.code && a.name.trim()) { a.code = genCode(a.name); const ci = t.closest("[data-aid]").querySelector('[data-af="code"]'); ci.value = a.code; drawAgentStats(); }
+      if (t.dataset.af === "code") { t.value = a.code; drawBuyers(); }
+    });
+    $("#m-agents").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.tagName === "INPUT") e.preventDefault(); });
+    $("#m-agents").addEventListener("click", e => {
+      const t = e.target.closest("button"); if (!t || !t.dataset.aact) return;
+      const act = t.dataset.aact, a = findA(t);
+      if (act === "add") { draft.agents.push({ id: "a" + Math.random().toString(36).slice(2, 9), name: "", code: "", phone: "", task: "Promote", type: "shirt", rate: "", paid: false }); drawAgents(); drawBuyers(); const ins = document.querySelectorAll('#m-agents [data-af="name"]'); ins[ins.length - 1].focus(); return; }
+      if (act === "formupdate") { openAgentScript(draft, url => { draft.form = { ...(draft.form || {}), editUrl: url }; }); return; }
+      if (!a) return;
+      if (act === "paid") { a.paid = !a.paid; t.setAttribute("aria-pressed", String(a.paid)); drawAgentTotal(); return; }
+      if (act === "copy") {
+        const c = baseCalc(draft), st = agentStats(draft, a, c.q, c.sale);
+        const txt = [`${draft.code} ${draft.name} · ${a.name || a.code} (${a.code})`, `${st.n} buyers · ${st.pcs} pcs · ${money(st.sales)}`, "", ...st.buyers.map(b => `${b.collected ? "✓" : "☐"} ${b.name} · ${itemsText(b)}${b.pickup ? " · " + b.pickup : ""}${b.paid ? "" : " · UNPAID"}${b.phone ? " · " + b.phone : ""}`)].join("\n");
+        copyText(txt).then(() => toast("Buyer list copied")); return;
+      }
+      if (act === "rm") {
+        if (!t.classList.contains("armed")) { t.classList.add("armed"); t.textContent = "Tap again to remove"; return; }
+        draft.agents = draft.agents.filter(x => x !== a); drawAgents(); drawBuyers(); updCalc(); return;
+      }
+    });
+    let openB = null, bFilter = "all", bQuery = "", bAgent = "";
+    const knownColors = () => [...new Set([...draft.buyers.flatMap(b => (b.items || []).map(it => it.color)), "Maroon", "Navy", "Black", "White"].filter(Boolean))];
+    function buyerRow(b) {
+      const fl = (b.flags || []).length;
+      const head = `<button type="button" class="brow" data-bopen="${esc(b.id)}" aria-expanded="${openB === b.id}"><span class="bn">${esc(b.name)}</span><span class="ba">${esc(money(num(b.amount)))}</span><span class="bi">${esc(itemsText(b) || "No items")}${b.place ? " · " + esc(b.place) : ""}</span><span class="bc">${b.agent ? `<span class="chip">${esc(b.agent)}</span>` : ""}${fl ? `<span class="chip warn">Check</span>` : ""}${b.paid ? "" : `<span class="chip bad">Unpaid</span>`}${b.collected ? `<span class="chip ok">Collected</span>` : ""}</span></button>`;
+      if (openB !== b.id) return `<div class="buyer">${head}</div>`;
+      const wa = waLink(b.phone);
+      return `<div class="buyer">${head}<div class="bedit" data-bid="${esc(b.id)}">
+        ${fl ? `<div class="banner" data-tone="warn" style="margin:0">${esc(b.flags.join(" · "))} <button type="button" class="linkbtn" data-bact="ok">Mark as checked</button></div>` : ""}
+        ${b.src ? `<div><div class="sub-label">What they wrote</div><div class="raw">${esc(b.src)}</div>${b.note ? `<div class="raw" style="margin-top:4px">Note: ${esc(b.note)}</div>` : ""}</div>` : ""}
+        <div><div class="sub-label">Shirts</div>
+          ${(b.items || []).map((it, i) => `<div class="it" data-it="${i}"><input class="inp" data-itf="color" list="b-colors" value="${esc(it.color)}" placeholder="Colour" aria-label="Colour"><select class="inp" data-itf="sleeve" aria-label="Sleeve"><option value="" ${!it.sleeve ? "selected" : ""}>Sleeve</option><option ${it.sleeve === "Short" ? "selected" : ""}>Short</option><option ${it.sleeve === "Long" ? "selected" : ""}>Long</option></select><select class="inp" data-itf="size" aria-label="Size">${SIZES.map(k => `<option ${k === it.size ? "selected" : ""}>${k}</option>`).join("")}</select><input class="inp" data-itf="qty" type="number" min="1" inputmode="numeric" value="${esc(it.qty || 1)}" aria-label="Quantity"><button type="button" class="x2" data-bact="rmit" aria-label="Remove shirt" style="border:0;background:transparent;font-size:18px;color:var(--muted)">×</button></div>`).join("")}
+          <button type="button" class="linkbtn" data-bact="addit">+ Add shirt</button></div>
+        <div class="grid2">
+          <div class="field"><label>Name</label><input data-bf="name" value="${esc(b.name)}"></div>
+          <div class="field"><label>Phone</label><input data-bf="phone" value="${esc(b.phone)}" inputmode="tel"></div>
+          <div class="field"><label>College / address</label><input data-bf="place" value="${esc(b.place)}"></div>
+          <div class="field"><label>Pickup point</label><input data-bf="pickup" value="${esc(b.pickup || "")}"></div>
+          ${agentsOf(draft).length || b.agent ? `<div class="field"><label>Agent</label><select data-bf="agent"><option value="">No agent</option>${agentsOf(draft).filter(a => a.code).map(a => `<option value="${esc(a.code)}" ${sameCode(a.code, b.agent) ? "selected" : ""}>${esc(a.code)}${a.name ? " · " + esc(a.name) : ""}</option>`).join("")}${b.agent && !agentsOf(draft).some(a => sameCode(a.code, b.agent)) ? `<option selected value="${esc(b.agent)}">${esc(b.agent)} (not in agents)</option>` : ""}</select></div>` : ""}
+          <div class="field"><label>Amount (${esc(state.currency)})</label><input data-bf="amount" type="number" step="0.01" inputmode="decimal" value="${esc(b.amount)}"></div>
+        </div>
+        <div class="toggles"><button type="button" class="toggle" data-btog="paid" aria-pressed="${!!b.paid}">Paid</button><button type="button" class="toggle" data-btog="collected" aria-pressed="${!!b.collected}">Collected</button></div>
+        <div class="links">${wa ? `<a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}${b.phone ? `<a href="tel:${esc(String(b.phone).replace(/[^\d+]/g, ""))}">Call</a>` : ""}${b.receipt ? `<a href="${esc(b.receipt)}" target="_blank" rel="noopener">Open receipt</a>` : ""}</div>
+        <div style="display:flex;gap:8px"><span class="spacer" style="flex:1"></span><button type="button" class="btn small danger" data-bact="del">Delete buyer</button></div>
+      </div></div>`;
+    }
+    function filteredBuyers() {
+      const q = bQuery.trim().toLowerCase();
+      return draft.buyers.filter(b => {
+        if (bFilter === "check" && !(b.flags || []).length) return false;
+        if (bFilter === "unpaid" && b.paid) return false;
+        if (bFilter === "uncollected" && b.collected) return false;
+        if (bAgent && !(bAgent === "-" ? !b.agent : sameCode(b.agent, bAgent))) return false;
+        if (q && !`${b.name} ${b.phone} ${b.place} ${b.pickup || ""} ${itemsText(b)}`.toLowerCase().includes(q)) return false;
+        return true;
+      });
+    }
+    function drawBuyerTop() {
+      const top = $("#b-top"); if (!top) return;
+      const bc = buyerCalc(draft);
+      top.innerHTML = `<div class="bstats"><span class="chip">${bc.n} buyers</span><span class="chip">${bc.pcs} pcs</span><span class="chip">${esc(money(bc.amount))}</span>${bc.check ? `<span class="chip warn">${bc.check} to check</span>` : ""}${bc.amount - bc.paid > 0 ? `<span class="chip bad">${esc(money(bc.amount - bc.paid))} unpaid</span>` : ""}<span class="chip ${bc.collected === bc.n ? "ok" : ""}">${bc.collected}/${bc.n} collected</span></div>${totalsTable(draft.buyers)}`;
+    }
+    function drawBuyerList() { const l = $("#b-list"); if (l) l.innerHTML = filteredBuyers().map(buyerRow).join("") || `<p class="note" style="padding:10px 12px">No buyers match.</p>`; }
+    function drawBuyers() {
+      const box = $("#m-buyers");
+      if (!draft.buyers.length) {
+        box.innerHTML = `<p class="note" style="margin-bottom:10px">Selling to lots of people through a Google Form? Import their orders and the app adds up the sizes per colour, tracks who paid, and who has collected.</p>
+          <div class="share-row"><button type="button" class="btn small" data-bact="formmaker">Make a Google Form</button><button type="button" class="btn small" data-bact="import">Import orders</button><button type="button" class="btn small" data-bact="addb">+ Add buyer</button></div>`;
+        return;
+      }
+      const filters = [["all", "All"], ["check", "To check"], ["unpaid", "Unpaid"], ["uncollected", "Not collected"]];
+      box.innerHTML = `<div id="b-top"></div>
+        <div class="btools"><input class="search inp" id="b-search" type="search" placeholder="Search buyers…" value="${esc(bQuery)}" aria-label="Search buyers">${filters.map(([k, l]) => `<button type="button" class="filter" data-bfilter="${k}" aria-pressed="${bFilter === k}">${l}</button>`).join("")}${agentsOf(draft).length ? `<select class="inp" id="b-agent" style="width:auto;max-width:170px" aria-label="Filter by agent"><option value="">All agents</option><option value="-" ${bAgent === "-" ? "selected" : ""}>No agent</option>${agentsOf(draft).filter(a => a.code).map(a => `<option value="${esc(a.code)}" ${bAgent === a.code ? "selected" : ""}>${esc(a.code)}</option>`).join("")}</select>` : ""}</div>
+        <div class="blist" id="b-list"></div>
+        <datalist id="b-colors">${knownColors().map(c => `<option value="${esc(c)}">`).join("")}</datalist>
+        <div class="share-row" style="margin-top:10px"><button type="button" class="btn small" data-bact="import">Import more</button><button type="button" class="btn small" data-bact="addb">+ Add buyer</button><button type="button" class="btn small" data-bact="pickup">Copy pickup list</button><button type="button" class="btn small" data-bact="formmaker">Google Form</button></div>`;
+      drawBuyerTop(); drawBuyerList();
+    }
+    function buyersChanged(structural) { syncLinesFromBuyers(draft); drawLines(); if (structural) drawBuyers(); else drawBuyerTop(); }
+    drawBuyers();
+    const findB = id => draft.buyers.find(b => b.id === id);
+    $("#m-buyers").addEventListener("input", e => {
+      const t = e.target;
+      if (t.id === "b-search") { bQuery = t.value; drawBuyerList(); return; }
+      if (t.id === "b-agent") { bAgent = t.value; drawBuyerList(); return; }
+      const ed = t.closest("[data-bid]"); if (!ed) return;
+      const b = findB(ed.dataset.bid); if (!b) return;
+      if (t.dataset.bf) { b[t.dataset.bf] = t.dataset.bf === "amount" ? num(t.value) : t.value; drawBuyerTop(); updCalc(); drawAgentStats(); return; }
+      const row = t.closest("[data-it]");
+      if (row && t.dataset.itf) { const it = b.items[+row.dataset.it]; it[t.dataset.itf] = t.dataset.itf === "qty" ? Math.max(1, num(t.value) || 1) : t.value.trim(); buyersChanged(false); }
+    });
+    $("#m-buyers").addEventListener("change", e => {
+      const t = e.target; if (!["size", "color", "sleeve"].includes(t.dataset.itf)) return;
+      const ed = t.closest("[data-bid]"), row = t.closest("[data-it]"); const b = ed && findB(ed.dataset.bid);
+      if (b && row) { b.items[+row.dataset.it][t.dataset.itf] = t.value.trim(); buyersChanged(false); }
+    });
+    $("#m-buyers").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.tagName === "INPUT") e.preventDefault(); });
+    $("#m-buyers").addEventListener("click", e => {
+      const t = e.target.closest("button"); if (!t) return;
+      if (t.dataset.bopen) { openB = openB === t.dataset.bopen ? null : t.dataset.bopen; drawBuyerList(); return; }
+      if (t.dataset.bfilter) { bFilter = t.dataset.bfilter; drawBuyers(); return; }
+      const ed = t.closest("[data-bid]"), b = ed && findB(ed.dataset.bid);
+      if (t.dataset.btog && b) { b[t.dataset.btog] = !b[t.dataset.btog]; t.setAttribute("aria-pressed", String(!!b[t.dataset.btog])); drawBuyerTop(); updCalc(); return; }
+      const act = t.dataset.bact; if (!act) return;
+      if (act === "import") { openImport(draft.buyers, fresh => { draft.buyers.push(...fresh); buyersChanged(true); updCalc(); drawAgents(); toast(`${fresh.length} order${fresh.length === 1 ? "" : "s"} added. Tap Save to keep them.`); }, draft.form, agentsOf(draft)); return; }
+      if (act === "formmaker") { readTop(); openFormMaker(draft, setup => { draft.form = setup; }); return; }
+      if (act === "addb") { const nb = { id: "b" + Math.random().toString(36).slice(2, 10), ts: new Date().toLocaleString(), name: "", phone: "", place: "", items: [{ color: knownColors()[0] || "", size: "M", qty: 1 }], amount: 0, paid: false, receipt: "", note: "", flags: [], collected: false, src: "" }; draft.buyers.unshift(nb); openB = nb.id; bFilter = "all"; buyersChanged(true); updCalc(); const inp = document.querySelector(`[data-bid="${nb.id}"] [data-bf="name"]`); if (inp) inp.focus(); return; }
+      if (act === "pickup") {
+        const groups = {};
+        [...draft.buyers].sort((a, b2) => a.name.localeCompare(b2.name)).forEach(x => { const g = x.pickup || x.place || "No pickup point given"; (groups[g] = groups[g] || []).push(x); });
+        const txt = [`${draft.code} ${draft.name} · pickup list`, ""].concat(...Object.keys(groups).sort().map(g => [`${g} (${groups[g].length})`, ...groups[g].map(x => `${x.collected ? "✓" : "☐"} ${x.name} · ${itemsText(x)}${x.paid ? "" : " · UNPAID"}${x.phone ? " · " + x.phone : ""}`), ""])).join("\n");
+        copyText(txt).then(() => toast("Pickup list copied")); return;
+      }
+      if (!b) return;
+      if (act === "ok") { b.flags = []; buyersChanged(true); return; }
+      if (act === "addit") { b.items.push({ color: (b.items[0] || {}).color || knownColors()[0] || "", size: "M", qty: 1 }); buyersChanged(true); return; }
+      if (act === "rmit") { b.items.splice(+t.closest("[data-it]").dataset.it, 1); buyersChanged(true); return; }
+      if (act === "del") {
+        if (!t.classList.contains("armed")) { t.classList.add("armed"); t.textContent = "Tap again to delete"; return; }
+        draft.buyers = draft.buyers.filter(x => x.id !== b.id); openB = null; buyersChanged(true); updCalc(); drawAgentStats(); return;
+      }
+    });
+    form.addEventListener("input", e => {
+      const box = e.target.closest("[data-line]");
+      if (box) {
+        const l = draft.lines[+box.dataset.line];
+        if (e.target.dataset.size) { const v = num(e.target.value); if (v > 0) l.sizes[e.target.dataset.size] = v; else delete l.sizes[e.target.dataset.size]; }
+        else if (e.target.dataset.k) l[e.target.dataset.k] = e.target.value;
+      }
+      updCalc();
+    });
+    form.addEventListener("change", e => { if (e.target.closest("[data-line]") && e.target.tagName === "SELECT") { const l = draft.lines[+e.target.closest("[data-line]").dataset.line]; l[e.target.dataset.k] = e.target.value; updCalc(); } });
+    form.addEventListener("click", e => {
+      const t = e.target.closest("button"); if (!t) return;
+      const box = t.closest("[data-line]");
+      if (t.dataset.addon && box) {
+        const l = draft.lines[+box.dataset.line]; l.addons = l.addons || [];
+        const on = l.addons.includes(t.dataset.addon);
+        l.addons = on ? l.addons.filter(x => x !== t.dataset.addon) : [...l.addons, t.dataset.addon];
+        t.setAttribute("aria-pressed", String(!on)); updCalc(); return;
+      }
+      if (t.dataset.act === "dup" && box) { const i = +box.dataset.line; const c = clone(draft.lines[i]); c.id = newLine(draft.pl).id; c.sizes = {}; c.pieces = ""; c.label = ""; draft.lines.splice(i + 1, 0, c); drawLines(); return; }
+      if (t.dataset.act === "del" && box) { draft.lines.splice(+box.dataset.line, 1); drawLines(); return; }
+      if (t.id === "m-addline") { draft.lines.push(newLine(draft.pl)); drawLines(); return; }
+      if (t.id === "m-plupdate") {
+        const pl = clone(state.priceList);
+        const has = (list, id) => (list || []).some(x => x.id === id);
+        if (!has(pl.fabrics, draft.fabric)) draft.fabric = pl.fabrics[0] ? pl.fabrics[0].id : "";
+        draft.lines.forEach(l => { if (!has(pl.collars, l.collar)) l.collar = pl.collars[0] ? pl.collars[0].id : ""; if (l.sleeve && /raglan/.test(l.sleeve) && has(pl.collars, l.sleeve)) l.collar = l.sleeve; delete l.sleeve; l.addons = (l.addons || []).filter(id => has(pl.addons, id)); });
+        draft.pl = pl;
+        $("#f-fabric").innerHTML = opt(pl.fabrics, draft.fabric, x => `${fabricLabel(x)} (${plus(x.price)})`);
+        drawLines(); toast("Updated to current costs"); return;
+      }
+      if (t.id === "m-copy-print" || t.id === "m-copy-quote") { readTop(); copyText(orderText(draft, t.id === "m-copy-quote")).then(() => toast("Copied. Paste it in WhatsApp")); }
+    });
     $("#m-stages").addEventListener("click", e => { const b = e.target.closest("[data-stage]"); if (!b) return; draft.stage = b.dataset.stage; $("#m-stages").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); });
     const close = () => { root.innerHTML = ""; document.removeEventListener("keydown", onKey); if (lastFocus && lastFocus.focus) lastFocus.focus(); };
     const onKey = e => { if (e.key === "Escape") close(); };
@@ -565,11 +1595,13 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       if (!del.classList.contains("armed")) { del.classList.add("armed"); del.textContent = "Tap again to delete"; setTimeout(() => { if (del.isConnected) { del.classList.remove("armed"); del.textContent = "Delete"; } }, 4000); return; }
       try { await deleteProject(p.id); close(); toast("Project deleted"); } catch (err) { showErr(err); }
     };
-    const showErr = err => { const el = $("#save-err"); el.textContent = err && err.code === "quota_exceeded" ? "Storage is full. Delete old projects and try again." : "Couldn't save. Check your connection and try again."; el.hidden = false; };
+    const showErr = err => { const el = $("#save-err"); el.textContent = err && err.code === "quota_exceeded" ? "Storage is full. Delete old projects and try again." : "Couldn't save. Try again."; el.hidden = false; };
     form.addEventListener("submit", async e => {
-      e.preventDefault(); read();
+      e.preventDefault(); readTop();
       if (!draft.name) { $("#name-err").hidden = false; $("#f-name").focus(); return; }
       const { id, ...data } = draft;
+      removedPhotos.forEach(ph => { photoDB.del(ph.id); photoMem.delete(ph.id); if (ph.gist && sync.token) gh(`/gists/${encodeURIComponent(ph.gist)}`, { method: "DELETE" }).catch(() => {}); });
+      delete data.sizes; delete data.qty; delete data.price;
       if (isNew) { data.createdAt = new Date().toISOString(); data.history = [{ stage: data.stage, at: data.createdAt }]; }
       else if (p.stage !== data.stage) data.history = [...(data.history || []), { stage: data.stage, at: new Date().toISOString() }];
       const btn = $("#m-save"); btn.disabled = true; btn.textContent = "Saving…";
@@ -579,11 +1611,73 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     setTimeout(() => (isNew ? $("#f-name") : $("#m-close")).focus(), 0);
   }
 
+  /* ---------- price list editor ---------- */
+  const PL_SECTIONS = [["fabrics", "Fabrics", true], ["collars", "Collars", false], ["addons", "Add-ons", false]];
+  function openPriceList() {
+    const draft = clone(state.priceList);
+    const root = $("#modal-root"); const lastFocus = document.activeElement;
+    root.innerHTML = `<div class="scrim" id="scrim"><form class="sheet" id="plform" role="dialog" aria-modal="true" aria-labelledby="pl-title" novalidate>
+      <div class="sheet-head"><div><div class="code">YOUR COSTS</div><h2 id="pl-title">Cost list</h2></div><button type="button" class="x" id="pl-close" aria-label="Close">×</button></div>
+      <div class="sheet-body" id="pl-body"></div>
+      <div class="sheet-foot"><button type="button" class="btn" id="pl-reset">Reset to defaults</button><span class="spacer"></span><button type="button" class="btn" id="pl-cancel">Cancel</button><button type="submit" class="btn primary">Save cost list</button></div>
+    </form></div>`;
+    const body = $("#pl-body");
+    function draw() {
+      body.innerHTML = `<p class="note" style="font-size:14px">What each shirt costs you: the base cost plus each option. Shirt types add these up into a cost per shirt, so profit works itself out. New projects use this list. Projects you already made keep their own costs.</p>
+        <div class="grid2">
+          <div class="field"><label for="pl-base">Base cost (${esc(state.currency)})</label><input id="pl-base" data-top="base" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.base)}"><span class="help">Round neck + free fabric. Filled in for new projects.</span></div>
+          <div class="field"><label for="pl-big">Big size extra cost (${esc(state.currency)})</label><div style="display:flex;gap:6px"><select id="pl-bigfrom" data-top="bigFrom" class="inp" style="max-width:110px" aria-label="From size">${SIZES.map(k => `<option ${k === draft.bigFrom ? "selected" : ""}>${k}</option>`).join("")}</select><input id="pl-big" data-top="big" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(draft.big)}"></div><span class="help">This size and above, per shirt</span></div>
+        </div>
+        ${PL_SECTIONS.map(([key, title, note]) => `<fieldset class="pl-sec"><legend>${title}</legend>
+          <div class="pl-row ${note ? "has-note" : ""}"><span class="pl-head">Name</span>${note ? `<span class="pl-head">Detail</span>` : ""}<span class="pl-head">+ ${esc(state.currency)}</span><span></span></div>
+          ${draft[key].map((it, i) => `<div class="pl-row ${note ? "has-note" : ""}" data-sec="${key}" data-i="${i}">
+            <input class="inp" data-f="name" value="${esc(it.name)}" aria-label="${title} name">
+            ${note ? `<input class="inp" data-f="note" value="${esc(it.note || "")}" placeholder="e.g. 160 gsm" aria-label="Detail">` : ""}
+            <input class="inp" data-f="price" type="number" step="0.01" inputmode="decimal" value="${esc(it.price)}" aria-label="Price">
+            <button type="button" class="x2" data-rm aria-label="Remove ${esc(it.name)}">×</button></div>`).join("")}
+          <div><button type="button" class="linkbtn" data-addsec="${key}">+ Add ${title.toLowerCase().replace(/s$/, "")}</button></div>
+        </fieldset>`).join("")}`;
+    }
+    draw();
+    body.addEventListener("input", e => {
+      const t = e.target;
+      if (t.dataset.top) { draft[t.dataset.top] = t.dataset.top === "big" ? num(t.value) : t.value; return; }
+      const row = t.closest("[data-sec]"); if (!row) return;
+      const it = draft[row.dataset.sec][+row.dataset.i];
+      it[t.dataset.f] = t.dataset.f === "price" ? num(t.value) : t.value;
+    });
+    body.addEventListener("change", e => { if (e.target.dataset.top === "bigFrom") draft.bigFrom = e.target.value; });
+    body.addEventListener("click", e => {
+      const rm = e.target.closest("[data-rm]");
+      if (rm) { const row = rm.closest("[data-sec]"); if (draft[row.dataset.sec].length <= 1) { toast("Keep at least one in each list."); return; } draft[row.dataset.sec].splice(+row.dataset.i, 1); draw(); return; }
+      const add = e.target.closest("[data-addsec]");
+      if (add) { draft[add.dataset.addsec].push({ id: "x" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: "", note: "", price: 0 }); draw(); const rows = body.querySelectorAll(`[data-sec="${add.dataset.addsec}"]`); rows[rows.length - 1].querySelector("input").focus(); }
+    });
+    const close = () => { root.innerHTML = ""; document.removeEventListener("keydown", onKey); if (lastFocus && lastFocus.focus) lastFocus.focus(); };
+    const onKey = e => { if (e.key === "Escape") close(); };
+    document.addEventListener("keydown", onKey);
+    $("#pl-close").onclick = close; $("#pl-cancel").onclick = close;
+    $("#scrim").addEventListener("mousedown", e => { if (e.target.id === "scrim") close(); });
+    const reset = $("#pl-reset");
+    reset.onclick = () => {
+      if (!reset.classList.contains("armed")) { reset.classList.add("armed", "danger"); reset.textContent = "Tap again to reset"; return; }
+      Object.assign(draft, clone(DEFAULT_PL), { base: draft.base }); reset.classList.remove("armed", "danger"); reset.textContent = "Reset to defaults"; draw();
+    };
+    $("#plform").addEventListener("submit", e => {
+      e.preventDefault();
+      PL_SECTIONS.forEach(([k]) => { draft[k] = draft[k].filter(it => String(it.name).trim()); if (!draft[k].length) draft[k] = clone(DEFAULT_PL[k]); });
+      state.priceList = draft; state.priceListAt = new Date().toISOString();
+      try { persist(); } catch (_) { toast("Couldn't save the cost list."); return; }
+      close(); render(); toast("Cost list saved");
+    });
+  }
+
   /* ---------- events ---------- */
   document.addEventListener("click", async e => {
     const tab = e.target.closest("[data-tab]"); if (tab) { state.tab = tab.dataset.tab; try { localStorage.setItem("kemas-tab", state.tab); } catch (_) {} render(); return; }
     if (e.target.closest("#new-btn, [data-new]")) { openModal(null); return; }
     if (e.target.closest("#export-btn")) { exportBackup(); return; }
+    if (e.target.closest("[data-pricelist]")) { openPriceList(); return; }
     const adv = e.target.closest("[data-advance]");
     if (adv) { e.stopPropagation(); const p = state.projects.find(x => x.id === adv.dataset.advance); const i = STAGES.findIndex(s => s.id === p.stage); if (p && i >= 0 && STAGES[i + 1]) { adv.disabled = true; try { await moveStage(p, STAGES[i + 1].id); } catch (_) { adv.disabled = false; toast("Couldn't move it. Try again."); } } return; }
     const f = e.target.closest("[data-filter]"); if (f) { state.stageFilter = f.dataset.filter; render(); return; }
@@ -617,8 +1711,8 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     return r.status === 204 ? null : r.json();
   }
   const stable = v => Array.isArray(v) ? "[" + v.map(stable).join(",") + "]" : v && typeof v === "object" ? "{" + Object.keys(v).sort().map(k => JSON.stringify(k) + ":" + stable(v[k])).join(",") + "}" : JSON.stringify(v ?? null);
-  const snapshot = () => ({ app: "kemas-apparel", version: 1, projects: state.projects, deleted: state.deleted, currency: state.currency, currencyAt: state.currencyAt });
-  const sig = d => stable({ p: [...(d.projects || [])].sort((a, b) => String(a.id).localeCompare(String(b.id))), d: d.deleted || {}, c: d.currency || "", ca: d.currencyAt || "" });
+  const snapshot = () => ({ app: "kemas-apparel", version: 1, projects: state.projects, deleted: state.deleted, currency: state.currency, currencyAt: state.currencyAt, priceList: state.priceListAt ? state.priceList : null, priceListAt: state.priceListAt });
+  const sig = d => stable({ p: [...(d.projects || [])].sort((a, b) => String(a.id).localeCompare(String(b.id))), d: d.deleted || {}, c: d.currency || "", ca: d.currencyAt || "", pl: d.priceListAt ? d.priceList : null, pla: d.priceListAt || "" });
 
   function merge(a, b) {
     const deleted = { ...(a.deleted || {}) };
@@ -631,11 +1725,13 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     });
     const projects = [...byId.values()].filter(p => !(deleted[p.id] && deleted[p.id] >= String(p.updatedAt || "")));
     const useB = String(b.currencyAt || "") > String(a.currencyAt || "");
-    return { app: "kemas-apparel", version: 1, projects, deleted, currency: (useB ? b.currency : a.currency) || a.currency || b.currency || "RM", currencyAt: useB ? b.currencyAt : a.currencyAt };
+    const plB = String(b.priceListAt || "") > String(a.priceListAt || "");
+    return { app: "kemas-apparel", version: 1, projects, deleted, currency: (useB ? b.currency : a.currency) || a.currency || b.currency || "RM", currencyAt: useB ? b.currencyAt : a.currencyAt,
+      priceList: plB ? b.priceList : a.priceList, priceListAt: plB ? b.priceListAt : a.priceListAt };
   }
 
   async function findOrCreateGist() {
-    for (let page = 1; page <= 5; page++) {
+    for (let page = 1; page <= 30; page++) {
       const list = await gh(`/gists?per_page=100&page=${page}`);
       const hit = list.find(g => g.files && g.files[FILE]);
       if (hit) return hit.id;
@@ -643,6 +1739,21 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     }
     const g = await gh("/gists", { method: "POST", body: JSON.stringify({ description: DESC, public: false, files: { [FILE]: { content: JSON.stringify(snapshot()) } } }) });
     return g.id;
+  }
+  async function uploadPendingPhotos() {
+    let changed = false;
+    for (const p of state.projects) {
+      for (const ph of p.photos || []) {
+        if (ph.gist) continue;
+        const data = await photoDB.get(ph.id);
+        if (!data) continue;
+        const name = `kemas-photo-${ph.id}.txt`;
+        const g = await gh("/gists", { method: "POST", body: JSON.stringify({ description: `KEMAS APPAREL photo · ${p.code || ""} ${p.name || ""}`.trim(), public: false, files: { [name]: { content: data } } }) });
+        ph.gist = g.id; ph.raw = g.files && g.files[name] ? g.files[name].raw_url : "";
+        p.updatedAt = new Date().toISOString(); changed = true;
+      }
+    }
+    if (changed) { persistLocal(); render(); }
   }
   async function readRemote() {
     const g = await gh(`/gists/${sync.gistId}`);
@@ -658,6 +1769,7 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
     sync.running = true; sync.again = false; setSync("syncing");
     try {
       if (!sync.gistId) { sync.gistId = await findOrCreateGist(); saveSyncCfg(); }
+      await uploadPendingPhotos();
       let remote;
       try { remote = await readRemote(); }
       catch (e) { if (e.status === 404) { sync.gistId = await findOrCreateGist(); saveSyncCfg(); remote = await readRemote(); } else throw e; }
@@ -665,7 +1777,8 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
       const local = snapshot();
       const merged = merge(local, remote);
       if (sig(merged) !== sig(local)) {
-        state.projects = merged.projects; state.deleted = merged.deleted; state.currency = merged.currency; state.currencyAt = merged.currencyAt;
+        state.projects = merged.projects.map(migrateProject); state.deleted = merged.deleted; state.currency = merged.currency; state.currencyAt = merged.currencyAt;
+        if (merged.priceListAt && merged.priceList) { state.priceList = normalizePL(merged.priceList); state.priceListAt = merged.priceListAt; }
         persistLocal(); render();
       }
       if (sig(merged) !== sig(remote)) {
@@ -765,10 +1878,12 @@ html { -webkit-text-size-adjust: 100%; } * { -webkit-tap-highlight-color: transp
   render();
 
   function boot() {
+    state.priceList = normalizePL(DEFAULT_PL);
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) { const d = JSON.parse(raw); state.projects = Array.isArray(d.projects) ? d.projects : []; state.deleted = d.deleted || {}; state.currencyAt = d.currencyAt || ""; if (d.currency) state.currency = String(d.currency); }
+      if (raw) { const d = JSON.parse(raw); state.projects = Array.isArray(d.projects) ? d.projects : []; state.deleted = d.deleted || {}; state.currencyAt = d.currencyAt || ""; if (d.priceList) { state.priceList = normalizePL(d.priceList); state.priceListAt = d.priceListAt || ""; } if (d.currency) state.currency = String(d.currency); }
     } catch (_) { banner("This browser is blocking storage, so projects can't be saved. Turn off Private Browsing and reopen the app.", "warn"); }
+    state.projects = state.projects.map(migrateProject);
     state.loaded = true; state.mode = "local";
     render();
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
