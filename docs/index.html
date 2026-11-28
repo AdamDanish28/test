@@ -5,67 +5,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Revise — Spaced Repetition</title>
 <meta name="description" content="Spaced repetition planner using the 1-3-7-14-30 schedule.">
-<meta name="theme-color" content="#4f46e5">
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
 :root{
-  --bg:#f6f7fb; --card:#ffffff; --text:#1c1f2a; --muted:#6b7280; --line:#e5e7ef;
-  --accent:#4f46e5; --accent-soft:#eef0ff; --ok:#16a34a; --ok-soft:#e7f7ec;
-  --warn:#d97706; --warn-soft:#fdf3e2; --bad:#dc2626; --bad-soft:#fdeaea;
-  --shadow:0 1px 2px rgba(20,20,40,.06),0 4px 16px rgba(20,20,40,.05);
+  --bg:#000; --card:#0b0b0b; --card2:#121212; --text:#f4f4f4; --muted:#8b8b8b; --line:#222;
+  --accent:#fff; --accent-soft:#161616; --ok:#fff; --ok-soft:#161616; --warn:#e6e6e6; --warn-soft:#161616; --bad:#fff; --bad-soft:#161616;
+  --glow:0 0 6px rgba(255,255,255,.55),0 0 22px rgba(255,255,255,.18);
+  --glow-sm:0 0 4px rgba(255,255,255,.45);
+  --tglow:0 0 8px rgba(255,255,255,.65),0 0 24px rgba(255,255,255,.25);
+  --on-accent:#000; --shadow:none;
+  color-scheme:dark;
 }
-:root[data-theme="dark"]{
-  --bg:#0f1117; --card:#181b24; --text:#e8eaf0; --muted:#9aa1b2; --line:#2a2f3c;
-  --accent:#8b86ff; --accent-soft:#25264a; --ok:#4ade80; --ok-soft:#173023;
-  --warn:#fbbf24; --warn-soft:#3a2e12; --bad:#f87171; --bad-soft:#3b1a1a;
-  --shadow:0 1px 2px rgba(0,0,0,.3);
+:root[data-theme="light"]{
+  --bg:#fff; --card:#fff; --card2:#f5f5f5; --text:#0a0a0a; --muted:#6e6e6e; --line:#e4e4e4;
+  --accent:#000; --accent-soft:#f2f2f2; --ok:#000; --ok-soft:#f2f2f2; --warn:#333; --warn-soft:#f2f2f2; --bad:#000; --bad-soft:#f2f2f2;
+  --glow:0 0 0 1px #000,0 6px 18px rgba(0,0,0,.12); --glow-sm:none; --tglow:none; --on-accent:#fff;
+  color-scheme:light;
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0f1117; --card:#181b24; --text:#e8eaf0; --muted:#9aa1b2; --line:#2a2f3c;
-    --accent:#8b86ff; --accent-soft:#25264a; --ok:#4ade80; --ok-soft:#173023;
-    --warn:#fbbf24; --warn-soft:#3a2e12; --bad:#f87171; --bad-soft:#3b1a1a;
-    --shadow:0 1px 2px rgba(0,0,0,.3);
-  }
-}
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
-body{background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  padding-bottom:calc(72px + env(safe-area-inset-bottom));}
+body{background:var(--bg);color:var(--text);font:15px/1.5 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:-.005em;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit}
-header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
-.hwrap{max-width:960px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px}
-.brand{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px}
-.brand img{width:26px;height:26px}
+a{color:var(--text)}
+.ic{display:inline-block;vertical-align:-4px;flex-shrink:0}
+.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+header{position:sticky;top:0;z-index:5;background:rgba(0,0,0,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+:root[data-theme="light"] header{background:rgba(255,255,255,.85)}
+.hwrap{max-width:960px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.brand{font-weight:700;font-size:17px;display:flex;align-items:center;gap:10px;letter-spacing:.18em;text-transform:uppercase;text-shadow:var(--tglow)}
+.brand img{width:26px;height:26px;border-radius:7px;box-shadow:var(--glow-sm)}
 .spacer{flex:1}
-main{max-width:960px;margin:0 auto;padding:16px}
-h2{font-size:17px;margin:20px 0 10px}
+main{max-width:960px;margin:0 auto;padding:18px 16px}
+h2{font-size:12px;margin:26px 2px 10px;font-weight:600;text-transform:uppercase;letter-spacing:.16em;color:var(--muted)}
 h2:first-child{margin-top:4px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px}
-.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 14px;cursor:pointer;white-space:nowrap}
-.btn:hover{border-color:var(--accent)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.small{padding:5px 10px;font-size:13px}
-.btn.ghost{background:transparent;border-color:transparent}
-.btn.danger{color:var(--bad)}
-.icon-btn{border:none;background:transparent;cursor:pointer;padding:6px;border-radius:8px;font-size:18px;line-height:1}
-.icon-btn:hover{background:var(--accent-soft)}
-nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:6;background:var(--card);border-top:1px solid var(--line);
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:transparent;border-radius:999px;padding:9px 16px;cursor:pointer;white-space:nowrap;transition:.15s}
+.btn:hover{border-color:var(--text)}
+.btn.primary{border-color:var(--accent);color:var(--text);box-shadow:var(--glow);text-shadow:var(--glow-sm)}
+.btn.primary:hover{background:var(--accent);color:var(--on-accent);text-shadow:none}
+.btn.small{padding:6px 12px;font-size:13px}
+.btn.ghost{border-color:transparent}
+.btn.danger{color:var(--muted)}
+.btn.danger:hover{color:var(--text);border-color:var(--text)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.icon-btn{border:none;background:transparent;cursor:pointer;padding:7px;border-radius:999px;line-height:1;color:var(--muted);display:inline-flex;align-items:center;gap:4px;font-size:12px}
+.icon-btn:hover{color:var(--text);background:var(--card2)}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:6;background:rgba(0,0,0,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);
   display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
-nav.tabs button{flex:1;max-width:160px;border:none;background:none;padding:9px 4px 8px;cursor:pointer;color:var(--muted);
-  display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px}
-nav.tabs button span.i{font-size:20px;line-height:1}
-nav.tabs button.active{color:var(--accent);font-weight:600}
-.fab{position:fixed;right:18px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:7;width:56px;height:56px;border-radius:50%;
-  border:none;background:var(--accent);color:#fff;font-size:28px;box-shadow:0 6px 20px rgba(79,70,229,.4);cursor:pointer}
+:root[data-theme="light"] nav.tabs{background:rgba(255,255,255,.92)}
+nav.tabs button{flex:1;max-width:150px;border:none;background:none;padding:10px 2px 8px;cursor:pointer;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+nav.tabs button.active{color:var(--text)}
+nav.tabs button.active .ic{filter:drop-shadow(0 0 4px rgba(255,255,255,.9)) drop-shadow(0 0 10px rgba(255,255,255,.4))}
+:root[data-theme="light"] nav.tabs button.active .ic{filter:none}
+.fab{position:fixed;right:18px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:7;width:56px;height:56px;border-radius:50%;
+  border:none;background:var(--accent);color:var(--on-accent);cursor:pointer;box-shadow:var(--glow);display:flex;align-items:center;justify-content:center}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.stat{padding:12px}
-.stat .n{font-size:24px;font-weight:700}
-.stat .l{color:var(--muted);font-size:12px}
+.stat{padding:14px}
+.stat .n{font-size:28px;font-weight:600;font-family:"JetBrains Mono",ui-monospace,monospace;text-shadow:var(--tglow);display:flex;align-items:center;gap:6px}
+.stat .l{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.12em}
 @media (max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
 .list{display:flex;flex-direction:column;gap:10px}
 .item{display:flex;gap:12px;align-items:flex-start}
@@ -73,115 +79,225 @@ nav.tabs button.active{color:var(--accent);font-weight:600}
 .item .title{font-weight:600;word-break:break-word}
 .item .desc{color:var(--muted);font-size:13px;margin-top:2px;white-space:pre-wrap;word-break:break-word;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.item .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
-.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--text)}
-.chip .dot{width:8px;height:8px;border-radius:50%}
-.badge{font-size:12px;padding:2px 8px;border-radius:999px;font-weight:600}
-.badge.over{background:var(--bad-soft);color:var(--bad)}
-.badge.today{background:var(--warn-soft);color:var(--warn)}
-.badge.up{background:var(--accent-soft);color:var(--accent)}
-.badge.done{background:var(--ok-soft);color:var(--ok)}
+.item .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--text)}
+.chip .dot{width:7px;height:7px;border-radius:50%;box-shadow:0 0 6px currentColor}
+.badge{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;letter-spacing:.04em;border:1px solid var(--line);color:var(--muted)}
+.badge.over{background:var(--accent);color:var(--on-accent);border-color:var(--accent);box-shadow:var(--glow)}
+.badge.today{color:var(--text);border-color:var(--accent);box-shadow:var(--glow);text-shadow:var(--glow-sm)}
+.badge.up{color:var(--muted)}
+.badge.done{color:var(--muted)}
 .actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.stages{display:flex;gap:4px;margin-top:8px}
-.stage{flex:1;height:6px;border-radius:3px;background:var(--line)}
-.stage.done{background:var(--ok)}
-.stage.over{background:var(--bad)}
-.stage.today{background:var(--warn)}
-.empty{text-align:center;color:var(--muted);padding:28px 10px}
+.stages{display:flex;gap:4px;margin-top:12px}
+.stage{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.stage.done{background:var(--accent);box-shadow:var(--glow-sm)}
+.stage.over{background:repeating-linear-gradient(90deg,var(--accent) 0 4px,transparent 4px 8px)}
+.stage.today{background:var(--muted)}
+.empty{text-align:center;color:var(--muted);padding:30px 12px}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .toolbar input,.toolbar select{flex:1;min-width:140px}
-input[type=text],input[type=date],input[type=time],input[type=search],select,textarea{
-  width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 11px;outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+input[type=text],input[type=password],input[type=date],input[type=time],input[type=search],input[type=number],select,textarea{
+  width:100%;border:1px solid var(--line);background:var(--card2);border-radius:12px;padding:10px 12px;outline:none;transition:.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:var(--glow-sm)}
+input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px}
 textarea{min-height:90px;resize:vertical}
-label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+label{display:block;font-size:11px;color:var(--muted);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.12em}
 /* calendar */
-.cal-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.cal-head .m{font-weight:700;font-size:16px;flex:1;text-align:center}
+.cal-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.cal-head .m{font-weight:600;font-size:15px;flex:1;text-align:center;letter-spacing:.14em;text-transform:uppercase;text-shadow:var(--tglow)}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.cal .dow{text-align:center;font-size:12px;color:var(--muted);padding:4px 0}
-.cal .d{min-height:62px;border-radius:10px;border:1px solid var(--line);background:var(--card);padding:5px;cursor:pointer;
-  display:flex;flex-direction:column;gap:3px;text-align:left}
-.cal .d.out{opacity:.4}
-.cal .d.today{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
-.cal .d.sel{background:var(--accent-soft)}
-.cal .d .num{font-size:12px;font-weight:600}
+.cal .dow{text-align:center;font-size:10px;color:var(--muted);padding:4px 0;letter-spacing:.12em;text-transform:uppercase}
+.cal .d{min-height:62px;border-radius:12px;border:1px solid transparent;background:var(--card2);padding:6px;cursor:pointer;
+  display:flex;flex-direction:column;gap:4px;text-align:left;color:var(--text)}
+.cal .d.out{opacity:.3}
+.cal .d.today{border-color:var(--accent);box-shadow:var(--glow)}
+.cal .d.sel{background:var(--text);color:var(--bg)}
+.cal .d .num{font-size:12px;font-weight:600;font-family:"JetBrains Mono",ui-monospace,monospace}
 .cal .d .dots{display:flex;flex-wrap:wrap;gap:3px}
-.cal .d .dots i{width:7px;height:7px;border-radius:50%;display:block}
-.cal .d .cnt{font-size:11px;color:var(--muted)}
+.cal .d .dots i{width:6px;height:6px;border-radius:50%;display:block;box-shadow:0 0 5px currentColor}
+.cal .d .cnt{font-size:10px;color:var(--muted)}
 @media (max-width:600px){.cal .d{min-height:48px;padding:4px}}
 /* modal */
-.modal-bg{position:fixed;inset:0;background:rgba(10,10,20,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:20;display:flex;align-items:flex-end;justify-content:center}
 @media (min-width:700px){.modal-bg{align-items:center}}
-.modal{background:var(--card);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
-@media (min-width:700px){.modal{border-radius:18px}}
-.modal h3{margin:0 0 4px;font-size:18px}
-.modal .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.modal{background:var(--card);border:1px solid var(--line);border-bottom:none;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -1px 0 rgba(255,255,255,.35),0 -12px 40px rgba(255,255,255,.06)}
+@media (min-width:700px){.modal{border-radius:22px;border-bottom:1px solid var(--line)}}
+.modal h3{margin:0 0 6px;font-size:19px;font-weight:600}
+.modal .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
 .preview{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.preview .chip{background:var(--bg);border:1px solid var(--line)}
-.timeline{display:flex;flex-direction:column;gap:8px;margin-top:10px}
-.tl{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px}
+.timeline{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.tl{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
 .tl .when{flex:1}
 .tl .when small{color:var(--muted);display:block}
 .row{display:flex;gap:10px}
 .row>*{flex:1}
-.toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top));background:var(--text);color:var(--bg);
-  padding:10px 16px;border-radius:10px;z-index:30;font-size:14px;max-width:90vw;text-align:center}
+.toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(68px + env(safe-area-inset-top));background:var(--text);color:var(--bg);
+  padding:10px 18px;border-radius:999px;z-index:30;font-size:14px;max-width:92vw;text-align:center;box-shadow:var(--glow);font-weight:500}
 .settings .card{margin-bottom:12px}
+.settings .card>b{font-size:12px;text-transform:uppercase;letter-spacing:.14em}
 .settings p{margin:6px 0;color:var(--muted);font-size:13px}
 .switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0}
 .switch span{font-size:14px}
 .rate{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-.rate button{padding:12px 6px;border-radius:12px;border:1px solid var(--line);background:var(--card);cursor:pointer}
-.rate button b{display:block;font-size:20px}
-.rate button:hover{border-color:var(--accent)}
-.banner{background:var(--accent-soft);border-radius:12px;padding:10px 12px;margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.rate button{padding:14px 6px;border-radius:14px;border:1px solid var(--line);background:transparent;cursor:pointer}
+.rate button b{display:block;font-size:15px}
+.rate button:hover{border-color:var(--accent);box-shadow:var(--glow)}
+.banner{border:1px solid var(--accent);box-shadow:var(--glow);border-radius:14px;padding:12px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .banner .t{flex:1;min-width:180px;font-size:14px}
 .hidden{display:none!important}
-.bars{display:flex;align-items:flex-end;gap:4px;height:90px;margin-top:8px}
-.bars div{flex:1;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px;opacity:.85}
-.bars-l{display:flex;gap:4px;font-size:10px;color:var(--muted)}
+.bars{display:flex;align-items:flex-end;gap:5px;height:90px;margin-top:10px}
+.bars div{flex:1;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px;box-shadow:var(--glow-sm)}
+.bars-l{display:flex;gap:5px;font-size:10px;color:var(--muted);margin-top:4px}
 .bars-l span{flex:1;text-align:center}
+/* focus / pomodoro */
+.focus-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:760px){.focus-grid{grid-template-columns:1fr}}
+.timer{display:flex;flex-direction:column;align-items:center;gap:16px;padding:26px 16px}
+.ring{position:relative;width:250px;height:250px;max-width:72vw;max-height:72vw}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.ring circle{fill:none;stroke-width:6}
+.ring .track{stroke:var(--line)}
+.ring .prog{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .4s linear;filter:drop-shadow(0 0 4px rgba(255,255,255,.9)) drop-shadow(0 0 12px rgba(255,255,255,.45))}
+:root[data-theme="light"] .ring .prog{filter:none}
+.ring.brk .prog{stroke-dasharray:2 10!important;stroke-linecap:round}
+.ring .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.ring .time{font-size:52px;font-weight:500;font-family:"JetBrains Mono",ui-monospace,monospace;letter-spacing:-2px;text-shadow:var(--tglow)}
+.ring .phase{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.22em;font-weight:600}
+.rounds{display:flex;gap:7px}
+.rounds i{width:7px;height:7px;border-radius:50%;border:1px solid var(--muted);display:block}
+.rounds i.on{background:var(--accent);border-color:var(--accent);box-shadow:var(--glow-sm)}
+.ctrls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.ctrls .btn.big{padding:13px 34px;font-size:15px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.presets button{border:1px solid var(--line);background:transparent;border-radius:999px;padding:4px 12px;cursor:pointer;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace}
+.presets button.on{border-color:var(--accent);box-shadow:var(--glow);text-shadow:var(--glow-sm)}
+.num{display:flex;align-items:center;gap:8px}
+.num input{width:78px!important;text-align:center;font-family:"JetBrains Mono",ui-monospace,monospace}
+.num span{color:var(--muted);font-size:13px}
+.goal{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:10px}
+.goal div{height:100%;background:var(--accent);box-shadow:var(--glow);border-radius:2px}
+.day-h{display:flex;justify-content:space-between;align-items:baseline;margin:18px 2px 8px;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600}
+.day-h small{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--text)}
+.rec{display:flex;gap:10px;align-items:center;padding:12px 14px}
+.rec+.rec{border-top:1px solid var(--line)}
+.rec .body{flex:1;min-width:0}
+.rec .tm{font-size:12px;color:var(--muted);margin-top:3px}
+.rec .dur{font-weight:500;font-family:"JetBrains Mono",ui-monospace,monospace;min-width:58px;text-align:right;text-shadow:var(--tglow)}
+.recs{padding:0}
+.selbar{position:sticky;top:64px;z-index:4;display:flex;gap:8px;align-items:center;background:var(--card2);border:1px solid var(--accent);border-radius:999px;padding:6px 8px 6px 16px;margin-bottom:8px;flex-wrap:wrap}
+.selbar .t{flex:1}
+.toast .undo{background:none;border:none;color:var(--bg);font-weight:700;margin-left:10px;cursor:pointer;text-decoration:underline}
+.big-num{font-size:26px;font-weight:500;font-family:"JetBrains Mono",ui-monospace,monospace;text-shadow:var(--tglow)}
+.cap{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.12em}
 </style>
 </head>
 <body>
 <header><div class="hwrap">
   <div class="brand"><img src="icon.svg" alt="">Revise</div>
   <div class="spacer"></div>
-  <button class="icon-btn" id="themeBtn" title="Toggle theme">🌓</button>
+  <button class="icon-btn hidden" id="syncBtn" title="Sync now" style="font-size:14px"></button>
+  <button class="icon-btn" id="themeBtn" title="Light / dark" data-ic="contrast"></button>
 </div></header>
 
 <main id="view"></main>
 
-<button class="fab" id="fab" title="Add topic" aria-label="Add topic">+</button>
+<button class="fab" id="fab" title="Add topic" aria-label="Add topic" data-ic="plus"></button>
 
 <nav class="tabs">
-  <button data-tab="today" class="active"><span class="i">🏠</span>Today</button>
-  <button data-tab="calendar"><span class="i">📅</span>Calendar</button>
-  <button data-tab="topics"><span class="i">📚</span>Topics</button>
-  <button data-tab="stats"><span class="i">📈</span>Stats</button>
-  <button data-tab="settings"><span class="i">⚙️</span>Settings</button>
+  <button data-tab="today" class="active"><span class="i" data-ic="home"></span>Today</button>
+  <button data-tab="focus"><span class="i" data-ic="timer"></span>Focus</button>
+  <button data-tab="calendar"><span class="i" data-ic="calendar"></span>Calendar</button>
+  <button data-tab="topics"><span class="i" data-ic="book"></span>Topics</button>
+  <button data-tab="stats"><span class="i" data-ic="chart"></span>Stats</button>
+  <button data-tab="settings"><span class="i" data-ic="sliders"></span>Settings</button>
 </nav>
 
 <div id="modalRoot"></div>
 
 <script>
+const ICONS = {
+  home:'<path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/>',
+  timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2h5"/>',
+  calendar:'<rect x="3" y="4.5" width="18" height="17" rx="3"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/>',
+  book:'<path d="M4 19V5a2 2 0 0 1 2-2h14v15H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h14"/>',
+  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  sliders:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+  contrast:'<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  trash:'<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>',
+  play:'<path d="M7 4.5v15l12-7.5z" fill="currentColor"/>',
+  pause:'<path d="M7 4h3.5v16H7zM13.5 4H17v16h-3.5z" fill="currentColor" stroke="none"/>',
+  skip:'<path d="M5 5l10 7-10 7z" fill="currentColor"/><path d="M19 5v14"/>',
+  stop:'<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/>',
+  pip:'<rect x="2" y="4" width="20" height="16" rx="3"/><rect x="12" y="11" width="7" height="6" rx="1.5" fill="currentColor"/>',
+  cloud:'<path d="M7 19h10.5a4.5 4.5 0 0 0 .5-8.97A6 6 0 0 0 6.34 9.5 4.75 4.75 0 0 0 7 19z"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/>',
+  close:'<path d="M6 6l12 12M18 6L6 18"/>',
+  flame:'<path d="M12 22c4 0 7-2.7 7-6.8 0-4.5-4-6.7-5-11.2-2.5 2-3.5 4.5-3.5 6.5C9 9.5 8 8.5 7.5 7 6 9 5 11.2 5 15.2 5 19.3 8 22 12 22z"/>',
+  download:'<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
+  upload:'<path d="M12 21V9M7 14l5-5 5 5M4 3h16"/>',
+  link:'<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4L12 18.4"/>',
+  refresh:'<path d="M20 11a8 8 0 0 0-14.7-4.4L3 9M3 4v5h5M4 13a8 8 0 0 0 14.7 4.4L21 15M21 20v-5h-5"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  select:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 12l3 3 5-6"/>'
+};
+const ic = (n, sz = 20) => `<svg class="ic" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]||''}</svg>`;
 /* ============ Storage ============ */
 const KEY = 'revise.v1';
 const DEFAULT = {
   topics: [],
-  settings: { intervals:[1,3,7,14,30], reminderTime:'08:00', notify:false, shiftLate:false, theme:'auto' },
-  log: [] // {date, topicId, stage, rating}
+  settings: { intervals:[1,3,7,14,30], reminderTime:'08:00', notify:false, shiftLate:false, theme:'dark' },
+  log: [], // {date, topicId, stage, rating}
+  // Pomodoro settings and study-session records
+  focus: { study:25, brk:5, longBrk:15, longEvery:4, autoStart:false, sound:true, goal:120, nowPlaying:true, noise:'silent' },
+  sessions: [] // {id, start, end, minutes, subject, topicId, topicTitle, note, completed, manual}
 };
 let db = load();
 function load(){
   try{
     const raw = localStorage.getItem(KEY);
-    if(raw){ const d = JSON.parse(raw); return {...DEFAULT, ...d, settings:{...DEFAULT.settings, ...(d.settings||{})}}; }
+    if(raw){ return normalize(JSON.parse(raw)); }
   }catch(e){}
-  return structuredClone(DEFAULT);
+  return normalize({});
 }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ toast('Could not save — storage is unavailable'); } }
+function normalize(d){
+  return {...structuredClone(DEFAULT), ...d,
+    settings:{...DEFAULT.settings, ...(d.settings||{})},
+    focus:{...DEFAULT.focus, ...(d.focus||{})},
+    sessions: Array.isArray(d.sessions) ? d.sessions : [],
+    log: (Array.isArray(d.log) ? d.log : []).map(l => l.id ? l : {...l, id: Math.random().toString(36).slice(2,10)+(l.date||'')}),
+    deleted: d.deleted || {}, meta: d.meta || {}};
+}
+/* Change tracking for sync: every save() compares items with the last snapshot, stamps
+   changed ones with `updated`, and records deleted ids as tombstones. */
+const SYNCED_SETTINGS = ['intervals','reminderTime','shiftLate'];
+const pick = (o, keys) => Object.fromEntries(keys.map(k => [k, o[k]]));
+function sig(x){ const {updated, ...rest} = x; return JSON.stringify(rest); }
+function indexSnap(d){
+  const m = new Map();
+  d.topics.forEach(x => m.set(x.id, sig(x)));
+  d.sessions.forEach(x => m.set(x.id, sig(x)));
+  d.log.forEach(x => m.set(x.id, sig(x)));
+  m.set('@settings', JSON.stringify(pick(d.settings, SYNCED_SETTINGS)));
+  m.set('@focus', JSON.stringify(d.focus));
+  return m;
+}
+let snap = indexSnap(db);
+function stamp(){
+  const now = Date.now(), seen = new Set();
+  for(const x of [...db.topics, ...db.sessions, ...db.log]){
+    seen.add(x.id);
+    if(snap.get(x.id) !== sig(x)){ x.updated = now; delete db.deleted[x.id]; }
+  }
+  for(const k of snap.keys()) if(!k.startsWith('@') && !seen.has(k)) db.deleted[k] = now;
+  if(snap.get('@settings') !== JSON.stringify(pick(db.settings, SYNCED_SETTINGS))) db.meta.settingsUpdated = now;
+  if(snap.get('@focus') !== JSON.stringify(db.focus)) db.meta.focusUpdated = now;
+  snap = indexSnap(db);
+}
+function writeLocal(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ toast('Could not save — storage is unavailable'); } }
+function save(){ stamp(); writeLocal(); scheduleSync(); }
 
 /* ============ Dates ============ */
 const pad = n => String(n).padStart(2,'0');
@@ -211,7 +327,7 @@ function status(r){
 }
 function subjectColor(name){
   let h = 0; for(const c of (name||'').toLowerCase()) h = (h*31 + c.charCodeAt(0)) % 360;
-  return `hsl(${h} 70% 55%)`;
+  return `hsl(${h} 100% 66%)`;
 }
 function subjects(){ return [...new Set(db.topics.map(t => t.subject).filter(Boolean))].sort((a,b)=>a.localeCompare(b)); }
 function getTopic(id){ return db.topics.find(t => t.id === id); }
@@ -233,7 +349,7 @@ function completeReview(topicId, idx, rating){
       t.reviews.splice(idx+1, 0, { interval:'extra', due:tom, done:null, rating:null, extra:true, xid:uid() });
     }
   }
-  db.log.push({ date:td, topicId, stage:r.interval, rating });
+  db.log.push({ id:uid(), date:td, topicId, stage:r.interval, rating });
   save();
 }
 function undoReview(topicId, idx){
@@ -258,14 +374,20 @@ function dueNow(){ const td = today(); return allPending().filter(x => x.r.due <
 /* ============ UI helpers ============ */
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function toast(msg){
-  const el = document.createElement('div'); el.className='toast'; el.textContent=msg; document.body.appendChild(el);
-  setTimeout(()=>el.remove(), 2600);
+function toast(msg, undo){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const el = document.createElement('div'); el.className='toast'; el.textContent=msg;
+  if(undo){
+    const b = document.createElement('button'); b.className='undo'; b.textContent='Undo';
+    b.onclick = () => { undo(); el.remove(); }; el.appendChild(b);
+  }
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), undo ? 6000 : 2600);
 }
 function stageLabel(r){ return r.extra ? 'Extra review' : `Day ${r.interval}`; }
 function chip(subject){
   if(!subject) return '';
-  return `<span class="chip"><span class="dot" style="background:${subjectColor(subject)}"></span>${esc(subject)}</span>`;
+  return `<span class="chip"><span class="dot" style="background:${subjectColor(subject)};color:${subjectColor(subject)}"></span>${esc(subject)}</span>`;
 }
 function stagesBar(t){
   return `<div class="stages">${t.reviews.map(r => `<div class="stage ${status(r)}" title="${stageLabel(r)} · ${fmt(r.due)}"></div>`).join('')}</div>`;
@@ -280,6 +402,8 @@ function render(){
   document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab===tab));
   const v = $('#view');
   if(tab==='today') v.innerHTML = renderToday();
+  if(tab==='focus'){ v.innerHTML = renderFocus(); updateTimerUI(); prepPipVideo(); }
+  $('#fab').classList.toggle('hidden', tab==='focus');
   if(tab==='calendar') v.innerHTML = renderCalendar();
   if(tab==='topics') v.innerHTML = renderTopics();
   if(tab==='stats') v.innerHTML = renderStats();
@@ -306,20 +430,21 @@ function reviewRow({t, r, i}){
 }
 function renderToday(){
   const td = today();
-  const pend = allPending().filter(x => !x.t.archived);
+  const seen = new Set(); // one card per topic: its earliest pending review
+  const pend = allPending().filter(x => !x.t.archived && !seen.has(x.t.id) && seen.add(x.t.id));
   const over = pend.filter(x => x.r.due < td);
   const due = pend.filter(x => x.r.due === td);
   const week = pend.filter(x => x.r.due > td && x.r.due <= addDays(td, 7));
   const doneToday = db.log.filter(l => l.date === td).length;
   let banner = '';
   if('Notification' in window && Notification.permission === 'default' && !db.settings.dismissedNotif){
-    banner = `<div class="banner"><div class="t">🔔 Turn on reminders so you get notified when reviews are due.</div>
+    banner = `<div class="banner"><div class="t">Turn on reminders so you get notified when reviews are due.</div>
       <button class="btn primary small" data-act="enableNotif">Enable</button>
       <button class="btn ghost small" data-act="dismissNotif">Later</button></div>`;
   }
   if(!db.topics.length){
     return banner + `<div class="card empty">
-      <div style="font-size:42px">🧠</div>
+      <div style="color:var(--text);filter:drop-shadow(0 0 8px rgba(255,255,255,.6))">${ic('calendar',44)}</div>
       <h2 style="margin:8px 0">Welcome to Revise</h2>
       <p>Add something you learned today. You'll be reminded to review it after<br><b>${db.settings.intervals.join(' · ')}</b> days.</p>
       <button class="btn primary" data-act="add">Add your first topic</button>
@@ -330,12 +455,12 @@ function renderToday(){
     <div class="card stat"><div class="n" style="color:var(--bad)">${over.length}</div><div class="l">Overdue</div></div>
     <div class="card stat"><div class="n" style="color:var(--warn)">${due.length}</div><div class="l">Due today</div></div>
     <div class="card stat"><div class="n" style="color:var(--ok)">${doneToday}</div><div class="l">Reviewed today</div></div>
-    <div class="card stat"><div class="n">🔥 ${streak()}</div><div class="l">Day streak</div></div>
+    <div class="card stat"><div class="n">${ic('flame',22)}${streak()}</div><div class="l">Day streak</div></div>
   </div>
   ${over.length ? `<h2>Overdue</h2><div class="list">${over.map(reviewRow).join('')}</div>` : ''}
   <h2>Today · ${fmt(td)}</h2>
   ${due.length ? `<div class="list">${due.map(reviewRow).join('')}</div>` :
-    `<div class="card empty">${over.length ? 'Nothing new today — clear the overdue ones above.' : '🎉 All caught up for today!'}</div>`}
+    `<div class="card empty">${over.length ? 'Nothing new today — clear the overdue ones above.' : 'All caught up for today!'}</div>`}
   <h2>Coming up this week</h2>
   ${week.length ? `<div class="list">${week.map(reviewRow).join('')}</div>` : `<div class="card empty">No reviews in the next 7 days.</div>`}`;
 }
@@ -359,7 +484,7 @@ function renderCalendar(){
   for(let k=0;k<42;k++){
     const d = new Date(start); d.setDate(start.getDate()+k);
     const s = ymd(d); const items = byDay[s] || [];
-    const dots = items.slice(0,6).map(x => `<i style="background:${x.r.done ? 'var(--ok)' : subjectColor(x.t.subject)}"></i>`).join('');
+    const dots = items.slice(0,6).map(x => `<i style="background:${x.r.done ? 'var(--muted)' : subjectColor(x.t.subject)};color:${x.r.done ? 'transparent' : subjectColor(x.t.subject)}"></i>`).join('');
     cells += `<button class="d ${d.getMonth()!==m?'out':''} ${s===td?'today':''} ${s===calSel?'sel':''}" data-day="${s}">
       <span class="num">${d.getDate()}</span><span class="dots">${dots}</span>${items.length>6?`<span class="cnt">+${items.length-6}</span>`:''}</button>`;
   }
@@ -382,7 +507,7 @@ function doneRow({t,r,i}){
     <div class="meta">${chip(t.subject)}<span class="chip">${stageLabel(r)}</span><span class="badge done">✓ Reviewed ${fmt(r.done)}${r.rating?` · ${rateEmoji(r.rating)}`:''}</span></div>
   </div></div>`;
 }
-const rateEmoji = r => ({easy:'😄 Easy', ok:'🙂 Okay', hard:'😣 Hard'})[r] || '';
+const rateEmoji = r => ({easy:'Easy', ok:'Okay', hard:'Hard'})[r] || '';
 
 /* ============ Topics ============ */
 function renderTopics(){
@@ -410,7 +535,7 @@ function topicRow(t){
   const badge = n ? `<span class="badge ${status(n)}">${status(n)==='up' ? 'Next: '+fmt(n.due) : rel(n.due)}</span>` : `<span class="badge done">✓ Completed</span>`;
   return `<div class="card item" data-open="${t.id}" style="cursor:pointer">
     <div class="body">
-      <div class="title">${t.pinned?'📌 ':''}${esc(t.title)}</div>
+      <div class="title">${t.pinned?'':''}${esc(t.title)}</div>
       ${t.description ? `<div class="desc">${esc(t.description)}</div>` : ''}
       <div class="meta">${chip(t.subject)}${badge}<span class="chip">${done}/${t.reviews.length} reviews</span></div>
       ${stagesBar(t)}
@@ -447,9 +572,9 @@ function renderStats(){
   </div>
   <h2>How it felt</h2>
   <div class="card"><div class="row" style="text-align:center">
-    <div><b style="font-size:20px">${rc.easy}</b><br><small>😄 Easy</small></div>
-    <div><b style="font-size:20px">${rc.ok}</b><br><small>🙂 Okay</small></div>
-    <div><b style="font-size:20px">${rc.hard}</b><br><small>😣 Hard</small></div>
+    <div><div class="big-num">${rc.easy}</div><div class="cap">Easy</div></div>
+    <div><div class="big-num">${rc.ok}</div><div class="cap">Okay</div></div>
+    <div><div class="big-num">${rc.hard}</div><div class="cap">Hard</div></div>
   </div></div>
   <h2>By subject</h2>
   ${subs.length ? `<div class="list">${subs.map(x=>`<div class="card">
@@ -463,33 +588,34 @@ function renderSettings(){
   const s = db.settings;
   const perm = 'Notification' in window ? Notification.permission : 'unsupported';
   return `<div class="settings">
+  ${renderSyncCard()}
   <div class="card">
-    <b>🔔 Notifications</b>
+    <b>Notifications</b>
     <p>Status: <b>${perm==='granted'?'Allowed':perm==='denied'?'Blocked in browser settings':perm==='unsupported'?'Not supported in this browser':'Not enabled yet'}</b></p>
     <div class="switch"><span>Daily reminder</span><input type="checkbox" id="sNotify" ${s.notify?'checked':''}></div>
     <label>Reminder time</label><input type="time" id="sTime" value="${s.reminderTime}">
     <p>Browser notifications fire when Revise is open or installed on your device. For reminders that <b>always</b> arrive — even when the app is closed — add your reviews to your phone/laptop calendar:</p>
-    <div class="row" style="margin-top:8px"><button class="btn" data-act="icsAll">📅 Export all reviews to calendar (.ics)</button></div>
+    <div class="row" style="margin-top:8px"><button class="btn" data-act="icsAll">${ic('calendar',16)}Export reviews to calendar (.ics)</button></div>
     <div class="row" style="margin-top:8px"><button class="btn" data-act="testNotif">Send a test notification</button></div>
   </div>
   <div class="card">
-    <b>🗓️ Schedule</b>
+    <b>Schedule</b>
     <p>Days after learning when each review is due. Applies to new topics.</p>
     <input type="text" id="sInt" value="${s.intervals.join(', ')}">
     <div class="row" style="margin-top:8px"><button class="btn small" data-act="resetInt">Reset to 1, 3, 7, 14, 30</button></div>
     <div class="switch" style="margin-top:8px"><span>If I review late, push the remaining reviews back by the same number of days</span><input type="checkbox" id="sShift" ${s.shiftLate?'checked':''}></div>
   </div>
   <div class="card">
-    <b>💾 Backup &amp; sync between devices</b>
-    <p>Your data is saved on this device. To move it to your phone or laptop, export a backup here and import it on the other device.</p>
+    <b>Backup file</b>
+    <p>Download a copy of everything, or restore from a copy.</p>
     <div class="row" style="margin-top:8px;flex-wrap:wrap">
-      <button class="btn" data-act="export">⬇️ Export backup</button>
-      <button class="btn" data-act="import">⬆️ Import backup</button>
+      <button class="btn" data-act="export">${ic('download',16)}Export backup</button>
+      <button class="btn" data-act="import">${ic('upload',16)}Import backup</button>
     </div>
     <input type="file" id="importFile" accept="application/json,.json" class="hidden">
   </div>
   <div class="card">
-    <b>📱 Install the app</b>
+    <b>Install the app</b>
     <p><b>iPhone:</b> open in Safari → Share → <i>Add to Home Screen</i> (needed for notifications on iOS).<br>
        <b>Android:</b> Chrome menu ⋮ → <i>Install app</i>.<br>
        <b>Laptop:</b> Chrome/Edge address bar → install icon.</p>
@@ -497,7 +623,7 @@ function renderSettings(){
   </div>
   <div class="card">
     <b>Theme</b>
-    <select id="sTheme" style="margin-top:8px">${['auto','light','dark'].map(x=>`<option ${x===s.theme?'selected':''}>${x}</option>`).join('')}</select>
+    <select id="sTheme" style="margin-top:8px">${[['dark','Neon (black)'],['light','Light (white)']].map(([v,l])=>`<option value="${v}" ${v===(s.theme==='light'?'light':'dark')?'selected':''}>${l}</option>`).join('')}</select>
   </div>
   <div class="card"><button class="btn danger" data-act="wipe">Delete all data</button></div>
   </div>`;
@@ -509,7 +635,7 @@ function openModal(html){
   $('#mbg').addEventListener('click', e => { if(e.target.id==='mbg') closeModal(); });
   const f = $('#modalRoot [autofocus]'); if(f && matchMedia('(min-width:700px)').matches) f.focus();
 }
-function closeModal(){ $('#modalRoot').innerHTML=''; }
+function closeModal(){ $('#modalRoot').innerHTML=''; if(pendingRender){ pendingRender=false; render(); } }
 
 function editTopic(id){
   const t = id ? getTopic(id) : null;
@@ -563,7 +689,7 @@ function showTopic(id){
   const t = getTopic(id); if(!t) return;
   openModal(`<div style="display:flex;gap:8px;align-items:flex-start">
       <div style="flex:1"><h3>${esc(t.title)}</h3><div class="meta" style="display:flex;gap:6px;flex-wrap:wrap">${chip(t.subject)}<span class="chip">Learned ${fmt(t.learned)}</span></div></div>
-      <button class="icon-btn" data-m="cancel" aria-label="Close">✕</button>
+      <button class="icon-btn" data-m="cancel" aria-label="Close">${ic('close')}</button>
     </div>
     ${t.description ? `<div style="white-space:pre-wrap;margin-top:12px;word-break:break-word">${linkify(esc(t.description))}</div>` : ''}
     <div class="timeline">${t.reviews.map((r,i)=>{
@@ -578,7 +704,8 @@ function showTopic(id){
     <div class="foot">
       <button class="btn danger" data-m="delete" data-id="${t.id}">Delete</button>
       <button class="btn" data-m="archive" data-id="${t.id}">${t.archived?'Unarchive':'Archive'}</button>
-      <button class="btn" data-m="ics" data-id="${t.id}">📅 Add to calendar</button>
+      <button class="btn" data-m="ics" data-id="${t.id}">${ic('calendar',16)}Calendar</button>
+      <button class="btn" data-m="studyThis" data-id="${t.id}">${ic('timer',16)}Study this</button>
       <button class="btn primary" data-m="edit" data-id="${t.id}">Edit</button>
     </div>`);
 }
@@ -589,13 +716,13 @@ function reviewModal(id, i){
   openModal(`<h3>Review: ${esc(t.title)}</h3>
     <div class="meta" style="display:flex;gap:6px;flex-wrap:wrap">${chip(t.subject)}<span class="chip">${stageLabel(r)}</span><span class="chip">Due ${fmt(r.due)}</span></div>
     <p style="color:var(--muted);font-size:13px;margin-top:12px">Try to recall the key points from memory first, then reveal your notes.</p>
-    <button class="btn" id="reveal" style="width:100%">👀 Reveal notes</button>
+    <button class="btn" id="reveal" style="width:100%">${ic('eye',16)}Reveal notes</button>
     <div id="notes" class="hidden card" style="margin-top:10px;white-space:pre-wrap;word-break:break-word">${t.description ? linkify(esc(t.description)) : '<i>No notes for this topic.</i>'}</div>
     <p style="margin:16px 0 0;font-weight:600">How well did you remember it?</p>
     <div class="rate">
-      <button data-rate="hard" data-id="${id}" data-i="${i}"><b>😣</b>Hard<br><small style="color:var(--muted)">+ extra review tomorrow</small></button>
-      <button data-rate="ok" data-id="${id}" data-i="${i}"><b>🙂</b>Okay</button>
-      <button data-rate="easy" data-id="${id}" data-i="${i}"><b>😄</b>Easy</button>
+      <button data-rate="hard" data-id="${id}" data-i="${i}"><b>Hard</b><small style="color:var(--muted)">+ extra review tomorrow</small></button>
+      <button data-rate="ok" data-id="${id}" data-i="${i}"><b>Okay</b><small style="color:var(--muted)">on schedule</small></button>
+      <button data-rate="easy" data-id="${id}" data-i="${i}"><b>Easy</b><small style="color:var(--muted)">nailed it</small></button>
     </div>
     <div class="foot"><button class="btn" data-m="cancel">Cancel</button></div>`);
   $('#reveal').onclick = () => { $('#notes').classList.remove('hidden'); $('#reveal').classList.add('hidden'); };
@@ -620,7 +747,7 @@ function buildIcs(topics){
       `DTSTAMP:${stamp}`,
       `DTSTART:${d}T${hh}${mm}00`,
       'DURATION:PT20M',
-      fold(`SUMMARY:${icsEscape(`📖 Review: ${t.title}${t.subject?' ('+t.subject+')':''} — ${stageLabel(r)}`)}`),
+      fold(`SUMMARY:${icsEscape(`Review: ${t.title}${t.subject?' ('+t.subject+')':''} — ${stageLabel(r)}`)}`),
       fold(`DESCRIPTION:${icsEscape((t.description||'') + `\n\nLearned ${t.learned}. ${stageLabel(r)} of the ${db.settings.intervals.join('-')} schedule.`)}`),
       'BEGIN:VALARM','ACTION:DISPLAY',fold(`DESCRIPTION:${icsEscape('Review: '+t.title)}`),'TRIGGER:PT0M','END:VALARM',
       'END:VEVENT');
@@ -643,9 +770,9 @@ function exportIcs(topics, name){
 
 /* ============ Notifications ============ */
 let swReg = null;
-async function notify(title, body){
+async function notify(title, body, tag='revise-due', sticky=false){
   if(!('Notification' in window) || Notification.permission!=='granted') return false;
-  const opts = { body, icon:'icon-192.png', badge:'icon-192.png', tag:'revise-due' };
+  const opts = { body, icon:'icon-192.png', badge:'icon-192.png', tag, renotify:true, requireInteraction:sticky, silent:false, vibrate:[300,120,300] };
   try{
     if(swReg){ await swReg.showNotification(title, opts); return true; }
   }catch(e){}
@@ -662,7 +789,7 @@ function dueSummary(){
   const d = dueNow();
   if(!d.length) return null;
   const names = d.slice(0,3).map(x=>x.t.title).join(', ');
-  return { title:`📖 ${d.length} review${d.length>1?'s':''} due`, body: names + (d.length>3?` and ${d.length-3} more`:'') };
+  return { title:`${d.length} review${d.length>1?'s':''} due`, body: names + (d.length>3?` and ${d.length-3} more`:'') };
 }
 // Fires once per day, after the reminder time, while the app is open/opened.
 function checkReminder(force){
@@ -707,7 +834,7 @@ document.addEventListener('click', e => {
   if(d.rate){
     completeReview(d.id, +d.i, d.rate); closeModal(); render();
     const t = getTopic(d.id); const n = nextReview(t);
-    toast(n ? `Nice! Next review ${rel(n.due).toLowerCase()} (${fmt(n.due)})` : '🏆 All reviews complete for this topic!');
+    toast(n ? `Nice! Next review ${rel(n.due).toLowerCase()} (${fmt(n.due)})` : 'All reviews complete for this topic!');
     return;
   }
   if(d.open){ showTopic(d.open); return; }
@@ -720,6 +847,11 @@ document.addEventListener('click', e => {
   if(d.m){
     const t = d.id && getTopic(d.id);
     if(d.m==='cancel') closeModal();
+    if(d.m==='studyThis'){
+      if(timer.running){ toast('A timer is already running'); }
+      else { timer.subject = t.subject||''; timer.topicId = t.id; saveTimer(); }
+      closeModal(); tab='focus'; render(); scrollTo(0,0);
+    }
     if(d.m==='saveTopic') saveTopic(d.id);
     if(d.m==='edit') editTopic(d.id);
     if(d.m==='undo'){ undoReview(d.id, +d.i); showTopic(d.id); render(); }
@@ -735,13 +867,13 @@ document.addEventListener('click', e => {
     if(a==='add') editTopic();
     if(a==='enableNotif') enableNotif();
     if(a==='dismissNotif'){ db.settings.dismissedNotif = true; save(); render(); }
-    if(a==='testNotif'){ if(Notification?.permission==='granted') notify('🔔 Revise test', dueSummary()?.body || 'Notifications are working!'); else enableNotif(); }
+    if(a==='testNotif'){ if(Notification?.permission==='granted') notify('Revise test', dueSummary()?.body || 'Notifications are working!'); else enableNotif(); }
     if(a==='icsAll') exportIcs(db.topics.filter(t=>!t.archived), 'revise-reviews.ics');
     if(a==='resetInt'){ db.settings.intervals=[1,3,7,14,30]; save(); render(); toast('Schedule reset'); }
     if(a==='export') download(`revise-backup-${today()}.json`, JSON.stringify(db, null, 2), 'application/json');
     if(a==='import') $('#importFile').click();
     if(a==='install' && deferredInstall){ deferredInstall.prompt(); deferredInstall = null; }
-    if(a==='wipe' && confirm('Delete ALL topics and history on this device?')){ db = structuredClone(DEFAULT); save(); render(); toast('All data deleted'); }
+    if(a==='wipe' && confirm(sync.token ? 'Delete ALL topics and study records? Sync is on, so they will be deleted on your other devices too.' : 'Delete ALL topics and history on this device?')){ db = normalize({}); save(); render(); toast('All data deleted'); }
   }
 });
 document.addEventListener('input', e => {
@@ -769,8 +901,10 @@ document.addEventListener('change', async e => {
         const have = new Set(db.topics.map(t=>t.id));
         d.topics.forEach(t => { if(have.has(t.id)){ const i=db.topics.findIndex(x=>x.id===t.id); db.topics[i]=t; } else db.topics.push(t); });
         db.log = [...db.log, ...(d.log||[])];
+        const haveS = new Set(db.sessions.map(s=>s.id));
+        (d.sessions||[]).forEach(s => { if(!haveS.has(s.id)) db.sessions.push(s); });
       } else {
-        db = {...DEFAULT, ...d, settings:{...DEFAULT.settings, ...(d.settings||{})}};
+        db = normalize(d);
       }
       save(); render(); toast(`Imported ${d.topics.length} topics`);
     }catch(err){ toast('That file is not a valid Revise backup'); }
@@ -783,13 +917,835 @@ document.addEventListener('keydown', e => {
   if(e.key==='n' && !$('#modalRoot').innerHTML && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); editTopic(); }
 });
 $('#fab').onclick = () => editTopic();
-$('#themeBtn').onclick = () => {
-  const cur = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
-  db.settings.theme = cur==='dark' ? 'light' : 'dark'; save(); applyTheme(); if(tab==='settings') render();
-};
+$('#themeBtn').onclick = () => { db.settings.theme = db.settings.theme==='light' ? 'dark' : 'light'; save(); applyTheme(); if(tab==='settings') render(); };
 function applyTheme(){
-  const t = db.settings.theme;
-  if(t==='auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+  const light = db.settings.theme === 'light';
+  if(light) document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme;
+  document.querySelector('meta[name=theme-color]').content = light ? '#ffffff' : '#000000';
+}
+
+/* ============ Focus (Pomodoro) ============ */
+const TKEY = 'revise.timer';
+const TIMER_BASE = {phase:'study', running:false, endAt:0, remaining:null, total:null, round:1, sessStart:0, subject:'', topicId:'', note:''};
+let timer = loadTimer();
+function loadTimer(){
+  try{ return {...TIMER_BASE, ...JSON.parse(localStorage.getItem(TKEY)||'{}')}; }catch(e){ return {...TIMER_BASE}; }
+}
+function saveTimer(){ try{ localStorage.setItem(TKEY, JSON.stringify(timer)); }catch(e){} armClock(); }
+const phaseMin = p => p==='study' ? db.focus.study : p==='long' ? db.focus.longBrk : db.focus.brk;
+const phaseName = p => p==='study' ? 'Focus' : p==='long' ? 'Long break' : 'Short break';
+const isActive = () => timer.remaining != null; // a phase has been started (running or paused)
+const totalMs = () => timer.total ?? phaseMin(timer.phase)*60000;
+const remainingMs = () => timer.running ? Math.max(0, timer.endAt - Date.now()) : (timer.remaining ?? totalMs());
+const clock = ms => { const s = Math.ceil(ms/1000); return `${pad(Math.floor(s/60))}:${pad(s%60)}`; };
+const fmtMin = m => { m = Math.round(m); return m < 60 ? `${m}m` : `${Math.floor(m/60)}h${m%60 ? ' '+(m%60)+'m' : ''}`; };
+const hm = ts => new Date(ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+let audioCtx = null, chimeEl = null, chimePrimed = false;
+// A ~2.5 s alarm (two rounds of three rising tones), generated as a WAV so it plays through a normal <audio> element
+function chimeUrl(){
+  const sr = 22050, n = Math.round(sr*2.6), buf = new ArrayBuffer(44+n*2), v = new DataView(buf);
+  const str = (o, t) => [...t].forEach((c, k) => v.setUint8(o+k, c.charCodeAt(0)));
+  str(0,'RIFF'); v.setUint32(4,36+n*2,true); str(8,'WAVEfmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); str(36,'data'); v.setUint32(40,n*2,true);
+  const notes = [[0,660],[.22,880],[.44,1320],[1.3,660],[1.52,880],[1.74,1320]];
+  for(let i=0;i<n;i++){
+    const t = i/sr; let x = 0;
+    for(const [st,f] of notes){ const d = t-st; if(d>=0 && d<.8){ const env = Math.min(1,d/.01)*Math.exp(-d*5); x += env*(Math.sin(2*Math.PI*f*d)*.7 + Math.sin(4*Math.PI*f*d)*.2); } }
+    v.setInt16(44+i*2, Math.max(-1,Math.min(1,x*.45))*32767, true);
+  }
+  return URL.createObjectURL(new Blob([buf], {type:'audio/wav'}));
+}
+// Browsers only allow sound after the user has interacted, so "unlock" the alarm on the first tap/click.
+function primeChime(){
+  try{
+    audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+  }catch(e){}
+  if(chimePrimed) return;
+  try{
+    chimeEl ||= Object.assign(new Audio(chimeUrl()), {preload:'auto'});
+    chimeEl.muted = true;
+    chimeEl.play().then(() => { chimeEl.pause(); chimeEl.currentTime = 0; chimeEl.muted = false; chimePrimed = true; }).catch(() => { chimeEl.muted = false; });
+  }catch(e){}
+}
+['pointerdown','keydown','touchend'].forEach(ev => addEventListener(ev, primeChime, {capture:true, passive:true}));
+function webChime(){
+  try{
+    audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();
+    audioCtx.resume?.();
+    [0,.22,.44,1.3,1.52,1.74].forEach((t, k) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.frequency.value = [660,880,1320][k%3]; o.type = 'sine';
+      g.gain.setValueAtTime(.0001, audioCtx.currentTime+t);
+      g.gain.exponentialRampToValueAtTime(.4, audioCtx.currentTime+t+.01);
+      g.gain.exponentialRampToValueAtTime(.0001, audioCtx.currentTime+t+.7);
+      o.connect(g).connect(audioCtx.destination); o.start(audioCtx.currentTime+t); o.stop(audioCtx.currentTime+t+.75);
+    });
+  }catch(e){}
+}
+function chime(){
+  if(!db.focus.sound) return;
+  try{
+    chimeEl ||= Object.assign(new Audio(chimeUrl()), {preload:'auto'});
+    chimeEl.muted = false; chimeEl.volume = 1; chimeEl.currentTime = 0;
+    chimeEl.play().catch(webChime);
+  }catch(e){ webChime(); }
+  try{ navigator.vibrate?.([300,120,300,120,300]); }catch(e){}
+}
+// Flash the tab title until the user comes back, so a hidden tab is noticeable
+let flashT = null;
+function flashTitle(msg){
+  clearInterval(flashT); if(!document.hidden) return;
+  let on = false;
+  flashT = setInterval(() => {
+    if(!document.hidden){ clearInterval(flashT); updateBadge(); return; }
+    on = !on; document.title = on ? msg : 'Revise';
+  }, 1000);
+}
+
+/* Web Worker clock: timers in background tabs are slowed down (up to 1 min late) on laptops,
+   but worker timers are not, so the end of a session is caught on time. */
+let clockWorker = null;
+function armClock(){
+  try{
+    if(!clockWorker){
+      clockWorker = new Worker(URL.createObjectURL(new Blob(["let t=null;onmessage=e=>{clearTimeout(t);if(e.data>0)t=setTimeout(()=>postMessage(1),e.data)}"], {type:'text/javascript'})));
+      clockWorker.onmessage = () => { if(timer.running && Date.now() >= timer.endAt) finishPhase(timer.endAt); };
+    }
+    clockWorker.postMessage(timer.running ? Math.max(1, timer.endAt - Date.now() + 25) : 0);
+  }catch(e){}
+}
+
+function startPause(){
+  primeChime();
+  if('Notification' in window && Notification.permission==='default') Notification.requestPermission().then(() => { if(tab==='focus') render(); });
+  if(timer.running){ // pause
+    timer.remaining = Math.max(0, timer.endAt - Date.now()); timer.running = false;
+  } else {
+    if(!isActive()){ timer.total = phaseMin(timer.phase)*60000; timer.remaining = timer.total; }
+    if(timer.phase==='study' && !timer.sessStart) timer.sessStart = Date.now();
+    timer.endAt = Date.now() + timer.remaining; timer.running = true;
+  }
+  saveTimer(); updateTimerUI(); nowPlayingFromGesture();
+}
+function studiedMs(){ return timer.phase==='study' && isActive() ? totalMs() - remainingMs() : 0; }
+function recordSession(ms, end, completed){
+  const minutes = Math.round(ms/60000);
+  if(minutes < 1) return null;
+  const t = timer.topicId && getTopic(timer.topicId);
+  const s = { id:uid(), start: timer.sessStart || end - ms, end, minutes,
+    subject: timer.subject.trim(), topicId: t ? t.id : '', topicTitle: t ? t.title : '', note: timer.note.trim(), completed };
+  db.sessions.push(s); save();
+  return s;
+}
+function setPhase(phase, autorun){
+  timer.phase = phase; timer.total = phaseMin(phase)*60000;
+  timer.sessStart = 0;
+  if(autorun){ timer.remaining = timer.total; timer.endAt = Date.now()+timer.total; timer.running = true; if(phase==='study') timer.sessStart = Date.now(); }
+  else { timer.remaining = null; timer.total = null; timer.running = false; }
+  saveTimer();
+}
+// Called when the countdown reaches zero (also on load if it finished while the app was closed)
+function finishPhase(at){
+  const stale = Date.now() - at > 60000;
+  const auto = db.focus.autoStart && !stale;
+  if(timer.phase==='study'){
+    const s = recordSession(totalMs(), at, true);
+    const long = timer.round % db.focus.longEvery === 0;
+    setPhase(long ? 'long' : 'break', auto);
+    chime();
+    notifyFocus('Focus session done', `${s ? fmtMin(s.minutes)+' recorded. ' : ''}Time for a ${phaseMin(timer.phase)} min ${long?'long ':''}break.`);
+  } else {
+    timer.round = timer.phase==='long' ? 1 : timer.round + 1;
+    setPhase('study', auto);
+    chime();
+    notifyFocus('Break is over', `Ready for ${db.focus.study} more minutes of focus?`);
+  }
+  if(tab==='focus') render(); else updateTimerUI();
+}
+function notifyFocus(title, body){
+  if(document.visibilityState==='visible') toast(title + ' — ' + body);
+  notify(title, body, 'revise-focus', true);
+  flashTitle('⏰ ' + title);
+}
+function skipPhase(){
+  if(timer.phase==='study'){
+    const ms = studiedMs();
+    const s = ms >= 60000 ? recordSession(ms, Date.now(), false) : null;
+    const long = timer.round % db.focus.longEvery === 0;
+    setPhase(long ? 'long' : 'break', false);
+    toast(s ? `Recorded ${fmtMin(s.minutes)} · break next` : 'Skipped to break');
+  } else {
+    timer.round = timer.phase==='long' ? 1 : timer.round + 1;
+    setPhase('study', false);
+    toast('Break skipped');
+  }
+  render();
+}
+function stopTimer(){
+  const ms = studiedMs();
+  if(ms >= 60000){
+    const s = recordSession(ms, Date.now(), false);
+    if(s) toast(`Stopped — ${fmtMin(s.minutes)} recorded`, () => { db.sessions = db.sessions.filter(x=>x.id!==s.id); save(); render(); });
+  }
+  timer.round = 1; setPhase('study', false); render();
+}
+
+function updateTimerUI(){
+  const rem = remainingMs(), tot = totalMs();
+  if(timer.running) document.title = `${clock(rem)} · ${phaseName(timer.phase)}`;
+  const el = $('#tTime'); if(!el) return;
+  el.textContent = clock(rem);
+  $('#tPhase').textContent = phaseName(timer.phase) + (isActive() && !timer.running ? ' · paused' : '');
+  const C = 2*Math.PI*110;
+  $('#tProg').style.strokeDashoffset = C * (1 - rem/tot);
+  $('#tRing').classList.toggle('brk', timer.phase!=='study');
+  $('#tStart').innerHTML = timer.running ? ic('pause',16)+'Pause' : isActive() ? ic('play',16)+'Resume' : ic('play',16)+'Start';
+  $('#tStop').disabled = !isActive() && timer.round===1 && timer.phase==='study';
+}
+
+/* --- records filtering --- */
+let recF = { q:'', subject:'', range:'7', sort:'new', selecting:false, sel:new Set() };
+function filteredSessions(){
+  let list = db.sessions.slice();
+  if(recF.range !== 'all'){
+    const from = recF.range==='today' ? today() : addDays(today(), -(+recF.range - 1));
+    list = list.filter(s => ymd(new Date(s.start)) >= from);
+  }
+  if(recF.subject) list = list.filter(s => (s.subject||'') === (recF.subject==='__none' ? '' : recF.subject));
+  const q = recF.q.trim().toLowerCase();
+  if(q) list = list.filter(s => `${s.subject} ${s.topicTitle} ${s.note}`.toLowerCase().includes(q));
+  const by = {
+    new:(a,b)=>b.start-a.start, old:(a,b)=>a.start-b.start,
+    long:(a,b)=>b.minutes-a.minutes, short:(a,b)=>a.minutes-b.minutes,
+    subject:(a,b)=>(a.subject||'~').localeCompare(b.subject||'~') || b.start-a.start
+  };
+  return list.sort(by[recF.sort]);
+}
+function sessionSubjects(){ return [...new Set([...subjects(), ...db.sessions.map(s=>s.subject).filter(Boolean)])].sort((a,b)=>a.localeCompare(b)); }
+function topicOptions(subject, selected){
+  const pool = db.topics.filter(t => !t.archived || t.id===selected);
+  const match = subject ? pool.filter(t => t.subject===subject) : [];
+  const list = match.length ? match : pool;
+  return `<option value="">— none —</option>` + list.map(t => `<option value="${t.id}" ${t.id===selected?'selected':''}>${esc(t.title)}${!match.length && t.subject ? ' ('+esc(t.subject)+')' : ''}</option>`).join('');
+}
+const minutesOn = d => db.sessions.filter(s => ymd(new Date(s.start))===d).reduce((a,s)=>a+s.minutes, 0);
+
+function alertStatus(){
+  const p = 'Notification' in window ? Notification.permission : 'unsupported';
+  const msg = p==='granted' ? 'Pop-up notifications are on.'
+    : p==='denied' ? 'Notifications are blocked for this site. Click the lock / settings icon left of the address bar → Notifications → Allow, then reload.'
+    : p==='unsupported' ? 'This browser can\'t show notifications — the sound will still play.'
+    : 'Pop-up notifications are off.';
+  return `<div style="margin-top:6px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:13px">
+    <div style="color:var(--muted)">${msg}${p==='granted' ? ' If you still don\'t see them, check that your computer allows notifications from your browser (Windows: Settings → Notifications; Mac: System Settings → Notifications) and that Do Not Disturb / Focus is off.' : ''}</div>
+    <div class="row" style="margin-top:8px;flex-wrap:wrap">
+      ${p==='default' ? `<button class="btn small primary" data-f="allowNotif">${ic('bell',15)}Turn on notifications</button>` : ''}
+      <button class="btn small" data-f="testAlert">${ic('bell',15)}Test alert</button>
+    </div></div>`;
+}
+function renderFocus(){
+  const f = db.focus, td = today();
+  const C = 2*Math.PI*110;
+  const todayMin = minutesOn(td), todayN = db.sessions.filter(s=>ymd(new Date(s.start))===td).length;
+  const days = [...Array(7)].map((_,k) => addDays(td, k-6));
+  const mins = days.map(minutesOn); const max = Math.max(1, ...mins);
+  const weekMin = mins.reduce((a,b)=>a+b,0);
+  let streakD = 0, d = todayMin ? td : addDays(td,-1); while(minutesOn(d) > 0){ streakD++; d = addDays(d,-1); }
+  const preset = (key, vals) => vals.map(v => `<button data-f="preset" data-k="${key}" data-v="${v}" class="${f[key]===v?'on':''}">${v}m</button>`).join('');
+  const subs = sessionSubjects();
+  return `
+  <div class="focus-grid">
+    <div class="card timer">
+      <div class="ring" id="tRing">
+        <svg viewBox="0 0 240 240"><circle class="track" cx="120" cy="120" r="110"/><circle class="prog" id="tProg" cx="120" cy="120" r="110" stroke-dasharray="${C}" stroke-dashoffset="0"/></svg>
+        <div class="center"><div class="phase" id="tPhase"></div><div class="time" id="tTime"></div>
+          <div class="rounds">${[...Array(f.longEvery)].map((_,k)=>`<i class="${k < timer.round - (timer.phase==='study'?1:0) ? 'on':''}"></i>`).join('')}</div></div>
+      </div>
+      <div class="ctrls">
+        <button class="btn primary big" id="tStart" data-f="start"></button>
+      </div>
+      <div class="ctrls">
+        <button class="btn small" data-f="skip">${ic('skip',15)}${timer.phase==='study'?'Skip to break':'Skip break'}</button>
+        <button class="btn small" id="tStop" data-f="stop">${ic('stop',15)}Stop</button>
+        <button class="btn small" data-f="pip" title="Float the timer over other apps">${ic('pip',15)}Pop out</button>
+      </div>
+      <div style="width:100%">
+        <label>Subject</label>
+        <input type="text" id="fcSub" list="fcSubList" placeholder="What are you studying?" value="${esc(timer.subject)}">
+        <datalist id="fcSubList">${subs.map(s=>`<option value="${esc(s)}">`).join('')}</datalist>
+        <label>Topic (optional)</label>
+        <select id="fcTopic">${topicOptions(timer.subject, timer.topicId)}</select>
+        <label>Note (optional)</label>
+        <input type="text" id="fcNote" placeholder="e.g. past paper Q1–5" value="${esc(timer.note)}">
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><b>Today</b><small style="color:var(--muted);display:flex;align-items:center;gap:4px">${ic('flame',14)}${streakD} day streak</small></div>
+        <div class="row" style="margin-top:8px">
+          <div><div style="font-size:24px;font-weight:700">${fmtMin(todayMin)}</div><small style="color:var(--muted)">focused · ${todayN} session${todayN===1?'':'s'}</small></div>
+          <div><div style="font-size:24px;font-weight:700">${fmtMin(weekMin)}</div><small style="color:var(--muted)">last 7 days</small></div>
+        </div>
+        <div class="goal"><div style="width:${Math.min(100, todayMin/f.goal*100)}%"></div></div>
+        <small style="color:var(--muted)">Daily goal: ${fmtMin(todayMin)} / ${fmtMin(f.goal)}${todayMin>=f.goal?' ':''}</small>
+        <div class="bars" style="height:70px">${mins.map((m,k)=>`<div style="height:${m/max*100}%;${days[k]===td?'':'opacity:.55'}" title="${fmt(days[k])}: ${fmtMin(m)}"></div>`).join('')}</div>
+        <div class="bars-l">${days.map(x=>`<span>${parse(x).toLocaleDateString(undefined,{weekday:'narrow'})}</span>`).join('')}</div>
+      </div>
+      <div class="card">
+        <b>Timer settings</b>
+        <label>Focus length</label>
+        <div class="num"><input type="number" id="fStudy" min="1" max="240" value="${f.study}"><span>minutes</span></div>
+        <div class="presets">${preset('study',[15,25,30,45,50,60,90])}</div>
+        <label>Break length</label>
+        <div class="num"><input type="number" id="fBrk" min="1" max="120" value="${f.brk}"><span>minutes</span></div>
+        <div class="presets">${preset('brk',[5,10,15,20])}</div>
+        <div class="row">
+          <div><label>Long break</label><div class="num"><input type="number" id="fLong" min="1" max="120" value="${f.longBrk}"><span>min</span></div></div>
+          <div><label>Long break after</label><div class="num"><input type="number" id="fEvery" min="1" max="12" value="${f.longEvery}"><span>sessions</span></div></div>
+        </div>
+        <label>Daily goal</label>
+        <div class="num"><input type="number" id="fGoal" min="5" max="1440" step="5" value="${f.goal}"><span>minutes</span></div>
+        <div class="switch" style="margin-top:10px"><span>Auto-start the next session / break</span><input type="checkbox" id="fAuto" ${f.autoStart?'checked':''}></div>
+        <div class="switch"><span>Sound &amp; vibration when time's up</span><input type="checkbox" id="fSound" ${f.sound?'checked':''}></div>
+        ${alertStatus()}
+        <div class="switch"><span>Show timer on lock screen &amp; notification bar<br><small style="color:var(--muted)">Keeps the timer alive when you leave the app</small></span><input type="checkbox" id="fNow" ${f.nowPlaying?'checked':''}></div>
+        <label>Background sound while timing</label>
+        <select id="fNoise">${[['silent','Silent'],['white','White noise'],['pink','Soft noise (rain-like)'],['brown','Brown noise (deep)']].map(([v,l])=>`<option value="${v}" ${f.noise===v?'selected':''}>${l}</option>`).join('')}</select>
+        ${isActive() ? '<p style="font-size:12px;color:var(--muted);margin:6px 0 0">New lengths apply from the next session.</p>' : ''}
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin:22px 0 10px;flex-wrap:wrap">
+    <h2 style="margin:0;flex:1">Study records</h2>
+    <button class="btn small" data-f="add">${ic('plus',15)}Add</button>
+    <button class="btn small" data-f="select">${recF.selecting?'Done':ic('select',15)+'Select'}</button>
+    <button class="btn small" data-f="csv">${ic('download',15)}CSV</button>
+  </div>
+  <div class="toolbar">
+    <input type="search" id="rq" placeholder="Search subject, topic, note…" value="${esc(recF.q)}">
+    <select id="rSub"><option value="">All subjects</option><option value="__none" ${recF.subject==='__none'?'selected':''}>No subject</option>${subs.map(s=>`<option ${s===recF.subject?'selected':''}>${esc(s)}</option>`).join('')}</select>
+    <select id="rRange">${[['today','Today'],['7','Last 7 days'],['30','Last 30 days'],['90','Last 90 days'],['all','All time']].map(([v,l])=>`<option value="${v}" ${v===recF.range?'selected':''}>${l}</option>`).join('')}</select>
+    <select id="rSort">${[['new','Newest first'],['old','Oldest first'],['long','Longest first'],['short','Shortest first'],['subject','By subject']].map(([v,l])=>`<option value="${v}" ${v===recF.sort?'selected':''}>${l}</option>`).join('')}</select>
+  </div>
+  <div id="recWrap">${renderRecords()}</div>`;
+}
+function renderRecords(){
+  const list = filteredSessions();
+  if(!db.sessions.length) return `<div class="card empty">No study sessions yet. Start the timer — every focus session is saved here automatically.</div>`;
+  if(!list.length) return `<div class="card empty">No records match these filters.</div>`;
+  const total = list.reduce((a,s)=>a+s.minutes,0);
+  // per-subject breakdown
+  const bySub = {}; list.forEach(s => { const k = s.subject || 'No subject'; bySub[k] = (bySub[k]||0) + s.minutes; });
+  const subRows = Object.entries(bySub).sort((a,b)=>b[1]-a[1]);
+  let html = `<div class="card" style="margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><b>${list.length} session${list.length>1?'s':''} · ${fmtMin(total)}</b><small style="color:var(--muted)">avg ${fmtMin(total/list.length)}</small></div>
+    <div style="display:flex;height:10px;border-radius:5px;overflow:hidden;margin-top:8px;background:var(--line)">${subRows.map(([k,m])=>`<div title="${esc(k)}: ${fmtMin(m)}" style="flex:${m};background:${k==='No subject'?'var(--muted)':subjectColor(k)}"></div>`).join('')}</div>
+    <div class="meta" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${subRows.map(([k,m])=>`<span class="chip"><span class="dot" style="background:${k==='No subject'?'var(--muted)':subjectColor(k)}"></span>${esc(k)} · ${fmtMin(m)}</span>`).join('')}</div>
+  </div>`;
+  if(recF.selecting){
+    const all = list.every(s=>recF.sel.has(s.id));
+    html += `<div class="selbar"><span class="t"><b>${recF.sel.size}</b> selected</span>
+      <button class="btn small" data-f="selAll">${all?'Clear':'Select all'}</button>
+      <button class="btn small danger" data-f="delSel" ${recF.sel.size?'':'disabled'}>${ic('trash',15)}Delete</button></div>`;
+  }
+  const row = s => {
+    const st = s.manual ? 'Added manually' : s.completed ? '✓ Completed' : 'Stopped early';
+    return `<div class="rec">
+      ${recF.selecting ? `<input type="checkbox" data-sel="${s.id}" ${recF.sel.has(s.id)?'checked':''}>` : ''}
+      <div class="body">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${s.subject ? chip(s.subject) : '<span class="chip">No subject</span>'}${s.topicTitle?`<b style="font-size:14px">${esc(s.topicTitle)}</b>`:''}</div>
+        ${s.note ? `<div style="font-size:13px;margin-top:3px;word-break:break-word">${esc(s.note)}</div>` : ''}
+        <div class="tm">${recF.sort==='new'||recF.sort==='old' ? '' : fmt(ymd(new Date(s.start)))+' · '}${hm(s.start)}–${hm(s.end)} · ${st}</div>
+      </div>
+      <div class="dur">${fmtMin(s.minutes)}</div>
+      ${recF.selecting ? '' : `<button class="icon-btn" data-f="edit" data-id="${s.id}" title="Edit">${ic('edit',18)}</button><button class="icon-btn" data-f="del" data-id="${s.id}" title="Delete">${ic('trash',18)}</button>`}
+    </div>`;
+  };
+  if(recF.sort==='new' || recF.sort==='old'){
+    const groups = []; list.forEach(s => { const k = ymd(new Date(s.start)); const g = groups.at(-1); if(g && g.k===k) g.items.push(s); else groups.push({k, items:[s]}); });
+    html += groups.map(g => `<div class="day-h"><span>${g.k===today()?'Today':g.k===addDays(today(),-1)?'Yesterday':fmtLong(g.k)}</span><small>${fmtMin(g.items.reduce((a,s)=>a+s.minutes,0))}</small></div>
+      <div class="card recs">${g.items.map(row).join('')}</div>`).join('');
+  } else {
+    html += `<div class="card recs">${list.map(row).join('')}</div>`;
+  }
+  return html;
+}
+function refreshRecords(){ const w = $('#recWrap'); if(w) w.innerHTML = renderRecords(); }
+
+function deleteSessions(ids){
+  const set = new Set(ids);
+  const removed = db.sessions.filter(s => set.has(s.id));
+  db.sessions = db.sessions.filter(s => !set.has(s.id));
+  ids.forEach(id => recF.sel.delete(id));
+  save(); if(tab==='focus') render();
+  toast(`Deleted ${removed.length} record${removed.length>1?'s':''}`, () => { db.sessions.push(...removed); save(); if(tab==='focus') render(); });
+}
+function editSession(id){
+  const s = id ? db.sessions.find(x=>x.id===id) : null;
+  const st = new Date(s ? s.start : Date.now() - 25*60000);
+  openModal(`<h3>${s?'Edit study record':'Add study record'}</h3>
+    <div class="row">
+      <div><label>Date</label><input type="date" id="sDate" value="${ymd(st)}"></div>
+      <div><label>Start time</label><input type="time" id="sStart" value="${pad(st.getHours())}:${pad(st.getMinutes())}"></div>
+    </div>
+    <label>Minutes studied</label>
+    <div class="num"><input type="number" id="sMin" min="1" max="1440" value="${s?.minutes ?? db.focus.study}" style="width:100px"><span>minutes</span></div>
+    <label>Subject</label>
+    <input type="text" id="sSub" list="sSubList" value="${esc(s?.subject||'')}" placeholder="e.g. Biology">
+    <datalist id="sSubList">${sessionSubjects().map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+    <label>Topic (optional)</label>
+    <select id="sTopic">${topicOptions(s?.subject||'', s?.topicId||'')}</select>
+    <label>Note</label>
+    <input type="text" id="sNote" value="${esc(s?.note||'')}" placeholder="What did you work on?">
+    <div class="foot">
+      ${s?`<button class="btn danger" data-f="delOne" data-id="${s.id}">Delete</button>`:''}
+      <button class="btn" data-m="cancel">Cancel</button>
+      <button class="btn primary" data-f="saveSess" data-id="${s?.id||''}">${s?'Save':'Add record'}</button>
+    </div>`);
+}
+function saveSession(id){
+  const min = Math.round(+$('#sMin').value);
+  if(!(min >= 1 && min <= 1440)){ toast('Minutes must be between 1 and 1440'); return; }
+  const [y,mo,da] = ($('#sDate').value || today()).split('-').map(Number);
+  const [h,mi] = ($('#sStart').value || '00:00').split(':').map(Number);
+  const start = new Date(y, mo-1, da, h, mi).getTime();
+  const topicId = $('#sTopic').value; const t = topicId && getTopic(topicId);
+  const data = { start, end:start+min*60000, minutes:min, subject:$('#sSub').value.trim(), topicId: t?t.id:'', topicTitle: t?t.title:'', note:$('#sNote').value.trim() };
+  if(id){ Object.assign(db.sessions.find(x=>x.id===id), data); toast('Record updated'); }
+  else { db.sessions.push({ id:uid(), completed:false, manual:true, ...data }); toast('Record added'); }
+  save(); closeModal(); render();
+}
+function exportCsv(){
+  const list = filteredSessions();
+  if(!list.length){ toast('No records to export'); return; }
+  const q = v => `"${String(v??'').replace(/"/g,'""')}"`;
+  const rows = [['Date','Start','End','Minutes','Subject','Topic','Note','Status']]
+    .concat(list.map(s => [ymd(new Date(s.start)), hm(s.start), hm(s.end), s.minutes, s.subject, s.topicTitle, s.note, s.manual?'Manual':s.completed?'Completed':'Stopped early']));
+  download(`study-records-${today()}.csv`, '﻿' + rows.map(r=>r.map(q).join(',')).join('\r\n'), 'text/csv');
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-f]'); if(!el) return;
+  const d = el.dataset, f = db.focus;
+  if(d.f==='start') startPause();
+  if(d.f==='skip') skipPhase();
+  if(d.f==='pip') popOut();
+  if(d.f==='testAlert'){ chime(); if(Notification?.permission==='granted') notify('Revise timer test', 'This is how you will be alerted when a session ends.', 'revise-focus', false); else toast('Sound played — desktop notifications are not turned on'); }
+  if(d.f==='allowNotif'){ enableNotif(); }
+  if(d.f==='stop') stopTimer();
+  if(d.f==='preset'){ f[d.k] = +d.v; save(); render(); }
+  if(d.f==='add') editSession();
+  if(d.f==='edit') editSession(d.id);
+  if(d.f==='saveSess') saveSession(d.id);
+  if(d.f==='del') deleteSessions([d.id]);
+  if(d.f==='delOne'){ closeModal(); deleteSessions([d.id]); }
+  if(d.f==='csv') exportCsv();
+  if(d.f==='select'){ recF.selecting = !recF.selecting; recF.sel.clear(); render(); }
+  if(d.f==='selAll'){ const l = filteredSessions(); const all = l.every(s=>recF.sel.has(s.id)); l.forEach(s => all ? recF.sel.delete(s.id) : recF.sel.add(s.id)); refreshRecords(); }
+  if(d.f==='delSel' && recF.sel.size && confirm(`Delete ${recF.sel.size} record${recF.sel.size>1?'s':''}?`)){ deleteSessions([...recF.sel]); }
+});
+document.addEventListener('input', e => {
+  const id = e.target.id;
+  if(id==='fcSub'){ timer.subject = e.target.value; saveTimer(); $('#fcTopic').innerHTML = topicOptions(timer.subject.trim(), timer.topicId); }
+  if(id==='fcNote'){ timer.note = e.target.value; saveTimer(); }
+  if(id==='sSub'){ const cur = $('#sTopic').value; $('#sTopic').innerHTML = topicOptions(e.target.value.trim(), cur); }
+  if(id==='rq'){ recF.q = e.target.value; refreshRecords(); }
+});
+document.addEventListener('change', e => {
+  const id = e.target.id, f = db.focus, v = Math.round(+e.target.value);
+  const clampSet = (k, lo, hi) => { if(v >= lo && v <= hi){ f[k] = v; save(); render(); } else { toast(`Enter a number from ${lo} to ${hi}`); render(); } };
+  if(id==='fStudy') clampSet('study', 1, 240);
+  if(id==='fBrk') clampSet('brk', 1, 120);
+  if(id==='fLong') clampSet('longBrk', 1, 120);
+  if(id==='fEvery') clampSet('longEvery', 1, 12);
+  if(id==='fGoal') clampSet('goal', 5, 1440);
+  if(id==='fAuto'){ f.autoStart = e.target.checked; save(); }
+  if(id==='fSound'){ f.sound = e.target.checked; save(); if(f.sound) chime(); }
+  if(id==='fNow'){ f.nowPlaying = e.target.checked; save(); if(!f.nowPlaying) stopNowPlaying(); else if(timer.running) nowPlayingFromGesture(); }
+  if(id==='fNoise'){ f.noise = e.target.value; save(); if(timer.running) nowPlayingFromGesture(); }
+  if(id==='fcTopic'){
+    timer.topicId = e.target.value; const t = getTopic(timer.topicId);
+    if(t && !timer.subject.trim() && t.subject){ timer.subject = t.subject; $('#fcSub').value = t.subject; }
+    saveTimer();
+  }
+  if(id==='sTopic'){ const t = getTopic(e.target.value); if(t && !$('#sSub').value.trim()) $('#sSub').value = t.subject||''; }
+  if(id==='rSub'){ recF.subject = e.target.value; refreshRecords(); }
+  if(id==='rRange'){ recF.range = e.target.value; refreshRecords(); }
+  if(id==='rSort'){ recF.sort = e.target.value; refreshRecords(); }
+  if(e.target.dataset.sel){ const s = e.target.dataset.sel; e.target.checked ? recF.sel.add(s) : recF.sel.delete(s); refreshRecords(); }
+});
+// Timer heartbeat
+let wasRunning = timer.running;
+armClock();
+setInterval(() => {
+  if(timer.running && Date.now() >= timer.endAt) finishPhase(timer.endAt);
+  updateTimerUI(); updateExternal();
+  if(wasRunning && !timer.running) updateBadge();
+  wasRunning = timer.running;
+}, 500);
+if(timer.running && Date.now() >= timer.endAt) setTimeout(() => finishPhase(timer.endAt), 0);
+
+/* ============ Pop-out timer + lock screen / notification bar ============ */
+/* 1) "Now Playing": a looping (silent or noise) audio track plus the Media Session API.
+      iOS & Android then show the timer on the lock screen / notification shade with a live
+      progress bar and play/pause/skip buttons — and the audio keeps the timer alive in the background.
+   2) Pop out: Document Picture-in-Picture (Chrome/Edge desktop) or video Picture-in-Picture. */
+let bgAudio = null, npKey = '';
+const noiseUrls = {};
+function noiseUrl(kind){
+  if(noiseUrls[kind]) return noiseUrls[kind];
+  const sr = 22050, n = sr * 12, fade = sr / 2, m = n - fade;
+  let b0=0,b1=0,b2=0,brown=0; const raw = new Float32Array(n);
+  for(let i=0;i<n;i++){
+    const w = Math.random()*2-1;
+    if(kind==='white') raw[i] = w*.18;
+    else if(kind==='pink'){ b0=.99765*b0+w*.099046; b1=.963*b1+w*.2965164; b2=.57*b2+w*1.0526913; raw[i]=(b0+b1+b2+w*.1848)*.05; }
+    else if(kind==='brown'){ brown=(brown+.02*w)/1.02; raw[i]=brown*1.6; }
+    else raw[i] = w * .00008; // practically silent, but a real audio track so the OS shows "Now Playing"
+  }
+  for(let i=0;i<fade;i++){ const t=i/fade; raw[i] = raw[i]*t + raw[m+i]*(1-t); } // seamless loop
+  const buf = new ArrayBuffer(44 + m*2), v = new DataView(buf);
+  const str = (o, t) => [...t].forEach((c, k) => v.setUint8(o+k, c.charCodeAt(0)));
+  str(0,'RIFF'); v.setUint32(4, 36+m*2, true); str(8,'WAVEfmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); str(36,'data'); v.setUint32(40,m*2,true);
+  for(let i=0;i<m;i++) v.setInt16(44+i*2, Math.max(-1,Math.min(1,raw[i]))*32767, true);
+  return noiseUrls[kind] = URL.createObjectURL(new Blob([buf], {type:'audio/wav'}));
+}
+function nowPlayingFromGesture(){ // call from a click/tap so the browser allows audio
+  if(!db.focus.nowPlaying) return;
+  if(!timer.running){ bgAudio?.pause(); updateMediaSession(true); return; }
+  try{
+    if(!bgAudio){ bgAudio = new Audio(); bgAudio.loop = true; bgAudio.preload = 'auto'; bgAudio.setAttribute('playsinline',''); }
+    const kind = db.focus.noise || 'silent';
+    if(bgAudio.dataset.kind !== kind){ bgAudio.src = noiseUrl(kind); bgAudio.dataset.kind = kind; }
+    bgAudio.play().catch(()=>{});
+  }catch(e){}
+  setupMediaSession(); updateMediaSession(true);
+}
+function stopNowPlaying(){
+  try{ bgAudio?.pause(); }catch(e){}
+  if('mediaSession' in navigator){ try{ navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; }catch(e){} }
+  npKey = '';
+}
+let msReady = false;
+function setupMediaSession(){
+  if(msReady || !('mediaSession' in navigator)) return; msReady = true;
+  const h = (a, fn) => { try{ navigator.mediaSession.setActionHandler(a, fn); }catch(e){} };
+  h('play', () => { if(!timer.running) startPause(); });
+  h('pause', () => { if(timer.running) startPause(); });
+  h('nexttrack', () => { skipPhase(); setTimeout(nowPlayingFromGesture, 50); });
+  h('stop', () => stopTimer());
+}
+function updateMediaSession(force){
+  if(!('mediaSession' in navigator) || !db.focus.nowPlaying) return;
+  if(!isActive() && timer.phase==='study' && !timer.running){ if(npKey) stopNowPlaying(); return; }
+  const rem = remainingMs(), tot = totalMs(), minsLeft = Math.ceil(rem/60000);
+  const key = [timer.phase, timer.running, minsLeft, timer.subject].join('|');
+  if(force || key !== npKey){
+    npKey = key;
+    try{
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: `${phaseName(timer.phase)} · ${minsLeft} min left${timer.running?'':' (paused)'}`,
+        artist: timer.subject ? `${timer.subject}${timer.topicId && getTopic(timer.topicId) ? ' — '+getTopic(timer.topicId).title : ''}` : 'Revise focus timer',
+        album: 'Revise',
+        artwork: [{src:'icon-192.png', sizes:'192x192', type:'image/png'},{src:'icon-512.png', sizes:'512x512', type:'image/png'}]
+      });
+      navigator.mediaSession.playbackState = timer.running ? 'playing' : 'paused';
+    }catch(e){}
+  }
+  try{ navigator.mediaSession.setPositionState({ duration: tot/1000, position: Math.min(tot, tot-rem)/1000, playbackRate: 1 }); }catch(e){}
+}
+
+/* --- Pop out --- */
+let pipWin = null, pipVideo = null, pipCanvas = null, pipCtx = null;
+const hasDocPip = () => 'documentPictureInPicture' in window;
+function prepPipVideo(){
+  if(hasDocPip() || pipVideo) return;
+  const v = document.createElement('video');
+  if(!(document.pictureInPictureEnabled || v.webkitSupportsPresentationMode)) return;
+  try{
+    pipCanvas = document.createElement('canvas'); pipCanvas.width = 480; pipCanvas.height = 270; pipCtx = pipCanvas.getContext('2d');
+    drawPip();
+    v.muted = true; v.playsInline = true; v.setAttribute('playsinline',''); v.autoplay = true;
+    v.srcObject = pipCanvas.captureStream(10);
+    v.style.cssText = 'position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:.01;pointer-events:none';
+    document.body.appendChild(v); v.play().catch(()=>{});
+    pipVideo = v;
+  }catch(e){ pipVideo = null; }
+}
+function drawPip(){
+  if(!pipCtx) return;
+  const c = pipCtx, W = 480, H = 270, rem = remainingMs(), tot = totalMs();
+  c.fillStyle = '#000'; c.fillRect(0,0,W,H);
+  c.textAlign = 'center'; c.fillStyle = '#8b8b8b'; c.font = '600 18px Inter, system-ui, sans-serif';
+  c.fillText((phaseName(timer.phase) + (isActive() && !timer.running ? ' · paused' : '')).toUpperCase().split('').join(String.fromCharCode(8202)), W/2, 62);
+  c.fillStyle = '#fff'; c.shadowColor = 'rgba(255,255,255,.8)'; c.shadowBlur = 24;
+  c.font = '500 104px "JetBrains Mono", ui-monospace, monospace'; c.fillText(clock(rem), W/2, 165);
+  c.shadowBlur = 0; c.fillStyle = '#222'; c.fillRect(60, 205, W-120, 4);
+  c.fillStyle = '#fff'; c.shadowBlur = 12; c.fillRect(60, 205, (W-120)*(1-rem/tot), 4); c.shadowBlur = 0;
+  if(timer.subject){ c.fillStyle = '#8b8b8b'; c.font = '16px Inter, system-ui, sans-serif'; c.fillText(timer.subject.slice(0,40), W/2, 242); }
+}
+const PIP_CSS = `body{margin:0;background:#000;color:#fff;font-family:Inter,system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden}
+.w{text-align:center;width:100%;padding:12px}.ph{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:#8b8b8b;font-weight:600}
+.t{font:500 clamp(36px,22vw,84px)/1.1 "JetBrains Mono",ui-monospace,monospace;text-shadow:0 0 8px rgba(255,255,255,.7),0 0 24px rgba(255,255,255,.3);margin:6px 0 10px}
+.b{height:3px;background:#222;border-radius:2px;margin:0 8%}.b div{height:100%;background:#fff;box-shadow:0 0 8px #fff;border-radius:2px}
+.c{display:flex;gap:8px;justify-content:center;margin-top:14px}.c button{background:none;color:#fff;border:1px solid #444;border-radius:999px;padding:6px 14px;font:inherit;font-size:12px;cursor:pointer;letter-spacing:.08em;text-transform:uppercase}
+.c button.p{border-color:#fff;box-shadow:0 0 6px rgba(255,255,255,.6)}.s{color:#8b8b8b;font-size:12px;margin-top:8px}`;
+function updatePipWindow(){
+  if(!pipWin) return;
+  const d = pipWin.document, rem = remainingMs(), tot = totalMs();
+  d.getElementById('pp').textContent = phaseName(timer.phase) + (isActive() && !timer.running ? ' · paused' : '');
+  d.getElementById('pt').textContent = clock(rem);
+  d.getElementById('pb').style.width = (100*(1-rem/tot)) + '%';
+  d.getElementById('ps').textContent = timer.running ? 'Pause' : isActive() ? 'Resume' : 'Start';
+  d.getElementById('psub').textContent = timer.subject || '';
+}
+async function popOut(){
+  try{
+    if(hasDocPip()){
+      if(pipWin){ pipWin.close(); pipWin = null; return; }
+      pipWin = await documentPictureInPicture.requestWindow({ width: 300, height: 260 });
+      const d = pipWin.document;
+      const st = d.createElement('style'); st.textContent = PIP_CSS; d.head.appendChild(st);
+      const fl = d.createElement('link'); fl.rel = 'stylesheet'; fl.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@500&display=swap'; d.head.appendChild(fl);
+      d.title = 'Revise timer';
+      d.body.innerHTML = '<div class="w"><div class="ph" id="pp"></div><div class="t" id="pt"></div><div class="b"><div id="pb"></div></div><div class="c"><button class="p" id="ps"></button><button id="pk">Skip</button></div><div class="s" id="psub"></div></div>';
+      d.getElementById('ps').onclick = () => startPause();
+      d.getElementById('pk').onclick = () => skipPhase();
+      pipWin.addEventListener('pagehide', () => { pipWin = null; });
+      updatePipWindow();
+      return;
+    }
+    prepPipVideo();
+    if(!pipVideo) throw new Error('unsupported');
+    if(document.pictureInPictureElement){ await document.exitPictureInPicture(); return; }
+    drawPip();
+    if(document.pictureInPictureEnabled && pipVideo.requestPictureInPicture){ await pipVideo.requestPictureInPicture(); setupMediaSession(); return; }
+    if(pipVideo.webkitSupportsPresentationMode?.('picture-in-picture')){ pipVideo.webkitSetPresentationMode('picture-in-picture'); return; }
+    throw new Error('unsupported');
+  }catch(e){
+    toast(db.focus.nowPlaying ? "Pop-out isn't supported in this browser. While the timer runs, it shows on your lock screen and notification bar instead."
+                              : "Pop-out isn't supported in this browser. Turn on 'Show timer on lock screen' in the timer settings instead.");
+  }
+}
+let lastPipDraw = 0;
+function updateExternal(){
+  updatePipWindow();
+  if(pipVideo && Date.now() - lastPipDraw > 450){ lastPipDraw = Date.now(); drawPip(); }
+  // keep audio in step with the timer (pausing is always allowed; playing may need a tap)
+  if(bgAudio && !timer.running && !bgAudio.paused) bgAudio.pause();
+  if(bgAudio && timer.running && bgAudio.paused && db.focus.nowPlaying) bgAudio.play().catch(()=>{});
+  updateMediaSession(false);
+}
+
+/* ============ Cloud sync (private GitHub Gist) ============ */
+const SKEY = 'revise.sync', GIST_FILE = 'revise-data.json';
+let sync = (() => { try{ return JSON.parse(localStorage.getItem(SKEY)||'{}'); }catch(e){ return {}; } })();
+let syncState = 'idle', syncErr = '', syncTimer = null, syncing = false, syncAgain = false, pendingRender = false;
+function saveSyncCfg(){ try{ localStorage.setItem(SKEY, JSON.stringify(sync)); }catch(e){} }
+
+async function gh(path, opts = {}){
+  const res = await fetch('https://api.github.com' + path, { ...opts, cache:'no-store',
+    headers:{ 'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + sync.token, ...(opts.body ? {'Content-Type':'application/json'} : {}) } });
+  if(res.status === 401){ const e = new Error('auth'); e.status = 401; throw e; }
+  if(!res.ok){ const e = new Error('GitHub error ' + res.status); e.status = res.status; throw e; }
+  return res.json();
+}
+// Merge two copies: newest version of each item wins; deletions (tombstones) win over older versions.
+function mergeData(a, b){
+  const del = {...(a.deleted||{})};
+  for(const [k,v] of Object.entries(b.deleted||{})) if(!(del[k] >= v)) del[k] = v;
+  const cutoff = Date.now() - 90*864e5;
+  for(const k in del) if(del[k] < cutoff) delete del[k];
+  const mergeArr = (x, y) => {
+    const m = new Map();
+    for(const it of [...(x||[]), ...(y||[])]){ const c = m.get(it.id); if(!c || (it.updated||0) > (c.updated||0)) m.set(it.id, it); }
+    return [...m.values()].filter(it => !(del[it.id] && del[it.id] >= (it.updated||0)));
+  };
+  const out = {...a, topics:mergeArr(a.topics, b.topics), sessions:mergeArr(a.sessions, b.sessions), log:mergeArr(a.log, b.log), deleted:del, meta:{...a.meta}};
+  if((b.meta?.settingsUpdated||0) > (a.meta?.settingsUpdated||0)){ out.settings = {...a.settings, ...pick(b.settings||{}, SYNCED_SETTINGS)}; out.meta.settingsUpdated = b.meta.settingsUpdated; }
+  if((b.meta?.focusUpdated||0) > (a.meta?.focusUpdated||0)){ out.focus = {...a.focus, ...(b.focus||{})}; out.meta.focusUpdated = b.meta.focusUpdated; }
+  return out;
+}
+const byId = arr => [...arr].sort((x,y) => x.id < y.id ? -1 : 1);
+const core = d => JSON.stringify([byId(d.topics), byId(d.sessions), byId(d.log), Object.entries(d.deleted).sort(), pick(d.settings, SYNCED_SETTINGS), d.focus]);
+const payload = d => JSON.stringify({ app:'revise', version:1, savedAt:Date.now(), topics:d.topics, sessions:d.sessions, log:d.log,
+  deleted:d.deleted, meta:d.meta, settings:pick(d.settings, SYNCED_SETTINGS), focus:d.focus });
+
+async function readRemote(){
+  const g = await gh('/gists/' + sync.gistId);
+  const f = g.files && g.files[GIST_FILE];
+  if(!f) return null;
+  const text = f.truncated ? await (await fetch(f.raw_url, {cache:'no-store'})).text() : f.content;
+  try{ return JSON.parse(text); }catch(e){ return null; }
+}
+async function createGist(){
+  const g = await gh('/gists', { method:'POST', body: JSON.stringify({ description:'Revise app data (used to sync your devices)', public:false, files:{ [GIST_FILE]:{ content: payload(db) } } }) });
+  sync.gistId = g.id; saveSyncCfg();
+}
+async function syncNow(){
+  if(!sync.token || !sync.gistId) return;
+  if(syncing){ syncAgain = true; return; }
+  clearTimeout(syncTimer); syncTimer = null;
+  if(!navigator.onLine){ setSyncState('offline'); return; }
+  syncing = true; setSyncState('syncing');
+  try{
+    let remote = null;
+    try{ remote = await readRemote(); }
+    catch(e){ if(e.status === 404){ await createGist(); } else throw e; }
+    const before = core(db);
+    const r = remote ? normalize(remote) : null;
+    if(r){ db = normalize(mergeData(db, r)); snap = indexSnap(db); writeLocal(); }
+    if(!r || core(r) !== core(db)){
+      await gh('/gists/' + sync.gistId, { method:'PATCH', body: JSON.stringify({ files:{ [GIST_FILE]:{ content: payload(db) } } }) });
+    }
+    sync.last = Date.now(); saveSyncCfg(); syncErr = ''; setSyncState('ok');
+    if(core(db) !== before) refreshAfterSync();
+  }catch(e){
+    syncErr = e.status === 401 ? 'GitHub did not accept your token (it may have expired). Disconnect and connect again with a new token.'
+            : e.status === 403 || e.status === 404 ? 'Your token does not have permission to use Gists. Make sure the "gist" box is ticked.'
+            : 'Could not reach GitHub — will retry automatically.';
+    setSyncState('error');
+  }finally{
+    syncing = false;
+    if(syncAgain){ syncAgain = false; syncNow(); }
+  }
+}
+function scheduleSync(){
+  if(!sync.token) return;
+  clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, 2000);
+  if(!syncing) setSyncState('pending');
+}
+function refreshAfterSync(){
+  const a = document.activeElement;
+  if($('#modalRoot').innerHTML || (a && a.closest('#view') && /INPUT|TEXTAREA|SELECT/.test(a.tagName))) pendingRender = true;
+  else render();
+}
+function ago(ts){
+  if(!ts) return 'never';
+  const s = Math.round((Date.now()-ts)/1000);
+  return s < 10 ? 'just now' : s < 60 ? `${s}s ago` : s < 3600 ? `${Math.round(s/60)} min ago` : s < 86400 ? `${Math.round(s/3600)} h ago` : new Date(ts).toLocaleString();
+}
+function syncStatusText(){
+  if(syncState === 'error') return '' + syncErr;
+  if(syncState === 'offline') return 'Offline — changes are saved and will sync when you are back online.';
+  if(syncState === 'syncing' || syncState === 'pending') return 'Syncing…';
+  return `Up to date · last synced ${ago(sync.last)}`;
+}
+function setSyncState(st){
+  syncState = st;
+  const b = $('#syncBtn');
+  if(b){
+    b.classList.toggle('hidden', !sync.token);
+    b.innerHTML = ic('cloud',20) + ({syncing:'…', pending:'…', ok:'', error:'!', offline:'×', idle:''}[st] || '');
+    b.style.color = st === 'error' ? 'var(--text)' : '';
+    b.title = syncStatusText();
+  }
+  const el = $('#syncStatus'); if(el) el.textContent = syncStatusText();
+}
+const encodeCode = () => btoa(JSON.stringify({t:sync.token, g:sync.gistId})).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+function decodeCode(c){
+  try{ const o = JSON.parse(atob(c.trim().replace(/-/g,'+').replace(/_/g,'/'))); if(o.t && o.g) return o; }catch(e){}
+  return null;
+}
+const syncLink = () => `${location.origin}${location.pathname}#sync=${encodeCode()}`;
+
+async function connectSync(input){
+  input = (input||'').trim();
+  if(!input){ toast('Paste your GitHub token or a sync code'); return; }
+  const fromLink = input.match(/#sync=([\w-]+)/);
+  const code = decodeCode(fromLink ? fromLink[1] : input);
+  sync = code ? { token:code.t, gistId:code.g } : { token:input };
+  try{
+    const me = await gh('/user'); sync.user = me.login;
+    if(!sync.gistId){
+      const list = await gh('/gists?per_page=100');
+      const found = list.find(g => g.files && g.files[GIST_FILE]);
+      if(found) sync.gistId = found.id; else await createGist();
+    }
+    saveSyncCfg();
+    await syncNow();
+    if(syncState === 'error') throw Object.assign(new Error(syncErr), {shown:true});
+    toast('Sync is on — this device is now linked');
+    render();
+  }catch(e){
+    sync = {}; saveSyncCfg(); setSyncState('idle');
+    toast(e.shown ? e.message : e.status === 401 ? 'GitHub did not accept that token' : 'Could not connect: ' + e.message);
+  }
+}
+function renderSyncCard(){
+  if(!sync.token) return `<div class="card">
+    <b>Sync phone &amp; laptop</b>
+    <p>Keep the same topics, reviews and study records on all your devices. Everything is stored in a <b>private Gist on your own GitHub account</b> — no other server involved.</p>
+    <ol style="font-size:13px;padding-left:18px;margin:8px 0;color:var(--muted)">
+      <li><a href="https://github.com/settings/tokens/new?scopes=gist&description=Revise%20sync" target="_blank" rel="noopener">Create a GitHub token</a> (the <b>gist</b> box is already ticked). Set <b>Expiration</b> to <i>No expiration</i>, click <b>Generate token</b>, and copy it.</li>
+      <li>Paste it below and press <b>Connect</b>.</li>
+      <li>On your other device, use <b>Link another device</b> — you don't need a second token.</li>
+    </ol>
+    <input type="password" id="syncInput" placeholder="Paste token (ghp_…) or a sync code" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="row" style="margin-top:8px"><button class="btn primary" data-act="syncConnect">Connect</button></div>
+  </div>`;
+  return `<div class="card">
+    <b>Sync is on</b>${sync.user ? ` <small style="color:var(--muted)">· GitHub @${esc(sync.user)}</small>` : ''}
+    <p id="syncStatus">${esc(syncStatusText())}</p>
+    <div class="row" style="flex-wrap:wrap;margin-top:8px">
+      <button class="btn" data-act="syncNow">${ic('refresh',16)}Sync now</button>
+      <button class="btn" data-act="syncLink">${ic('link',16)}Link another device</button>
+      <button class="btn ghost danger" data-act="syncOff">Disconnect</button>
+    </div>
+    <div id="linkBox" class="hidden" style="margin-top:12px;text-align:center">
+      <p>Scan with your phone camera, or open this link on the other device:</p>
+      <div id="qr" style="display:inline-block;background:#fff;padding:10px;border-radius:10px;margin:6px 0"></div>
+      <input type="text" id="linkText" readonly value="" style="font-size:12px">
+      <div class="row" style="margin-top:8px;flex-wrap:wrap">
+        <button class="btn small" data-act="copyLink">Copy link</button>
+        <button class="btn small" data-act="copyCode">Copy sync code</button>
+      </div>
+      <p style="text-align:left"><b>iPhone home-screen app:</b> it keeps its own storage, so open the installed app → Settings → paste the <b>sync code</b> there.<br>This link works like a password for your Revise data — only open it on your own devices.</p>
+    </div>
+  </div>`;
+}
+function loadScript(src){ return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+async function showLinkBox(){
+  const box = $('#linkBox'); box.classList.toggle('hidden'); if(box.classList.contains('hidden')) return;
+  $('#linkText').value = syncLink();
+  try{
+    if(!window.QRCode) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js');
+    $('#qr').innerHTML = ''; new QRCode($('#qr'), { text: syncLink(), width:200, height:200, correctLevel: QRCode.CorrectLevel.L });
+  }catch(e){ $('#qr').outerHTML = '<p>(QR code needs an internet connection — use the link instead.)</p>'; }
+}
+async function copy(text, what){
+  try{ await navigator.clipboard.writeText(text); toast(what + ' copied'); }
+  catch(e){ const i = $('#linkText'); i.value = text; i.select(); toast('Press Ctrl+C / Copy to copy'); }
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-act]')?.dataset.act;
+  if(a === 'syncConnect') connectSync($('#syncInput').value);
+  if(a === 'syncNow') syncNow();
+  if(a === 'syncLink') showLinkBox();
+  if(a === 'copyLink') copy(syncLink(), 'Link');
+  if(a === 'copyCode') copy(encodeCode(), 'Sync code');
+  if(a === 'syncOff' && confirm('Stop syncing this device? Your data stays on this device and in your GitHub Gist.')){ sync = {}; saveSyncCfg(); setSyncState('idle'); render(); }
+});
+$('#syncBtn').onclick = () => { if(syncState === 'error'){ tab = 'settings'; render(); } syncNow(); };
+function checkSyncHash(){
+  const m = location.hash.match(/sync=([\w-]+)/);
+  if(!m) return false;
+  history.replaceState(null, '', location.pathname + location.search);
+  const c = decodeCode(m[1]);
+  if(c && (!sync.token || sync.gistId !== c.g) && confirm('Link this device to your Revise sync? Your data from this device will be merged in.')){ connectSync(m[1]); return true; }
+  return false;
+}
+function initSync(){
+  addEventListener('hashchange', checkSyncHash);
+  setSyncState('idle');
+  if(!checkSyncHash() && sync.token) syncNow();
+  document.addEventListener('visibilitychange', () => { if(sync.token) syncNow(); });
+  addEventListener('online', () => syncNow());
+  setInterval(() => { if(sync.token && !document.hidden) syncNow(); }, 60000);
+  setInterval(() => { const el = $('#syncStatus'); if(el && syncState === 'ok') el.textContent = syncStatusText(); }, 15000);
 }
 
 /* ============ PWA ============ */
@@ -803,8 +1759,10 @@ document.addEventListener('visibilitychange', () => { if(!document.hidden){ rend
 let lastDay = today();
 setInterval(() => { if(today()!==lastDay){ lastDay=today(); render(); } checkReminder(); }, 60000);
 
+document.querySelectorAll('[data-ic]').forEach(el => el.innerHTML = ic(el.dataset.ic, el.id==='fab' ? 26 : 22));
 applyTheme();
 render();
+initSync();
 setTimeout(checkReminder, 1500);
 </script>
 </body>
